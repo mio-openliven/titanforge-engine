@@ -9,6 +9,7 @@ from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.locations.builder import build_location_pack, format_location_build_result
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
+from titanforge.masks.cleanup import format_mask_cleanup_result, render_mask_cleanup_preview
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
@@ -56,6 +57,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     mask_preview_parser.add_argument("input", type=Path, help="PNG mask to preview.")
     mask_preview_parser.add_argument("output", type=Path, help="Preview PNG output path.")
+
+    mask_cleanup_parser = subparsers.add_parser(
+        "mask-cleanup-preview",
+        help="Render a cleanup preview that removes tiny water/land mask noise.",
+    )
+    mask_cleanup_parser.add_argument("input", type=Path, help="PNG mask to clean up.")
+    mask_cleanup_parser.add_argument("output", type=Path, help="Cleanup preview PNG output path.")
+    mask_cleanup_parser.add_argument("--threshold", type=int, default=5, help="Neighbor threshold from 1 to 8.")
 
     mask_layout_parser = subparsers.add_parser(
         "mask-layout",
@@ -127,6 +136,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mask-preview":
         result = render_mask_preview(args.input, args.output)
         print(format_mask_preview_result(result))
+        return 0
+
+    if args.command == "mask-cleanup-preview":
+        result = render_mask_cleanup_preview(args.input, args.output, threshold=args.threshold)
+        print(format_mask_cleanup_result(result))
         return 0
 
     if args.command == "mask-layout":

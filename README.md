@@ -21,6 +21,7 @@ python -m titanforge inventory examples
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
+python -m titanforge mask-cleanup-preview path\to\mask.png out\mask-cleanup-preview.png
 python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
 python -m titanforge validate-layout out\layout.json --report out\report.txt

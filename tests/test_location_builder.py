@@ -21,6 +21,7 @@ class LocationBuilderTests(unittest.TestCase):
             for path in (
                 result.mask_path,
                 result.mask_preview_path,
+                result.cleanup_preview_path,
                 result.layout_path,
                 result.heightmap_path,
                 result.report_path,
@@ -32,6 +33,7 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(result.warnings, 0)
         self.assertEqual(manifest["schema"], "titanforge.location-pack")
         self.assertEqual(manifest["validation"], {"errors": 0, "warnings": 0})
+        self.assertEqual(manifest["artifacts"]["maskCleanupPreview"], "mask-cleanup-preview.png")
 
     def test_build_location_pack_from_input_mask_reports_warnings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

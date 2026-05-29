@@ -74,3 +74,9 @@ It is not a production map generator. Keep it small and predictable so tests can
 `titanforge build-location` creates the first tangible product folder: mask, mask preview, layout JSON, heightmap preview, report, and manifest.
 
 This is the first "touch it" output. It deliberately stops before Minecraft world or schematic export so early validation and preview remain stable.
+
+## 2026-05-29: First Mask Cleanup Preview
+
+`titanforge mask-cleanup-preview` renders a conservative preview that removes tiny water/land specks by neighbor majority.
+
+It does not modify the source mask or feed cleaned pixels into terrain yet. This keeps the pass safe while making arnis-style water noise visible and debuggable.

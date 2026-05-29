@@ -25,6 +25,7 @@ $env:PYTHONPATH = "src"
 python -m titanforge demo-mask out\demo-mask.png --width 128 --height 128
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
+python -m titanforge mask-cleanup-preview path\to\mask.png out\mask-cleanup-preview.png
 python -m titanforge mask-layout path\to\mask.png out\layout.json
 ```
 
@@ -37,6 +38,13 @@ The command prints image size, known zone counts, and unknown colors. Unknown co
 - Known zone colors are preserved.
 - Transparent pixels remain transparent.
 - Unknown colors are rendered as `#ff00ff` so bad mask data is visible immediately.
+
+`mask-cleanup-preview` writes a conservative cleanup PNG:
+
+- Tiny water specks surrounded by land become land.
+- Tiny land specks surrounded by water become water.
+- The original mask is not modified.
+- This is a preview pass, not final coastline generation.
 
 `mask-layout` writes a neutral JSON artifact:
 

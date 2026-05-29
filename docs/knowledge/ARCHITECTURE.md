@@ -50,6 +50,8 @@ The initial `terrain` module can render a grayscale heightmap preview from a mas
 
 `demo-mask` belongs to the mask tooling, not generation. Its job is to provide stable smoke-test input for the current pipeline.
 
+`mask-cleanup-preview` is the first cleanup pass. It should stay conservative and inspectable: produce a preview artifact first, then later decide whether terrain generation should consume cleaned masks.
+
 ## First Location Pack
 
 The first user-facing output is a location pack folder:
@@ -57,6 +59,7 @@ The first user-facing output is a location pack folder:
 ```text
 mask.png
 mask-preview.png
+mask-cleanup-preview.png
 layout.json
 heightmap-preview.png
 report.txt

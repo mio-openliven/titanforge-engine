@@ -8,6 +8,7 @@ The goal is to collect all early artifacts needed to review a location idea:
 location/
   mask.png
   mask-preview.png
+  mask-cleanup-preview.png
   layout.json
   heightmap-preview.png
   report.txt
@@ -45,6 +46,8 @@ Current warnings include:
 - missing land
 - mostly water
 - mostly land
+
+`mask-cleanup-preview.png` is included to reveal tiny water/land noise before terrain generation. It does not replace `mask.png` yet.
 
 ## Product Meaning
 

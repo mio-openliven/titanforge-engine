@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 
 from titanforge.layouts.mask_layout import write_mask_layout
+from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.demo import generate_demo_mask
 from titanforge.preview.mask_preview import render_mask_preview
 from titanforge.terrain.heightmap_preview import render_heightmap_preview
@@ -17,6 +18,7 @@ class LocationBuildResult:
     output_dir: Path
     mask_path: Path
     mask_preview_path: Path
+    cleanup_preview_path: Path
     layout_path: Path
     heightmap_path: Path
     report_path: Path
@@ -40,6 +42,7 @@ def build_location_pack(
 
     mask_path = output_dir / "mask.png"
     mask_preview_path = output_dir / "mask-preview.png"
+    cleanup_preview_path = output_dir / "mask-cleanup-preview.png"
     layout_path = output_dir / "layout.json"
     heightmap_path = output_dir / "heightmap-preview.png"
     report_path = output_dir / "report.txt"
@@ -55,6 +58,7 @@ def build_location_pack(
         source_mode = "input"
 
     render_mask_preview(mask_path, mask_preview_path)
+    render_mask_cleanup_preview(mask_path, cleanup_preview_path)
     write_mask_layout(mask_path, layout_path)
     render_heightmap_preview(layout_path, heightmap_path)
     validation = write_layout_validation_report(layout_path, report_path)
@@ -66,6 +70,7 @@ def build_location_pack(
         "artifacts": {
             "mask": mask_path.name,
             "maskPreview": mask_preview_path.name,
+            "maskCleanupPreview": cleanup_preview_path.name,
             "layout": layout_path.name,
             "heightmapPreview": heightmap_path.name,
             "report": report_path.name,
@@ -81,6 +86,7 @@ def build_location_pack(
         output_dir=output_dir,
         mask_path=mask_path,
         mask_preview_path=mask_preview_path,
+        cleanup_preview_path=cleanup_preview_path,
         layout_path=layout_path,
         heightmap_path=heightmap_path,
         report_path=report_path,
@@ -96,6 +102,7 @@ def format_location_build_result(result: LocationBuildResult) -> str:
             f"Location pack: {result.output_dir}",
             f"- mask: {result.mask_path.name}",
             f"- preview: {result.mask_preview_path.name}",
+            f"- cleanup preview: {result.cleanup_preview_path.name}",
             f"- layout: {result.layout_path.name}",
             f"- heightmap: {result.heightmap_path.name}",
             f"- report: {result.report_path.name}",
