@@ -216,3 +216,30 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Node / frontend
+node_modules/
+.next/
+.nuxt/
+coverage/
+
+# Java / Minecraft tooling
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+target/
+
+# Local generated outputs
+exports/
+renders/
+previews/
+tmp/
+temp/
