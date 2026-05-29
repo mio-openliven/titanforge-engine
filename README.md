@@ -18,9 +18,20 @@ $env:PYTHONPATH = "src"
 python -m titanforge info
 python -m titanforge plan examples/tiny_project/titanforge.toml
 python -m titanforge inventory examples
+python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
 python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
 python -m unittest discover -s tests
+```
+
+## Tiny Mask Pipeline
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge demo-mask out\demo-mask.png --width 128 --height 128
+python -m titanforge mask-preview out\demo-mask.png out\demo-preview.png
+python -m titanforge mask-layout out\demo-mask.png out\demo-layout.json
+python -m titanforge heightmap-preview out\demo-layout.json out\demo-heightmap.png
 ```

@@ -22,10 +22,13 @@ The first mask pass supports exact-color PNG masks. It is intentionally simple: 
 
 ```powershell
 $env:PYTHONPATH = "src"
+python -m titanforge demo-mask out\demo-mask.png --width 128 --height 128
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
 python -m titanforge mask-layout path\to\mask.png out\layout.json
 ```
+
+`demo-mask` writes a deterministic toy island mask. It exists for smoke testing the current pipeline without drawing a new input image by hand.
 
 The command prints image size, known zone counts, and unknown colors. Unknown colors are not errors yet; they are early feedback that the mask needs cleanup or a custom palette.
 

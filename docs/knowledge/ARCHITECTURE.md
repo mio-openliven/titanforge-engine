@@ -48,6 +48,8 @@ The initial `layouts` module writes a neutral JSON artifact from a PNG mask. It 
 
 The initial `terrain` module can render a grayscale heightmap preview from a mask layout. It is a diagnostic terrain artifact, not the final terrain algorithm. This lets us inspect height intent before adding coastline smoothing, erosion-style noise, or Minecraft exporters.
 
+`demo-mask` belongs to the mask tooling, not generation. Its job is to provide stable smoke-test input for the current pipeline.
+
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.

@@ -12,6 +12,14 @@ python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
 ```
 
+For a generated smoke-test input:
+
+```powershell
+python -m titanforge demo-mask out\demo-mask.png --width 128 --height 128
+python -m titanforge mask-layout out\demo-mask.png out\demo-layout.json
+python -m titanforge heightmap-preview out\demo-layout.json out\demo-heightmap-preview.png
+```
+
 ## Initial Height Rules
 
 These are diagnostic grayscale values, not final Minecraft Y values.

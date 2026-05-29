@@ -62,3 +62,9 @@ Keep this artifact Minecraft-version-neutral. Minecraft block IDs, biome IDs, sc
 `titanforge heightmap-preview` renders a simple grayscale preview from a `mask-layout` JSON artifact.
 
 This is diagnostic only. It deliberately avoids smoothing, erosion-style filtering, and water-depth logic until the mask and layout contracts are stable.
+
+## 2026-05-29: Demo Mask Generator
+
+`titanforge demo-mask` creates a deterministic toy island mask for smoke testing the input-preview-layout-heightmap pipeline.
+
+It is not a production map generator. Keep it small and predictable so tests can catch pipeline regressions.

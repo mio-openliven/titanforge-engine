@@ -8,6 +8,7 @@ from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
+from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
@@ -38,6 +39,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Inspect a PNG mask and report known TitanForge zone colors.",
     )
     mask_parser.add_argument("path", type=Path, help="PNG mask to inspect.")
+
+    demo_mask_parser = subparsers.add_parser(
+        "demo-mask",
+        help="Create a small deterministic demo PNG mask for pipeline testing.",
+    )
+    demo_mask_parser.add_argument("output", type=Path, help="Demo mask PNG output path.")
+    demo_mask_parser.add_argument("--width", type=int, default=128, help="Demo mask width.")
+    demo_mask_parser.add_argument("--height", type=int, default=128, help="Demo mask height.")
 
     mask_preview_parser = subparsers.add_parser(
         "mask-preview",
@@ -88,6 +97,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mask-info":
         analysis = analyze_png_mask(args.path)
         print(format_mask_analysis(analysis))
+        return 0
+
+    if args.command == "demo-mask":
+        result = generate_demo_mask(args.output, width=args.width, height=args.height)
+        print(format_demo_mask_result(result))
         return 0
 
     if args.command == "mask-preview":
