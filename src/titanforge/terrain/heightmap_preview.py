@@ -1,0 +1,115 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+from pathlib import Path
+from typing import Any
+
+from titanforge.masks.classifier import MaskColorClassifier
+from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, ZoneDefinition
+from titanforge.masks.png import read_png, write_rgba_png
+
+
+UNKNOWN_HEIGHT_COLOR = (255, 0, 255, 255)
+
+ZONE_HEIGHTS = {
+    "void": None,
+    "water": 38,
+    "beach": 92,
+    "port": 104,
+    "road": 112,
+    "city": 122,
+    "forest": 132,
+    "land": 140,
+    "mountain": 220,
+}
+
+
+@dataclass(frozen=True)
+class HeightmapPreviewResult:
+    layout_path: Path
+    mask_path: Path
+    output_path: Path
+    width: int
+    height: int
+    known_pixels: int
+    unknown_pixels: int
+
+
+def render_heightmap_preview(
+    layout_path: Path,
+    output_path: Path,
+    palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
+) -> HeightmapPreviewResult:
+    layout = _load_layout(layout_path)
+    mask_path = _resolve_mask_path(layout_path, layout)
+    image = read_png(mask_path)
+    classifier = MaskColorClassifier(palette)
+
+    known_pixels = 0
+    unknown_pixels = 0
+    output_rows: list[tuple[tuple[int, int, int, int], ...]] = []
+
+    for row in image.pixels:
+        output_row: list[tuple[int, int, int, int]] = []
+        for rgba in row:
+            zone = classifier.classify(rgba)
+            if zone is None:
+                unknown_pixels += 1
+                output_row.append(UNKNOWN_HEIGHT_COLOR)
+                continue
+
+            height_value = ZONE_HEIGHTS.get(zone.zone_id)
+            known_pixels += 1
+            if height_value is None:
+                output_row.append((0, 0, 0, 0))
+            else:
+                output_row.append((height_value, height_value, height_value, 255))
+
+        output_rows.append(tuple(output_row))
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_rgba_png(output_path, image.width, image.height, tuple(output_rows))
+
+    return HeightmapPreviewResult(
+        layout_path=layout_path,
+        mask_path=mask_path,
+        output_path=output_path,
+        width=image.width,
+        height=image.height,
+        known_pixels=known_pixels,
+        unknown_pixels=unknown_pixels,
+    )
+
+
+def format_heightmap_preview_result(result: HeightmapPreviewResult) -> str:
+    return "\n".join(
+        [
+            f"Heightmap preview: {result.output_path}",
+            f"Layout: {result.layout_path}",
+            f"Mask: {result.mask_path}",
+            f"Size: {result.width} x {result.height}",
+            f"Known pixels: {result.known_pixels}",
+            f"Unknown pixels: {result.unknown_pixels}",
+        ]
+    )
+
+
+def _load_layout(layout_path: Path) -> dict[str, Any]:
+    return json.loads(layout_path.read_text(encoding="utf-8"))
+
+
+def _resolve_mask_path(layout_path: Path, layout: dict[str, Any]) -> Path:
+    source_path = Path(str(layout.get("source", {}).get("path", "")))
+    if source_path.is_absolute():
+        return source_path
+
+    layout_relative = layout_path.parent / source_path
+    if layout_relative.exists():
+        return layout_relative
+
+    cwd_relative = Path.cwd() / source_path
+    if cwd_relative.exists():
+        return cwd_relative
+
+    return layout_relative

@@ -56,3 +56,9 @@ Unknown mask colors are rendered as `#ff00ff` to make bad inputs visible instead
 `titanforge mask-layout` writes a neutral JSON summary from a PNG mask. The artifact records source, dimensions, coverage, zones, and unknown colors.
 
 Keep this artifact Minecraft-version-neutral. Minecraft block IDs, biome IDs, schematic formats, and exporter rules belong in later adapters.
+
+## 2026-05-29: First Heightmap Preview
+
+`titanforge heightmap-preview` renders a simple grayscale preview from a `mask-layout` JSON artifact.
+
+This is diagnostic only. It deliberately avoids smoothing, erosion-style filtering, and water-depth logic until the mask and layout contracts are stable.

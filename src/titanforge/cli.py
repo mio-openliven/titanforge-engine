@@ -9,6 +9,7 @@ from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
+from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
 
@@ -52,6 +53,13 @@ def build_parser() -> argparse.ArgumentParser:
     mask_layout_parser.add_argument("input", type=Path, help="PNG mask to convert.")
     mask_layout_parser.add_argument("output", type=Path, help="Layout JSON output path.")
 
+    heightmap_preview_parser = subparsers.add_parser(
+        "heightmap-preview",
+        help="Render a first grayscale heightmap preview from a mask layout JSON.",
+    )
+    heightmap_preview_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
+    heightmap_preview_parser.add_argument("output", type=Path, help="Heightmap preview PNG output path.")
+
     return parser
 
 
@@ -90,6 +98,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mask-layout":
         result = write_mask_layout(args.input, args.output)
         print(format_mask_layout_result(result))
+        return 0
+
+    if args.command == "heightmap-preview":
+        result = render_heightmap_preview(args.layout, args.output)
+        print(format_heightmap_preview_result(result))
         return 0
 
     parser.print_help()

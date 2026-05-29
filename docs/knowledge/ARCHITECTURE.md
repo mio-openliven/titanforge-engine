@@ -46,6 +46,8 @@ The initial `preview` module can render a normalized mask preview PNG. It preser
 
 The initial `layouts` module writes a neutral JSON artifact from a PNG mask. It should describe intent and coverage, not Minecraft-specific blocks. Terrain, schematic, and exporter passes should consume this type of artifact instead of reparsing the original image.
 
+The initial `terrain` module can render a grayscale heightmap preview from a mask layout. It is a diagnostic terrain artifact, not the final terrain algorithm. This lets us inspect height intent before adding coastline smoothing, erosion-style noise, or Minecraft exporters.
+
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.

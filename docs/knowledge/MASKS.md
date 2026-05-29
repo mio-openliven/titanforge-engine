@@ -45,6 +45,8 @@ The command prints image size, known zone counts, and unknown colors. Unknown co
 
 This is not final terrain. It is the first machine-readable contract between image input and later generation passes.
 
+The first consumer is `heightmap-preview`, documented in `TERRAIN.md`.
+
 ## Design Rule
 
 Do not guess fuzzy colors in the first pass. Exact colors make bugs visible and keep the first pipeline deterministic.

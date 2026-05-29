@@ -4,6 +4,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, MaskColor, ZoneDefinition
 from titanforge.masks.png import read_png
 
@@ -45,9 +46,7 @@ def analyze_png_mask(
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
 ) -> MaskAnalysis:
     image = read_png(path)
-    zone_by_color = {zone.color.rgba: zone for zone in palette}
-    zone_by_rgb = {zone.color.rgb: zone for zone in palette if zone.color.alpha == 255}
-    void_zone = next((zone for zone in palette if zone.zone_id == "void"), None)
+    classifier = MaskColorClassifier(palette)
 
     zone_counts: Counter[str] = Counter()
     unknown_counts: Counter[tuple[int, int, int, int]] = Counter()
@@ -55,12 +54,7 @@ def analyze_png_mask(
 
     for row in image.pixels:
         for rgba in row:
-            zone = zone_by_color.get(rgba)
-            if zone is None and rgba[3] == 0:
-                zone = void_zone
-            if zone is None and rgba[3] == 255:
-                zone = zone_by_rgb.get(rgba[:3])
-
+            zone = classifier.classify(rgba)
             if zone is None:
                 unknown_counts[rgba] += 1
             else:

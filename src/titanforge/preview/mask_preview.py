@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, MaskColor, ZoneDefinition
 from titanforge.masks.png import read_png, write_rgba_png
 
@@ -26,9 +27,7 @@ def render_mask_preview(
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
 ) -> MaskPreviewResult:
     image = read_png(input_path)
-    zone_by_rgba = {zone.color.rgba: zone for zone in palette}
-    zone_by_rgb = {zone.color.rgb: zone for zone in palette if zone.color.alpha == 255}
-    void_zone = next((zone for zone in palette if zone.zone_id == "void"), None)
+    classifier = MaskColorClassifier(palette)
 
     known_pixels = 0
     unknown_pixels = 0
@@ -37,12 +36,7 @@ def render_mask_preview(
     for row in image.pixels:
         output_row: list[tuple[int, int, int, int]] = []
         for rgba in row:
-            zone = zone_by_rgba.get(rgba)
-            if zone is None and rgba[3] == 0:
-                zone = void_zone
-            if zone is None and rgba[3] == 255:
-                zone = zone_by_rgb.get(rgba[:3])
-
+            zone = classifier.classify(rgba)
             if zone is None:
                 unknown_pixels += 1
                 output_row.append(UNKNOWN_COLOR.rgba)
