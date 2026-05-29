@@ -38,3 +38,15 @@ Use GitHub private repository with Git LFS enabled for heavy binary assets such 
 ## 2026-05-29: Knowledge Base
 
 Project memory should live in repo docs instead of relying only on chat history.
+
+## 2026-05-29: First Mask Pass
+
+The first image input pass uses exact-color PNG masks and reports zone statistics through `titanforge mask-info`.
+
+Do not add fuzzy color matching or AI interpretation before the deterministic mask contract exists. Unknown colors should be reported visibly so bad plans can be cleaned up before terrain generation.
+
+## 2026-05-29: First Preview Pass
+
+The first preview pass renders a normalized PNG through `titanforge mask-preview`. It should be fast, deterministic, and independent of Minecraft export.
+
+Unknown mask colors are rendered as `#ff00ff` to make bad inputs visible instead of silently guessing intent.

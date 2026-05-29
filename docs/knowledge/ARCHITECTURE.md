@@ -38,6 +38,12 @@ Each stage should receive explicit inputs and produce explicit outputs. Intermed
 - `versions`: version-specific rules, formats, palettes, and compatibility adapters.
 - `pipeline`: orchestration, cache, stage execution.
 
+## First Mask Pass
+
+The initial `masks` module reads simple PNG masks without external dependencies and reports exact-color zone statistics. It does not generate terrain yet. This keeps the first image-input layer deterministic and easy to test.
+
+The initial `preview` module can render a normalized mask preview PNG. It preserves known colors and marks unknown colors with a visible error color. Preview output should stay cheap and deterministic so it can run before expensive terrain or exporter work.
+
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.

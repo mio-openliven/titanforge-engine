@@ -6,6 +6,8 @@ from pathlib import Path
 from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
+from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
+from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
 
@@ -28,6 +30,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Scan a source or donor folder before importing it.",
     )
     inventory_parser.add_argument("path", type=Path, help="Folder to scan.")
+
+    mask_parser = subparsers.add_parser(
+        "mask-info",
+        help="Inspect a PNG mask and report known TitanForge zone colors.",
+    )
+    mask_parser.add_argument("path", type=Path, help="PNG mask to inspect.")
+
+    mask_preview_parser = subparsers.add_parser(
+        "mask-preview",
+        help="Render a normalized preview PNG from a TitanForge mask.",
+    )
+    mask_preview_parser.add_argument("input", type=Path, help="PNG mask to preview.")
+    mask_preview_parser.add_argument("output", type=Path, help="Preview PNG output path.")
 
     return parser
 
@@ -52,6 +67,16 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "inventory":
         report = scan_inventory(args.path)
         print(format_inventory_report(report))
+        return 0
+
+    if args.command == "mask-info":
+        analysis = analyze_png_mask(args.path)
+        print(format_mask_analysis(analysis))
+        return 0
+
+    if args.command == "mask-preview":
+        result = render_mask_preview(args.input, args.output)
+        print(format_mask_preview_result(result))
         return 0
 
     parser.print_help()
