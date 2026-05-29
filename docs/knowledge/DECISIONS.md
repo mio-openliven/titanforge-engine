@@ -50,3 +50,9 @@ Do not add fuzzy color matching or AI interpretation before the deterministic ma
 The first preview pass renders a normalized PNG through `titanforge mask-preview`. It should be fast, deterministic, and independent of Minecraft export.
 
 Unknown mask colors are rendered as `#ff00ff` to make bad inputs visible instead of silently guessing intent.
+
+## 2026-05-29: First Layout Artifact
+
+`titanforge mask-layout` writes a neutral JSON summary from a PNG mask. The artifact records source, dimensions, coverage, zones, and unknown colors.
+
+Keep this artifact Minecraft-version-neutral. Minecraft block IDs, biome IDs, schematic formats, and exporter rules belong in later adapters.

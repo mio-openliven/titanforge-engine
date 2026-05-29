@@ -44,6 +44,8 @@ The initial `masks` module reads simple PNG masks without external dependencies 
 
 The initial `preview` module can render a normalized mask preview PNG. It preserves known colors and marks unknown colors with a visible error color. Preview output should stay cheap and deterministic so it can run before expensive terrain or exporter work.
 
+The initial `layouts` module writes a neutral JSON artifact from a PNG mask. It should describe intent and coverage, not Minecraft-specific blocks. Terrain, schematic, and exporter passes should consume this type of artifact instead of reparsing the original image.
+
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.

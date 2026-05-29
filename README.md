@@ -20,5 +20,6 @@ python -m titanforge plan examples/tiny_project/titanforge.toml
 python -m titanforge inventory examples
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
+python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m unittest discover -s tests
 ```

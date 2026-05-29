@@ -6,6 +6,7 @@ from pathlib import Path
 from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
+from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
@@ -44,6 +45,13 @@ def build_parser() -> argparse.ArgumentParser:
     mask_preview_parser.add_argument("input", type=Path, help="PNG mask to preview.")
     mask_preview_parser.add_argument("output", type=Path, help="Preview PNG output path.")
 
+    mask_layout_parser = subparsers.add_parser(
+        "mask-layout",
+        help="Write a neutral layout JSON artifact from a TitanForge PNG mask.",
+    )
+    mask_layout_parser.add_argument("input", type=Path, help="PNG mask to convert.")
+    mask_layout_parser.add_argument("output", type=Path, help="Layout JSON output path.")
+
     return parser
 
 
@@ -77,6 +85,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mask-preview":
         result = render_mask_preview(args.input, args.output)
         print(format_mask_preview_result(result))
+        return 0
+
+    if args.command == "mask-layout":
+        result = write_mask_layout(args.input, args.output)
+        print(format_mask_layout_result(result))
         return 0
 
     parser.print_help()

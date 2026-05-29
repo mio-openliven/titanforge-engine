@@ -24,6 +24,7 @@ The first mask pass supports exact-color PNG masks. It is intentionally simple: 
 $env:PYTHONPATH = "src"
 python -m titanforge mask-info path\to\mask.png
 python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
+python -m titanforge mask-layout path\to\mask.png out\layout.json
 ```
 
 The command prints image size, known zone counts, and unknown colors. Unknown colors are not errors yet; they are early feedback that the mask needs cleanup or a custom palette.
@@ -33,6 +34,16 @@ The command prints image size, known zone counts, and unknown colors. Unknown co
 - Known zone colors are preserved.
 - Transparent pixels remain transparent.
 - Unknown colors are rendered as `#ff00ff` so bad mask data is visible immediately.
+
+`mask-layout` writes a neutral JSON artifact:
+
+- source mask path
+- world width and length
+- known and unknown pixel counts
+- zone IDs, labels, colors, pixel counts, and percentages
+- unknown color list
+
+This is not final terrain. It is the first machine-readable contract between image input and later generation passes.
 
 ## Design Rule
 
