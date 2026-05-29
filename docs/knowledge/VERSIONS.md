@@ -33,6 +33,29 @@ The 1.12.2 path should be treated as a downgrade/export problem:
 3. Report unsupported features explicitly.
 4. Keep compatibility decisions visible and testable.
 
+## Popular Version Candidates
+
+This is a planning matrix, not a promise that every version will be fully supported.
+
+The engine should keep the version adapter system flexible enough to add popular versions inside the 1.12.2 to 1.21.11 range when there is a real product reason.
+
+| Tier | Version | Role | Why it matters |
+| --- | --- | --- | --- |
+| P0 | 1.21.11 | Primary product target | Current modern target for our own product direction. |
+| P1 | 1.20.1 | Modern modded ecosystem candidate | Frequently treated as a strong modern modded baseline. |
+| P1 | 1.12.2 | Legacy/client compatibility target | Important older ecosystem and YouTuber/client compatibility target. |
+| P2 | 1.21.1 | Modern compatibility candidate | Common 1.21-era mod/plugin target; useful if 1.21.11 ecosystem support lags. |
+| P2 | 1.19.2 | Mid-modern compatibility candidate | Common post-Caves-and-Cliffs modded/server target. |
+| P2 | 1.18.2 | Worldgen-era compatibility candidate | Important because world generation changed significantly around this era. |
+| P2 | 1.16.5 | Legacy-modern bridge candidate | Popular older modded baseline between 1.12.2 and modern Minecraft. |
+
+Recommended early adapter order:
+
+1. `1.21.11`: primary modern exporter.
+2. `1.20.1`: modern fallback if ecosystem tooling is stronger there.
+3. `1.12.2`: downgrade/export path for the YouTuber/client case.
+4. Add `1.21.1`, `1.19.2`, `1.18.2`, or `1.16.5` only when a donor, library, or real workflow requires it.
+
 ## Architecture Rule
 
 Core generation logic should describe intent: regions, masks, terrain operations, structures, materials, and export requests.
@@ -52,3 +75,5 @@ Minecraft-version-specific code should live in adapters:
 - Should 1.21.11 support direct world export, schematic export, or both?
 - How much block/material parity is required between 1.21.11 and 1.12.2?
 - Which modern features can be downgraded, approximated, or forbidden for 1.12.2?
+- Is 1.20.1 worth supporting before 1.12.2 if tooling is better?
+- Which version gives the best first preview/export donor set?

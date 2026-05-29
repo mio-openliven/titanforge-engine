@@ -15,6 +15,8 @@ The product should prioritize our own long-term direction. A YouTuber/client tar
 
 Implementation bias: build from a neutral internal representation toward version-specific exporters. Prefer modern-first design with a downgrade adapter for 1.12.2 where feasible.
 
+Popular versions inside the supported planning range should be represented as candidate adapters, not hard requirements. Early candidates: 1.20.1, 1.21.1, 1.19.2, 1.18.2, and 1.16.5.
+
 ## 2026-05-29: Naming
 
 Use `TitanForge Engine` as the display name.

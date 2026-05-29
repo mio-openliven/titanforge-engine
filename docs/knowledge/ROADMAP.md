@@ -29,6 +29,7 @@
 - Keep block palettes and format details out of core generation logic.
 - Add fixtures for 1.21.11 and 1.12.2 once formats are selected.
 - Test downgrade/export compatibility from the neutral internal model to 1.12.2.
+- Keep candidate slots for popular in-range versions: 1.20.1, 1.21.1, 1.19.2, 1.18.2, and 1.16.5.
 
 ## Phase 3: Generation
 
