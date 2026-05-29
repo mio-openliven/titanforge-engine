@@ -18,10 +18,16 @@
 
 ## Phase 2: Minecraft Data
 
-- Decide schematic format support.
-- Decide world export format support.
+- Decide V1 Minecraft 1.12.2 schematic/world export support.
+- Define V2 Minecraft 1.21.11 compatibility assumptions.
 - Add NBT tests and fixtures.
 - Export one minimal structure or region successfully.
+
+## Phase 2.5: Version Layer
+
+- Add explicit version target model.
+- Keep block palettes and format details out of core generation logic.
+- Add fixtures for V1 and V2 once formats are selected.
 
 ## Phase 3: Generation
 

@@ -2,9 +2,14 @@
 
 ## 2026-05-29: Product Identity
 
-TitanForge Engine is an external procedural toolkit and generation engine for cinematic Minecraft 1.12.2 maps.
+TitanForge Engine is an external procedural toolkit and generation engine for cinematic Minecraft maps.
 
 It should not be described as a game, mod, or plugin.
+
+Target versions:
+
+- V1: Minecraft 1.12.2
+- V2: Minecraft 1.21.11
 
 ## 2026-05-29: Naming
 

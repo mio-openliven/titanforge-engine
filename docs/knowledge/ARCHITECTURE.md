@@ -32,9 +32,19 @@ Each stage should receive explicit inputs and produce explicit outputs. Intermed
 - `terrain`: heightmaps, biome/material passes, erosion-style operations.
 - `schematics`: schematic metadata, placement rules, collision checks.
 - `preview`: fast visual diagnostics before Minecraft export.
-- `exporters`: Minecraft 1.12.2-compatible outputs.
+- `exporters`: Minecraft-compatible outputs.
+- `versions`: version-specific rules, formats, palettes, and compatibility adapters.
 - `pipeline`: orchestration, cache, stage execution.
 
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.
+
+## Version Strategy
+
+Avoid scattering Minecraft-version checks through the engine. Keep version-specific behavior behind explicit adapters.
+
+Initial target:
+
+- V1: Minecraft 1.12.2
+- V2: Minecraft 1.21.11

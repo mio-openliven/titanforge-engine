@@ -2,7 +2,12 @@
 
 ## TitanForge Engine
 
-The external procedural toolkit for generating cinematic Minecraft 1.12.2 maps.
+The external procedural toolkit for generating cinematic Minecraft maps.
+
+Target versions:
+
+- V1: Minecraft 1.12.2
+- V2: Minecraft 1.21.11
 
 ## Mask
 

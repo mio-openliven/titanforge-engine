@@ -6,13 +6,18 @@ Name: TitanForge Engine
 
 Category: external toolkit, procedural generation engine, development tool.
 
-Short description: TitanForge Engine is a procedural toolkit for generating cinematic Minecraft 1.12.2 maps.
+Short description: TitanForge Engine is a procedural toolkit for generating cinematic Minecraft maps.
 
 Not a game. Not a Minecraft mod. Not a server plugin. The engine may export data that Minecraft tools can consume.
 
 ## Product Goal
 
 Build a modular pipeline that can generate cinematic Minecraft maps from structured inputs: masks, layout rules, terrain passes, schematic placement, previews, and exporters.
+
+Version target:
+
+- V1: Minecraft 1.12.2
+- V2: Minecraft 1.21.11
 
 ## Core Workflow
 
@@ -33,6 +38,7 @@ Build a modular pipeline that can generate cinematic Minecraft maps from structu
 - Schematic and structure placement
 - Preview and diagnostics
 - Exporters
+- Version compatibility layer
 - Asset library
 - CLI or desktop control surface
 - Test fixtures and example maps

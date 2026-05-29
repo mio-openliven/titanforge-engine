@@ -7,6 +7,7 @@ Donors are reference projects, libraries, formats, or tools that can teach the p
 Start with 10 to 15 donors. Each donor should answer at least one important question:
 
 - How to read or write Minecraft 1.12.2 world data?
+- How to prepare a second compatibility path for Minecraft 1.21.11?
 - How to handle schematics and NBT safely?
 - How to generate terrain from masks or heightmaps?
 - How to preview maps quickly?
