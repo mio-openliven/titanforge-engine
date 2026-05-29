@@ -43,3 +43,14 @@ C:\Users\Li2Fox\Documents\Some Project Folder
 3. Propose what to include, ignore, or place in LFS.
 4. Copy or move selected files into the repo.
 5. Commit in small groups.
+
+## Inventory Command
+
+Use the local CLI before importing a source or donor folder:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge inventory "C:\path\to\source"
+```
+
+The report highlights total size, common extensions, largest files, ignored generated folders, and likely Git LFS candidates.

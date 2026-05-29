@@ -5,6 +5,7 @@ from pathlib import Path
 
 from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
+from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
 
@@ -21,6 +22,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
+
+    inventory_parser = subparsers.add_parser(
+        "inventory",
+        help="Scan a source or donor folder before importing it.",
+    )
+    inventory_parser.add_argument("path", type=Path, help="Folder to scan.")
 
     return parser
 
@@ -40,6 +47,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "plan":
         config = load_project_config(args.config)
         print_project_plan(config)
+        return 0
+
+    if args.command == "inventory":
+        report = scan_inventory(args.path)
+        print(format_inventory_report(report))
         return 0
 
     parser.print_help()

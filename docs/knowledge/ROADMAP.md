@@ -7,6 +7,7 @@
 - Create project knowledge base.
 - Select 10 to 15 donors.
 - Identify real source folder and import only useful files.
+- Use the inventory command before importing source folders or donors.
 
 ## Phase 1: Skeleton
 
