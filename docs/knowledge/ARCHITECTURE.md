@@ -20,6 +20,8 @@ tests/
 docs/
 ```
 
+The repository now starts as a Python package with a command-line interface. This keeps the early pipeline simple, testable, and friendly to image/mask processing. Java or Minecraft-native tools can be added later as adapters when a specific exporter needs them.
+
 ## Pipeline Contract
 
 Each stage should receive explicit inputs and produce explicit outputs. Intermediate artifacts should be inspectable so broken generation can be debugged without rerunning the entire world.

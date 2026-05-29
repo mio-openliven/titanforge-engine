@@ -1,0 +1,16 @@
+[project]
+name = "Tiny Cinematic Valley"
+target_version = "1.21.11"
+
+[world]
+width = 512
+length = 512
+
+[pipeline]
+stages = [
+    "load_masks",
+    "resolve_layout",
+    "terrain_pass",
+    "preview",
+    "export",
+]

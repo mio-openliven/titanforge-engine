@@ -10,3 +10,12 @@ Version priorities:
 - Secondary compatibility target: Minecraft 1.12.2
 
 Project knowledge starts in [docs/knowledge/PROJECT_MAP.md](docs/knowledge/PROJECT_MAP.md).
+
+## Local Smoke Test
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge info
+python -m titanforge plan examples/tiny_project/titanforge.toml
+python -m unittest discover -s tests
+```
