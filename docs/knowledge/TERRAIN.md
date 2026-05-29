@@ -41,3 +41,5 @@ Unknown colors are rendered as `#ff00ff` so bad masks remain visible.
 ## Design Rule
 
 Keep this pass simple. It exists to verify map intent before adding smoothing, coastline cleanup, erosion-style filters, water depth, or Minecraft exporters.
+
+For normal use, prefer `build-location`; it runs the mask, layout, heightmap, and report steps together.

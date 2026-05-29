@@ -16,6 +16,7 @@
 - Add tiny example project.
 - Add first pipeline command.
 - Add basic preview output.
+- Add first location pack folder output.
 
 ## Phase 2: Minecraft Data
 

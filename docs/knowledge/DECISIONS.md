@@ -68,3 +68,9 @@ This is diagnostic only. It deliberately avoids smoothing, erosion-style filteri
 `titanforge demo-mask` creates a deterministic toy island mask for smoke testing the input-preview-layout-heightmap pipeline.
 
 It is not a production map generator. Keep it small and predictable so tests can catch pipeline regressions.
+
+## 2026-05-29: First Location Pack
+
+`titanforge build-location` creates the first tangible product folder: mask, mask preview, layout JSON, heightmap preview, report, and manifest.
+
+This is the first "touch it" output. It deliberately stops before Minecraft world or schematic export so early validation and preview remain stable.

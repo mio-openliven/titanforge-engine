@@ -50,6 +50,8 @@ This is not final terrain. It is the first machine-readable contract between ima
 
 The first consumer is `heightmap-preview`, documented in `TERRAIN.md`.
 
+For normal use, prefer `build-location`; it creates a complete early location pack from a user mask or deterministic demo input.
+
 ## Design Rule
 
 Do not guess fuzzy colors in the first pass. Exact colors make bugs visible and keep the first pipeline deterministic.

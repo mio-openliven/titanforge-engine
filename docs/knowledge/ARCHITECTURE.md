@@ -50,6 +50,21 @@ The initial `terrain` module can render a grayscale heightmap preview from a mas
 
 `demo-mask` belongs to the mask tooling, not generation. Its job is to provide stable smoke-test input for the current pipeline.
 
+## First Location Pack
+
+The first user-facing output is a location pack folder:
+
+```text
+mask.png
+mask-preview.png
+layout.json
+heightmap-preview.png
+report.txt
+manifest.json
+```
+
+This is intentionally not a Minecraft world yet. It gives the user something inspectable while keeping exporter work behind later adapters.
+
 ## Design Bias
 
 Start with a clear command-line workflow. Add a desktop UI only after the file formats and pipeline are stable enough.

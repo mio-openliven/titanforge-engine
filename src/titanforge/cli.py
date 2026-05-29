@@ -7,10 +7,12 @@ from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
+from titanforge.locations.builder import build_location_pack, format_location_build_result
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
+from titanforge.validation.layout_report import format_layout_validation_report, validate_layout_file, write_layout_validation_report
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
 
@@ -69,6 +71,24 @@ def build_parser() -> argparse.ArgumentParser:
     heightmap_preview_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
     heightmap_preview_parser.add_argument("output", type=Path, help="Heightmap preview PNG output path.")
 
+    validate_layout_parser = subparsers.add_parser(
+        "validate-layout",
+        help="Validate a mask layout JSON and optionally write a human-readable report.",
+    )
+    validate_layout_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
+    validate_layout_parser.add_argument("--report", type=Path, help="Optional report TXT output path.")
+
+    build_location_parser = subparsers.add_parser(
+        "build-location",
+        help="Build a first TitanForge location pack folder from a mask or deterministic demo input.",
+    )
+    build_location_parser.add_argument("output_dir", type=Path, help="Location pack output folder.")
+    source_group = build_location_parser.add_mutually_exclusive_group()
+    source_group.add_argument("--input", type=Path, help="PNG mask to use as the location source.")
+    source_group.add_argument("--demo", action="store_true", help="Generate a deterministic demo mask.")
+    build_location_parser.add_argument("--width", type=int, default=128, help="Demo mask width.")
+    build_location_parser.add_argument("--height", type=int, default=128, help="Demo mask height.")
+
     return parser
 
 
@@ -118,6 +138,25 @@ def main(argv: list[str] | None = None) -> int:
         result = render_heightmap_preview(args.layout, args.output)
         print(format_heightmap_preview_result(result))
         return 0
+
+    if args.command == "validate-layout":
+        if args.report:
+            result = write_layout_validation_report(args.layout, args.report)
+        else:
+            result = validate_layout_file(args.layout)
+        print(format_layout_validation_report(result))
+        return 1 if result.has_errors else 0
+
+    if args.command == "build-location":
+        result = build_location_pack(
+            args.output_dir,
+            input_mask=args.input,
+            demo=args.demo,
+            width=args.width,
+            height=args.height,
+        )
+        print(format_location_build_result(result))
+        return 1 if result.errors else 0
 
     parser.print_help()
     return 0
