@@ -7,7 +7,8 @@ import unittest
 
 from titanforge.cli import main
 from titanforge.locations.builder import build_location_pack
-from titanforge.masks.png import write_rgba_png
+from titanforge.masks.png import read_png, write_rgba_png
+from titanforge.terrain.heightmap_preview import ZONE_HEIGHTS
 
 
 class LocationBuilderTests(unittest.TestCase):
@@ -34,6 +35,7 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(manifest["schema"], "titanforge.location-pack")
         self.assertEqual(manifest["validation"], {"errors": 0, "warnings": 0})
         self.assertEqual(manifest["artifacts"]["maskCleanupPreview"], "mask-cleanup-preview.png")
+        self.assertEqual(manifest["terrain"], {"cleanupApplied": False, "heightmapSource": "mask.png"})
 
     def test_build_location_pack_from_input_mask_reports_warnings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -62,3 +64,27 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(manifest["sourceMode"], "demo")
         self.assertIn("Location pack:", stdout.getvalue())
+
+    def test_build_location_can_use_cleanup_for_heightmap(self) -> None:
+        water = (0, 102, 255, 255)
+        land = (59, 170, 53, 255)
+        pixels = (
+            (water, water, water),
+            (water, land, water),
+            (water, water, water),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_mask = root / "input.png"
+            output_dir = root / "location"
+            write_rgba_png(input_mask, 3, 3, pixels)
+
+            result = build_location_pack(output_dir, input_mask=input_mask, use_cleanup_for_heightmap=True)
+            manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+            heightmap = read_png(result.heightmap_path)
+
+        water_height = ZONE_HEIGHTS["water"]
+        self.assertEqual(result.heightmap_source_path, result.cleanup_preview_path)
+        self.assertEqual(manifest["terrain"], {"cleanupApplied": True, "heightmapSource": "mask-cleanup-preview.png"})
+        self.assertEqual(heightmap.pixels[1][1], (water_height, water_height, water_height, 255))

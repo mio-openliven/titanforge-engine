@@ -39,10 +39,11 @@ class HeightmapPreviewResult:
 def render_heightmap_preview(
     layout_path: Path,
     output_path: Path,
+    mask_override_path: Path | None = None,
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
 ) -> HeightmapPreviewResult:
     layout = _load_layout(layout_path)
-    mask_path = _resolve_mask_path(layout_path, layout)
+    mask_path = mask_override_path or _resolve_mask_path(layout_path, layout)
     image = read_png(mask_path)
     classifier = MaskColorClassifier(palette)
 

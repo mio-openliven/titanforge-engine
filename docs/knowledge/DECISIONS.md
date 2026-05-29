@@ -80,3 +80,9 @@ This is the first "touch it" output. It deliberately stops before Minecraft worl
 `titanforge mask-cleanup-preview` renders a conservative preview that removes tiny water/land specks by neighbor majority.
 
 It does not modify the source mask or feed cleaned pixels into terrain yet. This keeps the pass safe while making arnis-style water noise visible and debuggable.
+
+## 2026-05-29: Optional Cleanup Terrain Input
+
+`heightmap-preview` can now render from an explicit mask override, and `build-location --use-cleanup-for-heightmap` uses `mask-cleanup-preview.png` as the heightmap source.
+
+The original mask remains the source of `layout.json` and `report.txt`. This keeps input problems visible while allowing cleaner terrain previews.

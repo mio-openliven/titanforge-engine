@@ -62,3 +62,24 @@ class HeightmapPreviewTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Unknown pixels: 1", stdout.getvalue())
         self.assertEqual(heightmap.pixels[0][1], UNKNOWN_HEIGHT_COLOR)
+
+    def test_render_heightmap_preview_can_use_mask_override(self) -> None:
+        original_pixels = (((59, 170, 53, 255),),)
+        override_pixels = (((0, 102, 255, 255),),)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            mask_path = root / "mask.png"
+            override_path = root / "cleaned.png"
+            layout_path = root / "layout.json"
+            output_path = root / "heightmap.png"
+            write_rgba_png(mask_path, 1, 1, original_pixels)
+            write_rgba_png(override_path, 1, 1, override_pixels)
+            write_mask_layout(mask_path, layout_path)
+
+            result = render_heightmap_preview(layout_path, output_path, mask_override_path=override_path)
+            heightmap = read_png(output_path)
+
+        water = ZONE_HEIGHTS["water"]
+        self.assertEqual(result.mask_path, override_path)
+        self.assertEqual(heightmap.pixels[0][0], (water, water, water, 255))

@@ -33,6 +33,27 @@ python -m titanforge build-location out\my-location --input path\to\mask.png
 
 The input mask is copied into the pack as `mask.png`.
 
+## Cleanup As Terrain Input
+
+By default, `heightmap-preview.png` is rendered from the original `mask.png`.
+
+Use this when you want tiny water/land specks cleaned before terrain preview:
+
+```powershell
+python -m titanforge build-location out\my-location --input path\to\mask.png --use-cleanup-for-heightmap
+```
+
+The original mask and report still remain in the pack. The manifest records which mask was used for heightmap generation:
+
+```json
+{
+  "terrain": {
+    "cleanupApplied": true,
+    "heightmapSource": "mask-cleanup-preview.png"
+  }
+}
+```
+
 ## Validation
 
 The pack writes `report.txt` and `manifest.json`.
@@ -47,7 +68,7 @@ Current warnings include:
 - mostly water
 - mostly land
 
-`mask-cleanup-preview.png` is included to reveal tiny water/land noise before terrain generation. It does not replace `mask.png` yet.
+`mask-cleanup-preview.png` is included to reveal tiny water/land noise before terrain generation. It can optionally be used for `heightmap-preview.png`, but it does not replace `mask.png`.
 
 ## Product Meaning
 

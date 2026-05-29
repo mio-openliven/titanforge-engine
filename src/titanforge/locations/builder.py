@@ -21,6 +21,7 @@ class LocationBuildResult:
     cleanup_preview_path: Path
     layout_path: Path
     heightmap_path: Path
+    heightmap_source_path: Path
     report_path: Path
     manifest_path: Path
     warnings: int
@@ -34,6 +35,7 @@ def build_location_pack(
     demo: bool = False,
     width: int = 128,
     height: int = 128,
+    use_cleanup_for_heightmap: bool = False,
 ) -> LocationBuildResult:
     if input_mask is None and not demo:
         demo = True
@@ -60,7 +62,8 @@ def build_location_pack(
     render_mask_preview(mask_path, mask_preview_path)
     render_mask_cleanup_preview(mask_path, cleanup_preview_path)
     write_mask_layout(mask_path, layout_path)
-    render_heightmap_preview(layout_path, heightmap_path)
+    heightmap_source_path = cleanup_preview_path if use_cleanup_for_heightmap else mask_path
+    render_heightmap_preview(layout_path, heightmap_path, mask_override_path=heightmap_source_path)
     validation = write_layout_validation_report(layout_path, report_path)
 
     manifest = {
@@ -74,6 +77,10 @@ def build_location_pack(
             "layout": layout_path.name,
             "heightmapPreview": heightmap_path.name,
             "report": report_path.name,
+        },
+        "terrain": {
+            "heightmapSource": heightmap_source_path.name,
+            "cleanupApplied": use_cleanup_for_heightmap,
         },
         "validation": {
             "errors": validation.error_count,
@@ -89,6 +96,7 @@ def build_location_pack(
         cleanup_preview_path=cleanup_preview_path,
         layout_path=layout_path,
         heightmap_path=heightmap_path,
+        heightmap_source_path=heightmap_source_path,
         report_path=report_path,
         manifest_path=manifest_path,
         warnings=validation.warning_count,
@@ -105,6 +113,7 @@ def format_location_build_result(result: LocationBuildResult) -> str:
             f"- cleanup preview: {result.cleanup_preview_path.name}",
             f"- layout: {result.layout_path.name}",
             f"- heightmap: {result.heightmap_path.name}",
+            f"- heightmap source: {result.heightmap_source_path.name}",
             f"- report: {result.report_path.name}",
             f"- manifest: {result.manifest_path.name}",
             f"Validation: {result.errors} errors, {result.warnings} warnings",

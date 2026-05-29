@@ -12,6 +12,13 @@ python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
 ```
 
+To render from a cleaned mask while preserving the original layout:
+
+```powershell
+python -m titanforge mask-cleanup-preview path\to\mask.png out\mask-cleanup-preview.png
+python -m titanforge heightmap-preview out\layout.json out\heightmap-cleaned-preview.png --mask out\mask-cleanup-preview.png
+```
+
 For a generated smoke-test input:
 
 ```powershell
@@ -42,4 +49,4 @@ Unknown colors are rendered as `#ff00ff` so bad masks remain visible.
 
 Keep this pass simple. It exists to verify map intent before adding smoothing, coastline cleanup, erosion-style filters, water depth, or Minecraft exporters.
 
-For normal use, prefer `build-location`; it runs the mask, layout, heightmap, and report steps together.
+For normal use, prefer `build-location`; it runs the mask, layout, heightmap, and report steps together. Add `--use-cleanup-for-heightmap` when tiny water/land noise should be cleaned before terrain preview.

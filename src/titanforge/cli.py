@@ -79,6 +79,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     heightmap_preview_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
     heightmap_preview_parser.add_argument("output", type=Path, help="Heightmap preview PNG output path.")
+    heightmap_preview_parser.add_argument(
+        "--mask",
+        type=Path,
+        help="Optional mask PNG override, useful for cleaned terrain inputs.",
+    )
 
     validate_layout_parser = subparsers.add_parser(
         "validate-layout",
@@ -97,6 +102,11 @@ def build_parser() -> argparse.ArgumentParser:
     source_group.add_argument("--demo", action="store_true", help="Generate a deterministic demo mask.")
     build_location_parser.add_argument("--width", type=int, default=128, help="Demo mask width.")
     build_location_parser.add_argument("--height", type=int, default=128, help="Demo mask height.")
+    build_location_parser.add_argument(
+        "--use-cleanup-for-heightmap",
+        action="store_true",
+        help="Render heightmap-preview.png from mask-cleanup-preview.png instead of mask.png.",
+    )
 
     return parser
 
@@ -149,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "heightmap-preview":
-        result = render_heightmap_preview(args.layout, args.output)
+        result = render_heightmap_preview(args.layout, args.output, mask_override_path=args.mask)
         print(format_heightmap_preview_result(result))
         return 0
 
@@ -168,6 +178,7 @@ def main(argv: list[str] | None = None) -> int:
             demo=args.demo,
             width=args.width,
             height=args.height,
+            use_cleanup_for_heightmap=args.use_cleanup_for_heightmap,
         )
         print(format_location_build_result(result))
         return 1 if result.errors else 0

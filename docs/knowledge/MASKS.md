@@ -46,6 +46,8 @@ The command prints image size, known zone counts, and unknown colors. Unknown co
 - The original mask is not modified.
 - This is a preview pass, not final coastline generation.
 
+The cleaned PNG can be used as a heightmap input with `heightmap-preview --mask` or `build-location --use-cleanup-for-heightmap`.
+
 `mask-layout` writes a neutral JSON artifact:
 
 - source mask path

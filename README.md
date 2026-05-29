@@ -24,8 +24,9 @@ python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
 python -m titanforge mask-cleanup-preview path\to\mask.png out\mask-cleanup-preview.png
 python -m titanforge mask-layout path\to\mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
+python -m titanforge heightmap-preview out\layout.json out\heightmap-cleaned-preview.png --mask out\mask-cleanup-preview.png
 python -m titanforge validate-layout out\layout.json --report out\report.txt
-python -m titanforge build-location out\demo-location --width 128 --height 128
+python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 python -m unittest discover -s tests
 ```
 
@@ -33,6 +34,6 @@ python -m unittest discover -s tests
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m titanforge build-location out\demo-location --width 128 --height 128
-python -m titanforge build-location out\my-location --input path\to\mask.png
+python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
+python -m titanforge build-location out\my-location --input path\to\mask.png --use-cleanup-for-heightmap
 ```

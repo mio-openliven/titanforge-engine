@@ -52,6 +52,8 @@ The initial `terrain` module can render a grayscale heightmap preview from a mas
 
 `mask-cleanup-preview` is the first cleanup pass. It should stay conservative and inspectable: produce a preview artifact first, then later decide whether terrain generation should consume cleaned masks.
 
+Terrain preview can optionally consume `mask-cleanup-preview.png`, but the layout/report path stays tied to the original mask. This separates "what the user drew" from "what a terrain pass may safely clean."
+
 ## First Location Pack
 
 The first user-facing output is a location pack folder:
