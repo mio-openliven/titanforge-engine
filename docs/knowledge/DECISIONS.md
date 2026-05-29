@@ -15,7 +15,15 @@ The product should prioritize our own long-term direction. A YouTuber/client tar
 
 Implementation bias: build from a neutral internal representation toward version-specific exporters. Prefer modern-first design with a downgrade adapter for 1.12.2 where feasible.
 
-Popular versions inside the supported planning range should be represented as candidate adapters, not hard requirements. Early candidates: 1.20.1, 1.21.1, 1.19.2, 1.18.2, and 1.16.5.
+Popular versions inside the supported planning range should be represented as candidate adapters, not hard requirements.
+
+Active version focus:
+
+- 1.21.11: primary product target.
+- 1.20.1: modern ecosystem fallback candidate.
+- 1.12.2: legacy/client downgrade target.
+
+Parking lot versions such as 1.19.2, 1.18.2, and 1.16.5 should not affect early architecture unless a real donor, library, or workflow requires them.
 
 ## 2026-05-29: Naming
 

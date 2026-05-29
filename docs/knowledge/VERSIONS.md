@@ -44,17 +44,16 @@ The engine should keep the version adapter system flexible enough to add popular
 | P0 | 1.21.11 | Primary product target | Current modern target for our own product direction. |
 | P1 | 1.20.1 | Modern modded ecosystem candidate | Frequently treated as a strong modern modded baseline. |
 | P1 | 1.12.2 | Legacy/client compatibility target | Important older ecosystem and YouTuber/client compatibility target. |
-| P2 | 1.21.1 | Modern compatibility candidate | Common 1.21-era mod/plugin target; useful if 1.21.11 ecosystem support lags. |
-| P2 | 1.19.2 | Mid-modern compatibility candidate | Common post-Caves-and-Cliffs modded/server target. |
-| P2 | 1.18.2 | Worldgen-era compatibility candidate | Important because world generation changed significantly around this era. |
-| P2 | 1.16.5 | Legacy-modern bridge candidate | Popular older modded baseline between 1.12.2 and modern Minecraft. |
+| Parking lot | 1.19.2 | Deferred compatibility candidate | Keep in mind only if a real workflow or donor requires it. |
+| Parking lot | 1.18.2 | Deferred worldgen-era candidate | Not active for early server/product work. |
+| Parking lot | 1.16.5 | Deferred legacy-modern bridge | Not active for early server/product work. |
 
 Recommended early adapter order:
 
 1. `1.21.11`: primary modern exporter.
 2. `1.20.1`: modern fallback if ecosystem tooling is stronger there.
 3. `1.12.2`: downgrade/export path for the YouTuber/client case.
-4. Add `1.21.1`, `1.19.2`, `1.18.2`, or `1.16.5` only when a donor, library, or real workflow requires it.
+4. Add `1.19.2`, `1.18.2`, or `1.16.5` only when a donor, library, or real workflow requires it.
 
 ## Architecture Rule
 

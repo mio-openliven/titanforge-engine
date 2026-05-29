@@ -7,7 +7,7 @@ Donors are reference projects, libraries, formats, or tools that can teach the p
 Start with 10 to 15 donors. Each donor should answer at least one important question:
 
 - How to read or write modern Minecraft data for the primary 1.21.11 target?
-- Which libraries and tools are strongest around 1.20.1 or 1.21.1?
+- Which libraries and tools are strongest around 1.21.11 or 1.20.1?
 - How to provide a compatibility path for Minecraft 1.12.2 without making it the core design?
 - How to handle schematics and NBT safely?
 - How to generate terrain from masks or heightmaps?
