@@ -44,7 +44,9 @@ Start with a clear command-line workflow. Add a desktop UI only after the file f
 
 Avoid scattering Minecraft-version checks through the engine. Keep version-specific behavior behind explicit adapters.
 
-Initial target:
+Priority target:
 
-- V1: Minecraft 1.12.2
-- V2: Minecraft 1.21.11
+- Primary product target: Minecraft 1.21.11
+- Secondary compatibility target: Minecraft 1.12.2
+
+The safest path is to build a neutral internal map model first, then write version adapters from that model. That makes it possible to export downward to 1.12.2 without letting old-format constraints infect the whole engine.

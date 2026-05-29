@@ -7,6 +7,7 @@
 - A single giant script will become unmaintainable quickly.
 - Preview rendering can drift from actual Minecraft output.
 - Donor code licenses may restrict reuse.
+- A client or YouTuber may disappear, change scope, or stop caring about the 1.12.2 target.
 
 ## Process Risks
 
@@ -22,3 +23,4 @@
 - Treat binary assets as LFS by default.
 - Separate research, architecture, and implementation commits.
 - Put version-specific behavior behind adapters early.
+- Prioritize the product direction over client-specific compatibility pressure.

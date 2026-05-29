@@ -4,10 +4,10 @@
 
 The external procedural toolkit for generating cinematic Minecraft maps.
 
-Target versions:
+Version priorities:
 
-- V1: Minecraft 1.12.2
-- V2: Minecraft 1.21.11
+- Primary product target: Minecraft 1.21.11
+- Secondary compatibility target: Minecraft 1.12.2
 
 ## Mask
 

@@ -18,8 +18,8 @@
 
 ## Phase 2: Minecraft Data
 
-- Decide V1 Minecraft 1.12.2 schematic/world export support.
-- Define V2 Minecraft 1.21.11 compatibility assumptions.
+- Decide primary Minecraft 1.21.11 schematic/world export support.
+- Define secondary Minecraft 1.12.2 compatibility assumptions.
 - Add NBT tests and fixtures.
 - Export one minimal structure or region successfully.
 
@@ -27,7 +27,8 @@
 
 - Add explicit version target model.
 - Keep block palettes and format details out of core generation logic.
-- Add fixtures for V1 and V2 once formats are selected.
+- Add fixtures for 1.21.11 and 1.12.2 once formats are selected.
+- Test downgrade/export compatibility from the neutral internal model to 1.12.2.
 
 ## Phase 3: Generation
 

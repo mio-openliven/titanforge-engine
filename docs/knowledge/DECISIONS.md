@@ -6,10 +6,14 @@ TitanForge Engine is an external procedural toolkit and generation engine for ci
 
 It should not be described as a game, mod, or plugin.
 
-Target versions:
+Version priorities:
 
-- V1: Minecraft 1.12.2
-- V2: Minecraft 1.21.11
+- Primary product target: Minecraft 1.21.11
+- Secondary compatibility target: Minecraft 1.12.2
+
+The product should prioritize our own long-term direction. A YouTuber/client target can justify compatibility work, but should not become the architectural center because that relationship may not be reliable.
+
+Implementation bias: build from a neutral internal representation toward version-specific exporters. Prefer modern-first design with a downgrade adapter for 1.12.2 where feasible.
 
 ## 2026-05-29: Naming
 

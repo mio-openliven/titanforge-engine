@@ -14,10 +14,12 @@ Not a game. Not a Minecraft mod. Not a server plugin. The engine may export data
 
 Build a modular pipeline that can generate cinematic Minecraft maps from structured inputs: masks, layout rules, terrain passes, schematic placement, previews, and exporters.
 
-Version target:
+Version priorities:
 
-- V1: Minecraft 1.12.2
-- V2: Minecraft 1.21.11
+- Primary product target: Minecraft 1.21.11
+- Secondary compatibility target: Minecraft 1.12.2
+
+The primary product should serve our own long-term engine first. External client needs can shape compatibility work, but should not control the core architecture.
 
 ## Core Workflow
 
