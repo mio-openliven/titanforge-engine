@@ -15,11 +15,14 @@ Minecraft server owners, builders, event teams, and YouTube creators often need 
 
 TitanForge is an experiment around that idea. The goal is to combine map-planning concepts, mask/heightmap workflows, schematic thinking, preview generation, and version-aware export logic into one understandable pipeline.
 
-## Current State
+## Project Status
 
-This repository is an idea-stage MVP. It already has working CLI pieces, examples, and tests, but it is not a finished production map generator.
+- **Useful now:** yes, as a tested CLI prototype for masks, previews, layout reports, and tiny location-pack experiments.
+- **Finished product:** no. This is an idea-stage MVP, not a production world generator yet.
+- **Main risks:** Minecraft format complexity, version compatibility, schematic/export correctness, and large asset handling.
+- **If needed:** I can continue it into a practical map-building pipeline with real exporters, richer terrain passes, and a friendlier UI.
 
-Working pieces include:
+## Current Working Pieces
 
 - project config loading;
 - inventory scanning;
@@ -30,9 +33,8 @@ Working pieces include:
 - mask-to-layout output;
 - simple heightmap previews;
 - layout validation reports;
-- tiny location-pack output.
-
-Future work is expected around schematic placement, Minecraft world/export formats, richer terrain passes, and a better control surface.
+- tiny location-pack output;
+- unit tests around the current pipeline pieces.
 
 ## Who It Could Help
 
