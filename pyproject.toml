@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Procedural toolkit for generating cinematic Minecraft maps."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
 authors = [
     { name = "mio-openliven" }
 ]

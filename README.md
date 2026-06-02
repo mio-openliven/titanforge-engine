@@ -1,17 +1,66 @@
 # TitanForge Engine
 
-TitanForge Engine is a procedural toolkit for generating cinematic Minecraft maps.
+TitanForge Engine is an early procedural toolkit for planning and generating cinematic Minecraft map workflows.
 
-It is not a game or a Minecraft mod. It is an external development tool and engine for map generation workflows: masks, layouts, previews, terrain passes, schematics, and modular exporters.
+It is not a game, not a Minecraft mod, and not a server plugin. It is an external development tool for map makers and server owners who want to turn visual ideas into repeatable steps: masks, layouts, previews, terrain passes, location packs, and future exporters.
 
-Version priorities:
+## Why This Exists
 
-- Primary product target: Minecraft 1.21.11
-- Secondary compatibility target: Minecraft 1.12.2
+Minecraft server owners, builders, event teams, and YouTube creators often need the same thing in different words:
 
-Project knowledge starts in [docs/knowledge/PROJECT_MAP.md](docs/knowledge/PROJECT_MAP.md).
+- a spawn that feels intentional;
+- a themed world for a season, event, or story;
+- a cinematic location that can be reviewed before hours are spent building;
+- a workflow that is less "start from nothing" and more "draw the idea, preview it, then iterate".
 
-## Local Smoke Test
+TitanForge is an experiment around that idea. The goal is to combine map-planning concepts, mask/heightmap workflows, schematic thinking, preview generation, and version-aware export logic into one understandable pipeline.
+
+## Current State
+
+This repository is an idea-stage MVP. It already has working CLI pieces, examples, and tests, but it is not a finished production map generator.
+
+Working pieces include:
+
+- project config loading;
+- inventory scanning;
+- PNG mask reading/writing;
+- demo mask generation;
+- mask analysis;
+- mask cleanup previews;
+- mask-to-layout output;
+- simple heightmap previews;
+- layout validation reports;
+- tiny location-pack output.
+
+Future work is expected around schematic placement, Minecraft world/export formats, richer terrain passes, and a better control surface.
+
+## Who It Could Help
+
+- **Minecraft server owners** who need repeatable spawns, hubs, event maps, or seasonal worlds.
+- **Creative builders** who want a planning pipeline before doing manual detail work.
+- **YouTubers and roleplay teams** who need cinematic locations quickly, with previews before production.
+- **Toolmakers** who want small readable examples of mask/layout/preview workflows.
+
+## Inspiration and Donor Research
+
+TitanForge is openly inspired by existing map-making and Minecraft tooling ecosystems. The project keeps donor research in:
+
+- [docs/knowledge/DONORS.md](docs/knowledge/DONORS.md)
+- [docs/knowledge/SOURCE_IMPORT_PLAN.md](docs/knowledge/SOURCE_IMPORT_PLAN.md)
+- [docs/knowledge/DECISIONS.md](docs/knowledge/DECISIONS.md)
+
+Donors are not code to blindly copy. They are references that teach formats, workflows, risks, and design choices. If this project ever uses code, assets, schemas, or behavior from another project, the license and attribution must be checked first.
+
+## Version Direction
+
+- Primary target: modern Minecraft, currently tracked as `1.21.11` in the planning docs.
+- Secondary compatibility target: `1.12.2`, because older creative/server ecosystems still matter.
+
+The goal is to keep version-specific behavior behind adapters instead of mixing every Minecraft version into core generation logic.
+
+## Quick Start
+
+Use Python 3.11 or newer.
 
 ```powershell
 $env:PYTHONPATH = "src"
@@ -19,21 +68,38 @@ python -m titanforge info
 python -m titanforge plan examples/tiny_project/titanforge.toml
 python -m titanforge inventory examples
 python -m titanforge demo-mask out\demo-mask.png
-python -m titanforge mask-info path\to\mask.png
-python -m titanforge mask-preview path\to\mask.png out\mask-preview.png
-python -m titanforge mask-cleanup-preview path\to\mask.png out\mask-cleanup-preview.png
-python -m titanforge mask-layout path\to\mask.png out\layout.json
+python -m titanforge mask-info out\demo-mask.png
+python -m titanforge mask-preview out\demo-mask.png out\mask-preview.png
+python -m titanforge mask-cleanup-preview out\demo-mask.png out\mask-cleanup-preview.png
+python -m titanforge mask-layout out\demo-mask.png out\layout.json
 python -m titanforge heightmap-preview out\layout.json out\heightmap-preview.png
-python -m titanforge heightmap-preview out\layout.json out\heightmap-cleaned-preview.png --mask out\mask-cleanup-preview.png
 python -m titanforge validate-layout out\layout.json --report out\report.txt
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
-python -m unittest discover -s tests
 ```
 
-## Tiny Location Pipeline
+## Tests
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
-python -m titanforge build-location out\my-location --input path\to\mask.png --use-cleanup-for-heightmap
+python -m unittest discover -s tests
 ```
+
+## Project Knowledge
+
+Start here:
+
+- [Project map](docs/knowledge/PROJECT_MAP.md)
+- [Architecture](docs/knowledge/ARCHITECTURE.md)
+- [Roadmap](docs/knowledge/ROADMAP.md)
+- [Risks](docs/knowledge/RISKS.md)
+- [Terms](docs/knowledge/TERMS.md)
+
+## Author Note
+
+This project is made in the spirit of learning, practice, and building useful tools for Minecraft communities. It is an honest MVP-plus experiment, not a polished commercial product.
+
+The idea is simple: learn by shipping, keep the reusable parts public, document the rough edges, and slowly turn scattered creative workflows into something other people can understand and improve.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).

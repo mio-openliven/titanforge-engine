@@ -55,7 +55,7 @@ The primary product should serve our own long-term engine first. External client
 
 ## Current State
 
-GitHub repository exists and is private.
+GitHub repository exists. It may be public while the project is used as an open learning MVP and portfolio piece.
 
 Repository URL: https://github.com/mio-openliven/titanforge-engine
 
