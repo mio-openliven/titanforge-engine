@@ -92,8 +92,11 @@ def read_png(path: Path) -> PngImage:
     if expected_size > _MAX_DECOMPRESSED:
         raise PngError("PNG image data exceeds maximum supported size.")
 
-    dec = zlib.decompressobj()
-    raw = dec.decompress(compressed, expected_size + 1)
+    try:
+        dec = zlib.decompressobj()
+        raw = dec.decompress(compressed, expected_size + 1)
+    except zlib.error as exc:
+        raise PngError("PNG image data could not be decompressed.") from exc
     if len(raw) != expected_size or dec.unconsumed_tail or not dec.eof:
         raise PngError("PNG image data has an unexpected size.")
 

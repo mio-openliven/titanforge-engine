@@ -52,6 +52,32 @@ class MaskCleanupTests(unittest.TestCase):
         self.assertEqual(result.changed_pixels, 1)
         self.assertEqual(cleanup.pixels[1][1], WATER)
 
+    def test_cleanup_removes_water_noise_on_heterogeneous_land_border(self) -> None:
+        # Regression: a stray WATER pixel surrounded by a mix of land-family zones
+        # (beach/road/forest) must be replaced.
+        # Old code: thresholded per zone_id; no single zone reached threshold=5.
+        # New code: thresholds on family total (8 opposing neighbors >= 5).
+        BEACH = (194, 178, 128, 255)
+        ROAD = (64, 64, 64, 255)
+        FOREST = (31, 122, 31, 255)
+        pixels = (
+            (BEACH, ROAD, FOREST),
+            (ROAD, WATER, BEACH),
+            (FOREST, BEACH, ROAD),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_path = root / "mask.png"
+            output_path = root / "cleanup.png"
+            write_rgba_png(input_path, 3, 3, pixels)
+
+            result = render_mask_cleanup_preview(input_path, output_path, threshold=5)
+            cleanup = read_png(output_path)
+
+        self.assertEqual(result.changed_pixels, 1)
+        self.assertNotEqual(cleanup.pixels[1][1], WATER)
+
     def test_mask_cleanup_cli_command(self) -> None:
         pixels = (
             (WATER, WATER, WATER),
