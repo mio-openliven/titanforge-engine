@@ -98,6 +98,8 @@ Start here:
 - [Terms](docs/knowledge/TERMS.md)
 - [Agent protocol](AGENTS.md)
 - [Chat roles](docs/operations/CHAT_ROLES.md)
+- [Window system](docs/operations/WINDOW_SYSTEM.md)
+- [AI workflow minimum](docs/operations/AI_WORKFLOW_MINIMUM.md)
 - [Simple next steps](docs/operations/SIMPLE_NEXT_STEPS.md)
 
 ## Author Note

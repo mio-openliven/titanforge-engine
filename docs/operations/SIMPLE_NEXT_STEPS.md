@@ -2,13 +2,11 @@
 
 ## What To Do
 
-1. Open a Builder chat.
-2. Paste the Builder prompt from `docs/operations/CHAT_ROLES.md`.
-3. Tell it: `Do TF-002`.
-4. Let it work.
-5. When done, open a Reviewer chat.
-6. Paste the Reviewer prompt.
-7. Ask it to review the last commit.
+1. If confused, open Window 0 Control / Ideas.
+2. Paste the Window 0 prompt from `docs/operations/CHAT_ROLES.md`.
+3. It tells you which window to use next.
+4. For coding, open Window 2 Builder and tell it: `Do TF-002`.
+5. When done, open Window 4 Reviewer and ask it to review the last commit.
 
 ## What TitanForge Can Do Now
 

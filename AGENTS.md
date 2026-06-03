@@ -65,3 +65,5 @@ When unsure, offer 3 micro-options and recommend one.
 If the user says any letter or "continue", choose the safest next high-value pass.
 
 Explain status simply. Avoid jargon walls.
+
+If this chat has a declared role, do not do work outside that role. Redirect with the correct mini-prompt from `docs/operations/WINDOW_SYSTEM.md`.
