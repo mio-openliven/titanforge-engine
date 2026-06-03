@@ -1,0 +1,61 @@
+{
+  "schema": "titanforge.tasks",
+  "version": 1,
+  "tasks": [
+    {
+      "id": "TF-001",
+      "status": "done",
+      "priority": "P0",
+      "title": "Create first location pack pipeline",
+      "acceptance": [
+        "build-location creates mask, previews, layout, heightmap, report, and manifest",
+        "tests pass",
+        "demo output exists locally"
+      ]
+    },
+    {
+      "id": "TF-002",
+      "status": "todo",
+      "priority": "P0",
+      "title": "Add terrain color preview",
+      "acceptance": [
+        "CLI writes a terrain-color-preview.png from layout/mask",
+        "build-location includes the preview",
+        "tests cover water, beach, land, forest, mountain, city, road, port"
+      ]
+    },
+    {
+      "id": "TF-003",
+      "status": "todo",
+      "priority": "P0",
+      "title": "Add location summary report for non-technical review",
+      "acceptance": [
+        "report includes simple human summary",
+        "report explains warnings in plain language",
+        "build-location output is understandable without reading JSON"
+      ]
+    },
+    {
+      "id": "TF-004",
+      "status": "todo",
+      "priority": "P1",
+      "title": "Add coastline smoothing preview",
+      "acceptance": [
+        "preview reduces stair-step coast noise",
+        "original mask remains unchanged",
+        "manifest records smoothing preview artifact"
+      ]
+    },
+    {
+      "id": "TF-005",
+      "status": "todo",
+      "priority": "P1",
+      "title": "Design first neutral block/terrain model",
+      "acceptance": [
+        "docs describe internal terrain cells",
+        "no Minecraft version-specific IDs leak into core",
+        "tests cover a tiny terrain grid"
+      ]
+    }
+  ]
+}

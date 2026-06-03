@@ -90,11 +90,15 @@ python -m unittest discover -s tests
 
 Start here:
 
+- [PRD](docs/knowledge/PRD.md)
 - [Project map](docs/knowledge/PROJECT_MAP.md)
 - [Architecture](docs/knowledge/ARCHITECTURE.md)
 - [Roadmap](docs/knowledge/ROADMAP.md)
 - [Risks](docs/knowledge/RISKS.md)
 - [Terms](docs/knowledge/TERMS.md)
+- [Agent protocol](AGENTS.md)
+- [Chat roles](docs/operations/CHAT_ROLES.md)
+- [Simple next steps](docs/operations/SIMPLE_NEXT_STEPS.md)
 
 ## Author Note
 
