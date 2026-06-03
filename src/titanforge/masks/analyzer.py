@@ -6,7 +6,7 @@ from pathlib import Path
 
 from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, MaskColor, ZoneDefinition
-from titanforge.masks.png import read_png
+from titanforge.masks.png import PngImage, read_png
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,7 @@ class MaskAnalysis:
     total_pixels: int
     zone_stats: tuple[ZoneStats, ...]
     unknown_color_stats: tuple[UnknownColorStats, ...]
+    unknown_total: int
 
     @property
     def known_pixels(self) -> int:
@@ -38,14 +39,17 @@ class MaskAnalysis:
 
     @property
     def unknown_pixels(self) -> int:
-        return sum(stat.pixels for stat in self.unknown_color_stats)
+        return self.unknown_total
 
 
 def analyze_png_mask(
     path: Path,
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
+    *,
+    image: PngImage | None = None,
 ) -> MaskAnalysis:
-    image = read_png(path)
+    if image is None:
+        image = read_png(path)
     classifier = MaskColorClassifier(palette)
 
     zone_counts: Counter[str] = Counter()
@@ -69,6 +73,7 @@ def analyze_png_mask(
         )
         for zone_id, count in zone_counts.most_common()
     )
+    unknown_total = sum(unknown_counts.values())
     unknown_stats = tuple(
         UnknownColorStats(
             color=MaskColor.from_rgba(rgba),
@@ -85,6 +90,7 @@ def analyze_png_mask(
         total_pixels=total,
         zone_stats=zone_stats,
         unknown_color_stats=unknown_stats,
+        unknown_total=unknown_total,
     )
 
 

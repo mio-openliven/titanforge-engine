@@ -8,6 +8,9 @@ import zlib
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
+_MAX_DIMENSION = 16384
+_MAX_DECOMPRESSED = 256 * 1024 * 1024  # 256 MiB
+
 
 class PngError(ValueError):
     """Raised when a PNG file cannot be decoded by TitanForge's minimal reader."""
@@ -50,9 +53,14 @@ def read_png(path: Path) -> PngImage:
 
         chunk_data = data[chunk_start:chunk_end]
         if chunk_type == b"IHDR":
-            width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(
-                ">IIBBBBB", chunk_data
-            )
+            if len(chunk_data) != 13:
+                raise PngError("Malformed IHDR chunk.")
+            try:
+                width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(
+                    ">IIBBBBB", chunk_data
+                )
+            except struct.error as exc:
+                raise PngError("Malformed IHDR chunk.") from exc
         elif chunk_type == b"PLTE":
             palette = tuple(
                 tuple(chunk_data[index : index + 3])  # type: ignore[misc]
@@ -75,12 +83,18 @@ def read_png(path: Path) -> PngImage:
         raise PngError(f"Unsupported PNG color type: {color_type}")
     if color_type == 3 and not palette:
         raise PngError("Indexed PNG mask is missing a palette.")
+    if width <= 0 or height <= 0 or width > _MAX_DIMENSION or height > _MAX_DIMENSION:
+        raise PngError(f"PNG dimensions out of range: {width}x{height}")
 
-    raw = zlib.decompress(bytes(compressed))
     bytes_per_pixel = _bytes_per_pixel(color_type)
     row_size = width * bytes_per_pixel
     expected_size = (row_size + 1) * height
-    if len(raw) != expected_size:
+    if expected_size > _MAX_DECOMPRESSED:
+        raise PngError("PNG image data exceeds maximum supported size.")
+
+    dec = zlib.decompressobj()
+    raw = dec.decompress(compressed, expected_size + 1)
+    if len(raw) != expected_size or dec.unconsumed_tail or not dec.eof:
         raise PngError("PNG image data has an unexpected size.")
 
     rows: list[bytes] = []
@@ -175,6 +189,10 @@ def _decode_row(
             pixels.append((rgb[0], rgb[1], rgb[2], alpha))
     elif color_type == 3:
         for palette_index in row[:width]:
+            if palette_index >= len(palette):
+                raise PngError(
+                    f"Palette index {palette_index} out of range ({len(palette)} entries)."
+                )
             red, green, blue = palette[palette_index]
             alpha = transparency[palette_index] if palette_index < len(transparency) else 255
             pixels.append((red, green, blue, alpha))

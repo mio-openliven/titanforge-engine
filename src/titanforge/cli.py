@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+import tomllib
 
 from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
@@ -10,6 +12,7 @@ from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask
 from titanforge.locations.builder import build_location_pack, format_location_build_result
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.masks.cleanup import format_mask_cleanup_result, render_mask_cleanup_preview
+from titanforge.masks.png import PngError
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
@@ -119,6 +122,15 @@ def main(argv: list[str] | None = None) -> int:
         print(__version__)
         return 0
 
+    try:
+        return _dispatch(args, parser)
+    except (PngError, FileNotFoundError, NotADirectoryError,
+            ValueError, tomllib.TOMLDecodeError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+
+def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "info":
         print_info()
         return 0

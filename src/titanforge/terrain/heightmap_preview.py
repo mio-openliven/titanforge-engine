@@ -7,7 +7,7 @@ from typing import Any
 
 from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, ZoneDefinition
-from titanforge.masks.png import read_png, write_rgba_png
+from titanforge.masks.png import PngImage, read_png, write_rgba_png
 
 
 UNKNOWN_HEIGHT_COLOR = (255, 0, 255, 255)
@@ -41,10 +41,12 @@ def render_heightmap_preview(
     output_path: Path,
     mask_override_path: Path | None = None,
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
+    *,
+    mask_image: PngImage | None = None,
 ) -> HeightmapPreviewResult:
     layout = _load_layout(layout_path)
     mask_path = mask_override_path or _resolve_mask_path(layout_path, layout)
-    image = read_png(mask_path)
+    image = mask_image if mask_image is not None else read_png(mask_path)
     classifier = MaskColorClassifier(palette)
 
     known_pixels = 0
