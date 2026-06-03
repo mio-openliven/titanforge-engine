@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, ZoneDefinition
 from titanforge.masks.png import read_png, write_rgba_png
-
 
 UNKNOWN_HEIGHT_COLOR = (255, 0, 255, 255)
 

@@ -1,8 +1,8 @@
-from pathlib import Path
 import contextlib
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.cli import main
 from titanforge.masks.png import read_png, write_rgba_png

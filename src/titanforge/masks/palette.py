@@ -11,7 +11,7 @@ class MaskColor:
     alpha: int = 255
 
     @classmethod
-    def from_rgba(cls, rgba: tuple[int, int, int, int]) -> "MaskColor":
+    def from_rgba(cls, rgba: tuple[int, int, int, int]) -> MaskColor:
         return cls(*rgba)
 
     @property

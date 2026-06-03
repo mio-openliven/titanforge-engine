@@ -1,6 +1,6 @@
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.inventory.scanner import format_size, scan_inventory
 

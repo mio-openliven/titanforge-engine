@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from math import hypot
 from pathlib import Path
 
-from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, MaskColor
+from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
 from titanforge.masks.png import write_rgba_png
 
 

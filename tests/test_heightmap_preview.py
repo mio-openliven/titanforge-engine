@@ -1,13 +1,17 @@
-from pathlib import Path
 import contextlib
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.cli import main
 from titanforge.layouts.mask_layout import write_mask_layout
 from titanforge.masks.png import read_png, write_rgba_png
-from titanforge.terrain.heightmap_preview import UNKNOWN_HEIGHT_COLOR, ZONE_HEIGHTS, render_heightmap_preview
+from titanforge.terrain.heightmap_preview import (
+    UNKNOWN_HEIGHT_COLOR,
+    ZONE_HEIGHTS,
+    render_heightmap_preview,
+)
 
 
 class HeightmapPreviewTests(unittest.TestCase):

@@ -14,11 +14,24 @@ authors = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
 [project.scripts]
 titanforge = "titanforge.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "N", "B"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
-from pathlib import Path
 import shutil
+from dataclasses import dataclass
+from pathlib import Path
 
 from titanforge.layouts.mask_layout import write_mask_layout
 from titanforge.masks.cleanup import render_mask_cleanup_preview

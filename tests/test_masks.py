@@ -1,8 +1,8 @@
-from pathlib import Path
 import contextlib
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.cli import main
 from titanforge.masks.analyzer import analyze_png_mask
