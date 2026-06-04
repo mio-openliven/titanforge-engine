@@ -97,7 +97,7 @@ def read_png(path: Path) -> PngImage:
         raw = dec.decompress(compressed, expected_size + 1)
     except zlib.error as exc:
         raise PngError("PNG image data could not be decompressed.") from exc
-    if len(raw) != expected_size or dec.unconsumed_tail or not dec.eof:
+    if len(raw) != expected_size or dec.unconsumed_tail or dec.unused_data or not dec.eof:
         raise PngError("PNG image data has an unexpected size.")
 
     rows: list[bytes] = []

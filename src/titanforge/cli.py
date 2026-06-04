@@ -124,8 +124,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return _dispatch(args, parser)
-    except (PngError, FileNotFoundError, NotADirectoryError,
-            ValueError, tomllib.TOMLDecodeError) as exc:
+    except (PngError, FileNotFoundError, NotADirectoryError, tomllib.TOMLDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
@@ -161,6 +160,9 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "mask-cleanup-preview":
+        if not 1 <= args.threshold <= 8:
+            print(f"error: --threshold must be between 1 and 8, got {args.threshold}", file=sys.stderr)
+            return 2
         result = render_mask_cleanup_preview(args.input, args.output, threshold=args.threshold)
         print(format_mask_cleanup_result(result))
         return 0
