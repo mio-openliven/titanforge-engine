@@ -7,7 +7,6 @@ from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, ZoneDefinition
 from titanforge.masks.png import read_png, write_rgba_png
 
-
 WATERLIKE_ZONES = {"water"}
 LANDLIKE_ZONES = {"land", "beach", "port", "road", "city", "forest", "mountain"}
 

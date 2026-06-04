@@ -12,8 +12,15 @@ from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.masks.cleanup import format_mask_cleanup_result, render_mask_cleanup_preview
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
-from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
-from titanforge.validation.layout_report import format_layout_validation_report, validate_layout_file, write_layout_validation_report
+from titanforge.terrain.heightmap_preview import (
+    format_heightmap_preview_result,
+    render_heightmap_preview,
+)
+from titanforge.validation.layout_report import (
+    format_layout_validation_report,
+    validate_layout_file,
+    write_layout_validation_report,
+)
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
 

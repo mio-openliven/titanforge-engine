@@ -101,9 +101,7 @@ def format_mask_analysis(analysis: MaskAnalysis) -> str:
 
     if analysis.zone_stats:
         for stat in analysis.zone_stats:
-            lines.append(
-                f"- {stat.zone.zone_id} {stat.zone.color.hex_rgb}: {stat.pixels} ({stat.percent:.1f}%)"
-            )
+            lines.append(f"- {stat.zone.zone_id} {stat.zone.color.hex_rgb}: {stat.pixels} ({stat.percent:.1f}%)")
     else:
         lines.append("- <none>")
 

@@ -1,12 +1,17 @@
-from pathlib import Path
 import contextlib
 import io
 import json
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.cli import main
-from titanforge.layouts.mask_layout import LAYOUT_SCHEMA, LAYOUT_VERSION, build_mask_layout, write_mask_layout
+from titanforge.layouts.mask_layout import (
+    LAYOUT_SCHEMA,
+    LAYOUT_VERSION,
+    build_mask_layout,
+    write_mask_layout,
+)
 from titanforge.masks.png import write_rgba_png
 
 

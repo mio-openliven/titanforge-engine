@@ -1,13 +1,12 @@
-from pathlib import Path
 import contextlib
 import io
 import tempfile
 import unittest
+from pathlib import Path
 
 from titanforge.cli import main
 from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.png import read_png, write_rgba_png
-
 
 WATER = (0, 102, 255, 255)
 LAND = (59, 170, 53, 255)

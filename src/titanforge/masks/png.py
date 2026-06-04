@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import struct
 import zlib
-
+from dataclasses import dataclass
+from pathlib import Path
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -50,9 +49,7 @@ def read_png(path: Path) -> PngImage:
 
         chunk_data = data[chunk_start:chunk_end]
         if chunk_type == b"IHDR":
-            width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(
-                ">IIBBBBB", chunk_data
-            )
+            width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(">IIBBBBB", chunk_data)
         elif chunk_type == b"PLTE":
             palette = tuple(
                 tuple(chunk_data[index : index + 3])  # type: ignore[misc]

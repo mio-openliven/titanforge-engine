@@ -7,7 +7,6 @@ from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, MaskColor, ZoneDefinition
 from titanforge.masks.png import read_png, write_rgba_png
 
-
 UNKNOWN_COLOR = MaskColor(255, 0, 255)
 
 

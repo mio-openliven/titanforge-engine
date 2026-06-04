@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from titanforge.masks.analyzer import MaskAnalysis, analyze_png_mask
-
 
 LAYOUT_SCHEMA = "titanforge.mask-layout"
 LAYOUT_VERSION = 1
