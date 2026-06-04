@@ -49,9 +49,7 @@ def read_png(path: Path) -> PngImage:
 
         chunk_data = data[chunk_start:chunk_end]
         if chunk_type == b"IHDR":
-            width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(
-                ">IIBBBBB", chunk_data
-            )
+            width, height, bit_depth, color_type, _compression, _filter, interlace = struct.unpack(">IIBBBBB", chunk_data)
         elif chunk_type == b"PLTE":
             palette = tuple(
                 tuple(chunk_data[index : index + 3])  # type: ignore[misc]

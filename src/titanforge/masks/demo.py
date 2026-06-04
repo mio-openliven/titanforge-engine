@@ -79,9 +79,7 @@ def format_demo_mask_result(result: DemoMaskResult) -> str:
 def _is_road(x: int, y: int, width: int, height: int) -> bool:
     diagonal = abs(y - (height * 0.72 - x * 0.24))
     horizontal = abs(y - height * 0.53)
-    return diagonal <= max(1.5, height * 0.012) or (
-        horizontal <= max(1.5, height * 0.01) and width * 0.30 <= x <= width * 0.70
-    )
+    return diagonal <= max(1.5, height * 0.012) or (horizontal <= max(1.5, height * 0.01) and width * 0.30 <= x <= width * 0.70)
 
 
 def _is_city_block(x: int, y: int, width: int, height: int) -> bool:
