@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from titanforge.masks.analyzer import MaskAnalysis, analyze_png_mask
+from titanforge.masks.png import PngImage
 
 
 LAYOUT_SCHEMA = "titanforge.mask-layout"
@@ -22,13 +23,13 @@ class MaskLayoutResult:
     unknown_color_count: int
 
 
-def build_mask_layout(input_path: Path) -> dict[str, Any]:
-    analysis = analyze_png_mask(input_path)
+def build_mask_layout(input_path: Path, *, image: PngImage | None = None) -> dict[str, Any]:
+    analysis = analyze_png_mask(input_path, image=image)
     return _layout_from_analysis(analysis)
 
 
-def write_mask_layout(input_path: Path, output_path: Path) -> MaskLayoutResult:
-    layout = build_mask_layout(input_path)
+def write_mask_layout(input_path: Path, output_path: Path, *, image: PngImage | None = None) -> MaskLayoutResult:
+    layout = build_mask_layout(input_path, image=image)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(layout, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

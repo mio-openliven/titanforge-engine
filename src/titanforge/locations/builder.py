@@ -8,6 +8,7 @@ import shutil
 from titanforge.layouts.mask_layout import write_mask_layout
 from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.demo import generate_demo_mask
+from titanforge.masks.png import read_png
 from titanforge.preview.mask_preview import render_mask_preview
 from titanforge.terrain.heightmap_preview import render_heightmap_preview
 from titanforge.validation.layout_report import write_layout_validation_report
@@ -59,11 +60,17 @@ def build_location_pack(
         _copy_input_mask(input_mask, mask_path)
         source_mode = "input"
 
-    render_mask_preview(mask_path, mask_preview_path)
-    render_mask_cleanup_preview(mask_path, cleanup_preview_path)
-    write_mask_layout(mask_path, layout_path)
+    mask_image = read_png(mask_path)
+    render_mask_preview(mask_path, mask_preview_path, image=mask_image)
+    render_mask_cleanup_preview(mask_path, cleanup_preview_path, image=mask_image)
+    write_mask_layout(mask_path, layout_path, image=mask_image)
     heightmap_source_path = cleanup_preview_path if use_cleanup_for_heightmap else mask_path
-    render_heightmap_preview(layout_path, heightmap_path, mask_override_path=heightmap_source_path)
+    render_heightmap_preview(
+        layout_path,
+        heightmap_path,
+        mask_override_path=heightmap_source_path if use_cleanup_for_heightmap else None,
+        mask_image=None if use_cleanup_for_heightmap else mask_image,
+    )
     validation = write_layout_validation_report(layout_path, report_path)
 
     manifest = {

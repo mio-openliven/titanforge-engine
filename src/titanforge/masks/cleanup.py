@@ -5,7 +5,7 @@ from pathlib import Path
 
 from titanforge.masks.classifier import MaskColorClassifier
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE, ZoneDefinition
-from titanforge.masks.png import read_png, write_rgba_png
+from titanforge.masks.png import PngImage, read_png, write_rgba_png
 
 
 WATERLIKE_ZONES = {"water"}
@@ -28,11 +28,13 @@ def render_mask_cleanup_preview(
     *,
     threshold: int = 5,
     palette: tuple[ZoneDefinition, ...] = DEFAULT_ZONE_PALETTE,
+    image: PngImage | None = None,
 ) -> MaskCleanupResult:
     if threshold < 1 or threshold > 8:
         raise ValueError("Cleanup threshold must be between 1 and 8.")
 
-    image = read_png(input_path)
+    if image is None:
+        image = read_png(input_path)
     classifier = MaskColorClassifier(palette)
     zone_grid: list[list[ZoneDefinition | None]] = []
     unknown_pixels = 0
@@ -100,23 +102,22 @@ def _replacement_zone(
     if current_family is None:
         return None
 
+    family_total = 0
     counts: dict[str, int] = {}
     candidates: dict[str, ZoneDefinition] = {}
     for neighbor in _neighbors(grid, x, y):
         family = _family(neighbor.zone_id)
         if family is None or family == current_family:
             continue
+        family_total += 1
         counts[neighbor.zone_id] = counts.get(neighbor.zone_id, 0) + 1
         candidates[neighbor.zone_id] = neighbor
 
-    if not counts:
+    if family_total < threshold or not counts:
         return None
 
-    zone_id, count = max(counts.items(), key=lambda item: item[1])
-    if count >= threshold:
-        return candidates[zone_id]
-
-    return None
+    zone_id = max(counts.items(), key=lambda item: item[1])[0]
+    return candidates[zone_id]
 
 
 def _neighbors(grid: list[list[ZoneDefinition | None]], x: int, y: int) -> tuple[ZoneDefinition, ...]:
