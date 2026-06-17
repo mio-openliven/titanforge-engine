@@ -2,6 +2,8 @@
 
 TitanForge Engine is an early procedural toolkit for planning and generating cinematic Minecraft map workflows.
 
+If you are new here, start with [START_HERE.md](START_HERE.md).
+
 It is not a game, not a Minecraft mod, and not a server plugin. It is an external development tool for map makers and server owners who want to turn visual ideas into repeatable steps: masks, layouts, previews, terrain passes, location packs, and future exporters.
 
 ## Why This Exists
@@ -134,6 +136,7 @@ python -m unittest discover -s tests
 Start here:
 
 - [PRD](docs/knowledge/PRD.md)
+- [Start here](START_HERE.md)
 - [Project map](docs/knowledge/PROJECT_MAP.md)
 - [Architecture](docs/knowledge/ARCHITECTURE.md)
 - [Roadmap](docs/knowledge/ROADMAP.md)

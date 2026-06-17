@@ -15,6 +15,7 @@ git pull origin main
 
 Read these files before changing behavior:
 
+- `START_HERE.md`
 - `README.md`
 - `docs/knowledge/PRD.md`
 - `docs/knowledge/PROJECT_MAP.md`
@@ -70,12 +71,13 @@ python -m titanforge night-run night_runs\smoke --count 4 --width 64 --height 64
 
 When this repo is opened from another PC or a new Codex chat:
 
-1. Read `README.md`.
-2. Read this file.
-3. Run `git status --short --branch`.
-4. Run `git pull origin main`.
-5. Run tests.
-6. Continue one task only.
+1. Read `START_HERE.md`.
+2. Read `README.md`.
+3. Read this file.
+4. Run `git status --short --branch`.
+5. Run `git pull origin main`.
+6. Run tests.
+7. Continue one task only.
 
 If the user asks for unattended work, use `night-run` and reports. Do not keep editing code forever without human review.
 
