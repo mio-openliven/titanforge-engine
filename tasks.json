@@ -56,6 +56,18 @@
         "no Minecraft version-specific IDs leak into core",
         "tests cover a tiny terrain grid"
       ]
+    },
+    {
+      "id": "TF-006",
+      "status": "done",
+      "priority": "P0",
+      "title": "Add resilient night-run command and new-PC handoff docs",
+      "acceptance": [
+        "CLI can run a batch of location-pack generations",
+        "progress manifest and summary are written after each case",
+        "README and AGENTS explain how a fresh Codex chat should continue",
+        "tests cover the night-run command"
+      ]
     }
   ]
 }

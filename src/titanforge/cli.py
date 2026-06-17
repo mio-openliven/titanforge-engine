@@ -14,6 +14,7 @@ from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
 from titanforge.masks.cleanup import format_mask_cleanup_result, render_mask_cleanup_preview
 from titanforge.masks.png import PngError
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
+from titanforge.operations.night_run import format_night_run_result, run_night_run
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.validation.layout_report import format_layout_validation_report, validate_layout_file, write_layout_validation_report
@@ -111,6 +112,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Render heightmap-preview.png from mask-cleanup-preview.png instead of mask.png.",
     )
 
+    night_run_parser = subparsers.add_parser(
+        "night-run",
+        help="Run a resilient overnight batch of demo location-pack generations.",
+    )
+    night_run_parser.add_argument("output_dir", type=Path, help="Night run output folder.")
+    night_run_parser.add_argument("--count", type=int, default=24, help="How many cases to attempt.")
+    night_run_parser.add_argument("--width", type=int, default=128, help="Base demo mask width.")
+    night_run_parser.add_argument("--height", type=int, default=128, help="Base demo mask height.")
+    night_run_parser.add_argument("--size-step", type=int, default=32, help="Size increase for variant cases.")
+    night_run_parser.add_argument("--max-minutes", type=float, help="Stop after this many minutes.")
+    night_run_parser.add_argument(
+        "--use-cleanup-for-heightmap",
+        action="store_true",
+        help="Use cleanup previews as heightmap source for every case.",
+    )
+    night_run_parser.add_argument(
+        "--no-alternate-cleanup",
+        action="store_true",
+        help="Do not alternate cleanup/raw heightmap cases.",
+    )
+
     return parser
 
 
@@ -196,6 +218,20 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         )
         print(format_location_build_result(result))
         return 1 if result.errors else 0
+
+    if args.command == "night-run":
+        result = run_night_run(
+            args.output_dir,
+            count=args.count,
+            width=args.width,
+            height=args.height,
+            size_step=args.size_step,
+            max_minutes=args.max_minutes,
+            use_cleanup_for_heightmap=args.use_cleanup_for_heightmap,
+            alternate_cleanup=not args.no_alternate_cleanup,
+        )
+        print(format_night_run_result(result))
+        return 1 if result.failed_cases else 0
 
     parser.print_help()
     return 0

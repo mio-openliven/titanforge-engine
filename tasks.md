@@ -20,6 +20,7 @@ Canonical machine-readable backlog: `tasks.json`.
 ## Done
 
 - `TF-001` `P0` Create first location pack pipeline.
+- `TF-006` `P0` Add resilient night-run command and new-PC handoff docs.
 
 ## Protocol
 

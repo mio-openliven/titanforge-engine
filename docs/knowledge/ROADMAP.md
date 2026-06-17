@@ -18,6 +18,14 @@
 - Add basic preview output.
 - Add first location pack folder output.
 
+## Phase 1.5: Reliable Work Loop
+
+- Keep GitHub usable as the handoff point between PCs.
+- Keep README and AGENTS understandable to both people and Codex.
+- Add resilient night runs for unattended generation, previews, manifests, and morning review.
+- Use AI for narrow planning/debugging/review, not endless overnight code changes.
+- Make each run leave inspectable artifacts even if later cases fail.
+
 ## Phase 2: Minecraft Data
 
 - Decide primary Minecraft 1.21.11 schematic/world export support.
@@ -41,6 +49,8 @@
 - Terrain passes.
 - Schematic placement.
 - Preview diagnostics.
+- Object/structure placement preview.
+- Water depth, vegetation density, and custom tree placement rules.
 
 ## Phase 4: Production Workflow
 
@@ -49,3 +59,4 @@
 - Error reports.
 - Batch generation.
 - Larger cinematic map examples.
+- Human-friendly editor only after CLI artifacts and previews are stable.

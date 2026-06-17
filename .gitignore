@@ -241,5 +241,7 @@ target/
 exports/
 renders/
 previews/
+night_runs/
+out/
 tmp/
 temp/

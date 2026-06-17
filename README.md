@@ -19,8 +19,8 @@ TitanForge is an experiment around that idea. The goal is to combine map-plannin
 
 - **Useful now:** yes, as a tested CLI prototype for masks, previews, layout reports, and tiny location-pack experiments.
 - **Finished product:** no. This is an idea-stage MVP, not a production world generator yet.
-- **Main risks:** Minecraft format complexity, version compatibility, schematic/export correctness, and large asset handling.
-- **If needed:** I can continue it into a practical map-building pipeline with real exporters, richer terrain passes, and a friendlier UI.
+- **Main risks:** Minecraft format complexity, version compatibility, schematic/export correctness, large asset handling, and scope creep.
+- **Current priority:** make the preview/location-pack loop reliable before GUI and Minecraft export.
 
 ## Current Working Pieces
 
@@ -79,6 +79,49 @@ python -m titanforge validate-layout out\layout.json --report out\report.txt
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 ```
 
+## New PC / New Codex Start
+
+If you open this repo from another computer or a fresh GPT/Codex chat, start with this:
+
+```text
+Continue TitanForge Engine.
+Repository: https://github.com/mio-openliven/titanforge-engine
+Read README.md and AGENTS.md first.
+Run git status --short --branch and git pull origin main.
+Then run tests:
+$env:PYTHONPATH='src'
+python -m unittest discover -s tests
+python -m compileall -q src tests
+Do one small pass only, update docs, then commit and push if tests pass.
+```
+
+## Overnight Run
+
+Use this when the PC should work while nobody watches the screen:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge night-run night_runs\first --count 200 --width 128 --height 128 --size-step 32 --max-minutes 480
+```
+
+The command writes progress after every generated case:
+
+```text
+night_runs\first\night-run-summary.txt
+night_runs\first\night-run-manifest.json
+night_runs\first\case-0001-128x128\
+night_runs\first\case-0002-160x160\
+...
+```
+
+Morning workflow:
+
+```text
+Ask Codex: "Check the latest night run and tell me what worked, what failed, and the next 3 options."
+```
+
+Do not use overnight mode as an endless AI coding loop. It is for deterministic generation, previews, logs, and reports.
+
 ## Tests
 
 ```powershell
@@ -100,6 +143,7 @@ Start here:
 - [Chat roles](docs/operations/CHAT_ROLES.md)
 - [Window system](docs/operations/WINDOW_SYSTEM.md)
 - [AI workflow minimum](docs/operations/AI_WORKFLOW_MINIMUM.md)
+- [Night runs](docs/operations/NIGHT_RUNS.md)
 - [Simple next steps](docs/operations/SIMPLE_NEXT_STEPS.md)
 
 ## Author Note

@@ -48,6 +48,13 @@ $env:PYTHONPATH='src'
 python -m titanforge build-location previews\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 ```
 
+Night smoke:
+
+```powershell
+$env:PYTHONPATH='src'
+python -m titanforge night-run night_runs\smoke --count 4 --width 64 --height 64 --size-step 16 --max-minutes 5
+```
+
 ## Scope Rules
 
 - Keep core generation neutral.
@@ -56,7 +63,21 @@ python -m titanforge build-location previews\demo-location --width 128 --height 
 - Compatibility target: Minecraft `1.12.2`.
 - Prefer CLI and file artifacts before GUI.
 - Prefer location packs before Minecraft export.
+- Prefer overnight deterministic runs over unattended AI coding.
 - Do not import donor code without inventory and license review.
+
+## New PC Protocol
+
+When this repo is opened from another PC or a new Codex chat:
+
+1. Read `README.md`.
+2. Read this file.
+3. Run `git status --short --branch`.
+4. Run `git pull origin main`.
+5. Run tests.
+6. Continue one task only.
+
+If the user asks for unattended work, use `night-run` and reports. Do not keep editing code forever without human review.
 
 ## User Interaction
 
