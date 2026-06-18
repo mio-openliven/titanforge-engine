@@ -12,6 +12,7 @@ location/
   layout.json
   heightmap-preview.png
   report.txt
+  review.html
   manifest.json
 ```
 
@@ -76,6 +77,8 @@ Current warnings include:
 
 `mask-cleanup-preview.png` is included to reveal tiny water/land noise before terrain generation. It can optionally be used for `heightmap-preview.png`, but it does not replace `mask.png`.
 
+`review.html` is a static local review page for the pack. Open it in a browser to inspect the three preview images, validation status, raw file links, and the full text report without building a GUI or starting a server.
+
 ## Product Meaning
 
 This is the first useful "touch it" version of TitanForge:
@@ -86,6 +89,7 @@ PNG mask or generated demo
 -> neutral layout JSON
 -> heightmap preview
 -> validation report
+-> static review page
 ```
 
 Minecraft export comes later. Location packs keep early work inspectable before expensive terrain and exporter passes exist.

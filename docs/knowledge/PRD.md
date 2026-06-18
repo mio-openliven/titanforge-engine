@@ -37,6 +37,7 @@ mask-cleanup-preview.png
 layout.json
 heightmap-preview.png
 report.txt
+review.html
 manifest.json
 ```
 

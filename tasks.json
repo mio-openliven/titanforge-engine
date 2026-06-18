@@ -58,6 +58,17 @@
       ]
     },
     {
+      "id": "TF-007",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add static location review page",
+      "acceptance": [
+        "build-location writes review.html into the location pack",
+        "review page shows preview images, validation status, and raw file links",
+        "tests cover review page generation"
+      ]
+    },
+    {
       "id": "TF-006",
       "status": "done",
       "priority": "P0",

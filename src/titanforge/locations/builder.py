@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 
 from titanforge.layouts.mask_layout import write_mask_layout
+from titanforge.locations.review_page import write_location_review_page
 from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.demo import generate_demo_mask
 from titanforge.masks.png import read_png
@@ -24,6 +25,7 @@ class LocationBuildResult:
     heightmap_path: Path
     heightmap_source_path: Path
     report_path: Path
+    review_page_path: Path
     manifest_path: Path
     warnings: int
     errors: int
@@ -49,6 +51,7 @@ def build_location_pack(
     layout_path = output_dir / "layout.json"
     heightmap_path = output_dir / "heightmap-preview.png"
     report_path = output_dir / "report.txt"
+    review_page_path = output_dir / "review.html"
     manifest_path = output_dir / "manifest.json"
 
     if demo:
@@ -72,6 +75,7 @@ def build_location_pack(
         mask_image=None if use_cleanup_for_heightmap else mask_image,
     )
     validation = write_layout_validation_report(layout_path, report_path)
+    report_text = report_path.read_text(encoding="utf-8")
 
     manifest = {
         "schema": "titanforge.location-pack",
@@ -84,6 +88,7 @@ def build_location_pack(
             "layout": layout_path.name,
             "heightmapPreview": heightmap_path.name,
             "report": report_path.name,
+            "reviewPage": review_page_path.name,
         },
         "terrain": {
             "heightmapSource": heightmap_source_path.name,
@@ -95,6 +100,16 @@ def build_location_pack(
         },
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_location_review_page(
+        output_dir,
+        pack_name=output_dir.name,
+        source_mode=source_mode,
+        validation_errors=validation.error_count,
+        validation_warnings=validation.warning_count,
+        cleanup_applied=use_cleanup_for_heightmap,
+        heightmap_source=heightmap_source_path.name,
+        report_text=report_text,
+    )
 
     return LocationBuildResult(
         output_dir=output_dir,
@@ -105,6 +120,7 @@ def build_location_pack(
         heightmap_path=heightmap_path,
         heightmap_source_path=heightmap_source_path,
         report_path=report_path,
+        review_page_path=review_page_path,
         manifest_path=manifest_path,
         warnings=validation.warning_count,
         errors=validation.error_count,
@@ -122,6 +138,7 @@ def format_location_build_result(result: LocationBuildResult) -> str:
             f"- heightmap: {result.heightmap_path.name}",
             f"- heightmap source: {result.heightmap_source_path.name}",
             f"- report: {result.report_path.name}",
+            f"- review page: {result.review_page_path.name}",
             f"- manifest: {result.manifest_path.name}",
             f"Validation: {result.errors} errors, {result.warnings} warnings",
         ]

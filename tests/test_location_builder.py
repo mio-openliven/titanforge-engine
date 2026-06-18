@@ -26,6 +26,7 @@ class LocationBuilderTests(unittest.TestCase):
                 result.layout_path,
                 result.heightmap_path,
                 result.report_path,
+                result.review_page_path,
                 result.manifest_path,
             ):
                 self.assertTrue(path.exists(), path)
@@ -35,7 +36,22 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(manifest["schema"], "titanforge.location-pack")
         self.assertEqual(manifest["validation"], {"errors": 0, "warnings": 0})
         self.assertEqual(manifest["artifacts"]["maskCleanupPreview"], "mask-cleanup-preview.png")
+        self.assertEqual(manifest["artifacts"]["reviewPage"], "review.html")
         self.assertEqual(manifest["terrain"], {"cleanupApplied": False, "heightmapSource": "mask.png"})
+
+    def test_build_location_pack_writes_static_review_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "location"
+
+            result = build_location_pack(output_dir, demo=True, width=64, height=64)
+            review_html = result.review_page_path.read_text(encoding="utf-8")
+
+        self.assertIn("<title>location - TitanForge Review</title>", review_html)
+        self.assertIn('src="mask-preview.png"', review_html)
+        self.assertIn('src="mask-cleanup-preview.png"', review_html)
+        self.assertIn('src="heightmap-preview.png"', review_html)
+        self.assertIn("TitanForge Layout Report", review_html)
+        self.assertIn("report.txt", review_html)
 
     def test_build_location_pack_from_input_mask_reports_warnings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -66,6 +82,7 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(manifest["sourceMode"], "demo")
         self.assertIn("Location pack:", stdout.getvalue())
+        self.assertIn("- review page: review.html", stdout.getvalue())
 
     def test_build_location_can_use_cleanup_for_heightmap(self) -> None:
         water = (0, 102, 255, 255)

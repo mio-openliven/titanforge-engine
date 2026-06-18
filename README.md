@@ -21,6 +21,7 @@ Working now:
 - grayscale heightmap previews;
 - validation reports;
 - simple human-readable location summaries inside reports;
+- static HTML review pages inside location packs;
 - location-pack folder output;
 - resilient batch generation with `night-run`;
 - unit tests for the current pipeline.
@@ -54,8 +55,11 @@ mask-cleanup-preview.png
 layout.json
 heightmap-preview.png
 report.txt
+review.html
 manifest.json
 ```
+
+Open `review.html` in a browser to inspect the first local TitanForge review page for that pack.
 
 ## Tests
 
