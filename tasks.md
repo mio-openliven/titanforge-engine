@@ -5,7 +5,6 @@ Canonical machine-readable backlog: `tasks.json`.
 ## To Do
 
 - `TF-002` `P0` Add terrain color preview.
-- `TF-003` `P0` Add location summary report for non-technical review.
 - `TF-004` `P1` Add coastline smoothing preview.
 - `TF-005` `P1` Design first neutral block/terrain model.
 
@@ -20,6 +19,7 @@ Canonical machine-readable backlog: `tasks.json`.
 ## Done
 
 - `TF-001` `P0` Create first location pack pipeline.
+- `TF-003` `P0` Add location summary report for non-technical review.
 - `TF-006` `P0` Add resilient night-run command and new-PC handoff docs.
 
 ## Protocol

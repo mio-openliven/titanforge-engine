@@ -26,7 +26,7 @@
     },
     {
       "id": "TF-003",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "title": "Add location summary report for non-technical review",
       "acceptance": [

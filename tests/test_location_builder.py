@@ -50,6 +50,8 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertEqual(result.errors, 0)
         self.assertGreater(result.warnings, 0)
         self.assertIn("mask.unknown-colors", report)
+        self.assertIn("Review Notes:", report)
+        self.assertIn("Some pixels use colors TitanForge does not recognize.", report)
 
     def test_build_location_cli_command_defaults_to_demo(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

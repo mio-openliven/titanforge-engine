@@ -58,6 +58,12 @@ The original mask and report still remain in the pack. The manifest records whic
 
 The pack writes `report.txt` and `manifest.json`.
 
+`report.txt` is meant to be readable without opening JSON first. It includes:
+
+- the technical validation status;
+- a short human summary of the location;
+- plain-language review notes for warnings and errors.
+
 Warnings do not stop the build. Errors return a non-zero CLI exit code.
 
 Current warnings include:

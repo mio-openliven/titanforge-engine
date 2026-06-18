@@ -20,6 +20,7 @@ Working now:
 - mask-to-layout JSON;
 - grayscale heightmap previews;
 - validation reports;
+- simple human-readable location summaries inside reports;
 - location-pack folder output;
 - resilient batch generation with `night-run`;
 - unit tests for the current pipeline.

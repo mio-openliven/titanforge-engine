@@ -21,6 +21,7 @@ class LayoutValidationResult:
     width: int
     length: int
     zones: tuple[str, ...]
+    zone_percentages: tuple[tuple[str, float], ...]
     total_pixels: int
     known_pixels: int
     unknown_pixels: int
@@ -57,6 +58,11 @@ def validate_layout(layout_path: Path, layout: dict[str, Any]) -> LayoutValidati
     known_pixels = int(coverage.get("knownPixels", 0))
     unknown_pixels = int(coverage.get("unknownPixels", 0))
     zones = tuple(str(zone.get("id", "")) for zone in zones_data if zone.get("id"))
+    zone_percentages = tuple(
+        (str(zone.get("id", "")), float(zone.get("percent", 0.0)))
+        for zone in zones_data
+        if zone.get("id")
+    )
 
     issues: list[LayoutIssue] = []
 
@@ -90,6 +96,7 @@ def validate_layout(layout_path: Path, layout: dict[str, Any]) -> LayoutValidati
         width=width,
         length=length,
         zones=zones,
+        zone_percentages=zone_percentages,
         total_pixels=total_pixels,
         known_pixels=known_pixels,
         unknown_pixels=unknown_pixels,
@@ -118,6 +125,16 @@ def format_layout_validation_report(result: LayoutValidationResult) -> str:
         f"Warnings: {result.warning_count}",
     ]
 
+    lines.append("")
+    lines.append("Summary:")
+    lines.extend(_format_human_summary(result))
+
+    if result.issues:
+        lines.append("")
+        lines.append("Review Notes:")
+        for issue in result.issues:
+            lines.append(f"- {_format_human_issue(issue)}")
+
     if result.issues:
         lines.append("")
         lines.append("Issues:")
@@ -125,6 +142,67 @@ def format_layout_validation_report(result: LayoutValidationResult) -> str:
             lines.append(f"- [{issue.severity.upper()}] {issue.code}: {issue.message}")
 
     return "\n".join(lines)
+
+
+def _format_human_summary(result: LayoutValidationResult) -> list[str]:
+    lines = [
+        f"- This location is {result.width} x {result.length}.",
+        f"- Main zones: {_format_zone_mix(result)}.",
+    ]
+
+    if result.has_errors:
+        lines.append(
+            f"- The layout has {result.error_count} blocking problem(s) and {result.warning_count} warning(s)."
+        )
+    elif result.warning_count:
+        lines.append(f"- The layout builds, but review {result.warning_count} warning(s) before trusting it.")
+    else:
+        lines.append("- The layout looks healthy and has no validation warnings.")
+
+    if result.unknown_pixels == 0:
+        lines.append("- The mask uses only known TitanForge colors.")
+    else:
+        lines.append(f"- {result.unknown_pixels} pixels use unknown colors and need cleanup.")
+
+    if "water" in result.zones and "land" in result.zones:
+        lines.append("- Water and land are both present.")
+    elif "water" not in result.zones:
+        lines.append("- No water area was detected.")
+    elif "land" not in result.zones:
+        lines.append("- No land area was detected.")
+
+    return lines
+
+
+def _format_zone_mix(result: LayoutValidationResult) -> str:
+    non_zero_zones = [(zone_id, percent) for zone_id, percent in result.zone_percentages if percent > 0.0]
+    if not non_zero_zones:
+        return "no known zones"
+    return ", ".join(f"{zone_id} {_format_percent(percent)}" for zone_id, percent in non_zero_zones)
+
+
+def _format_percent(percent: float) -> str:
+    rounded = round(percent, 1)
+    if rounded.is_integer():
+        return f"{int(rounded)}%"
+    return f"{rounded:.1f}%"
+
+
+def _format_human_issue(issue: LayoutIssue) -> str:
+    messages = {
+        "layout.schema": "The layout file format is missing or not supported. Regenerate the layout file.",
+        "layout.version": "The layout file version is missing or not supported. Regenerate the layout file.",
+        "world.size": "World width or length is invalid. Regenerate the layout file with a real size.",
+        "coverage.total": "The layout coverage does not match the world size. Regenerate the layout file.",
+        "coverage.sum": "Known and unknown pixel counts do not add up. Regenerate the layout file.",
+        "zones.empty": "No known zones were detected. Check that the mask uses TitanForge zone colors.",
+        "mask.unknown-colors": "Some pixels use colors TitanForge does not recognize. Replace them with known zone colors.",
+        "zones.no-water": "No water area was detected. Add water if this location should include sea, river, or lake.",
+        "zones.no-land": "No land area was detected. Add land if this location should include ground or islands.",
+        "zones.too-much-water": "Almost the whole mask is water. Review whether the location needs more land variety.",
+        "zones.too-much-land": "Almost the whole mask is land. Review whether the location needs more water variety.",
+    }
+    return messages.get(issue.code, issue.message)
 
 
 def _coverage_percent(layout: dict[str, Any], zone_id: str) -> float:

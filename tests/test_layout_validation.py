@@ -44,7 +44,29 @@ class LayoutValidationTests(unittest.TestCase):
 
         self.assertEqual(result.error_count, 0)
         self.assertIn("TitanForge Layout Report", report)
+        self.assertIn("Summary:", report)
+        self.assertIn("The layout looks healthy and has no validation warnings.", report)
+        self.assertIn("The mask uses only known TitanForge colors.", report)
         self.assertIn("Status: OK", report)
+
+    def test_write_layout_validation_report_includes_plain_language_warning_notes(self) -> None:
+        pixels = (((0, 102, 255, 255), (1, 2, 3, 255)),)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            mask_path = root / "mask.png"
+            layout_path = root / "layout.json"
+            report_path = root / "report.txt"
+            write_rgba_png(mask_path, 2, 1, pixels)
+            write_mask_layout(mask_path, layout_path)
+
+            result = write_layout_validation_report(layout_path, report_path)
+            report = report_path.read_text(encoding="utf-8")
+
+        self.assertGreater(result.warning_count, 0)
+        self.assertIn("Review Notes:", report)
+        self.assertIn("Some pixels use colors TitanForge does not recognize.", report)
+        self.assertIn("No land area was detected.", report)
 
     def test_validate_layout_cli_command(self) -> None:
         pixels = (((59, 170, 53, 255),),)
