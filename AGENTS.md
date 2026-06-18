@@ -13,6 +13,11 @@ git status --short --branch
 git pull origin main
 ```
 
+Windows note:
+
+- if `python --version` prints only `Python`, use `py -3.11` instead of `python`;
+- do not run `unittest` and `compileall` in parallel on Windows, because `__pycache__` writes can produce false permission errors.
+
 Read these files before changing behavior:
 
 - `START_HERE.md`

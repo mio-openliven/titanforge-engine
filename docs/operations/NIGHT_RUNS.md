@@ -11,6 +11,18 @@ $env:PYTHONPATH='src'
 python -m titanforge night-run night_runs\first --count 200 --width 128 --height 128 --size-step 32 --max-minutes 480
 ```
 
+Windows note:
+
+- if `python` resolves to the Windows Store alias instead of the real interpreter, use `py -3.11`;
+- set `PYTHONPATH` in the same shell that starts `night-run`, especially for background PowerShell launches.
+
+Fallback command:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge night-run night_runs\first --count 200 --width 128 --height 128 --size-step 32 --max-minutes 480
+```
+
 ## Outputs
 
 Each run creates:

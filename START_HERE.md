@@ -25,6 +25,11 @@ python -m unittest discover -s tests
 python -m compileall -q src tests
 ```
 
+Windows note:
+
+- if `python --version` prints only `Python` or launches the Microsoft Store alias, use `py -3.11` instead of `python`;
+- run `unittest` and `compileall` sequentially, not in parallel, or Windows may throw false `__pycache__` permission errors.
+
 If tests pass, run a small smoke:
 
 ```powershell
@@ -39,6 +44,13 @@ Use this when the PC should work without supervision:
 ```powershell
 $env:PYTHONPATH='src'
 python -m titanforge night-run night_runs\first --count 200 --width 128 --height 128 --size-step 32 --max-minutes 480
+```
+
+If the Windows `python` alias is broken, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge night-run night_runs\first --count 200 --width 128 --height 128 --size-step 32 --max-minutes 480
 ```
 
 Morning review:
@@ -67,6 +79,9 @@ git pull origin main
 $env:PYTHONPATH='src'
 python -m unittest discover -s tests
 python -m compileall -q src tests
+
+If `python` is a broken Windows Store alias, use `py -3.11` for the same commands.
+Run the test and compile commands sequentially, not in parallel.
 
 I am a beginner in code. Keep answers short and practical.
 Pick one safe next task only.
