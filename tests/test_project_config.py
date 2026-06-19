@@ -58,6 +58,26 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertEqual(plan.regions[0].x, 0)
         self.assertEqual(plan.regions[-1].x + plan.regions[-1].width, 512)
         self.assertTrue(all(region.length == 512 for region in plan.regions))
+        self.assertTrue(all(region.anchors for region in plan.regions))
+        for region in plan.regions:
+            for anchor in region.anchors:
+                self.assertGreaterEqual(anchor.x, region.x)
+                self.assertLess(anchor.x, region.x + region.width)
+                self.assertGreaterEqual(anchor.z, region.z)
+                self.assertLess(anchor.z, region.z + region.length)
+
+    def test_build_world_plan_assigns_story_specific_anchor_ids(self) -> None:
+        config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
+
+        plan = build_world_plan(config)
+
+        anchors_by_title = {region.title: {anchor.id for anchor in region.anchors} for region in plan.regions}
+
+        self.assertIn("arrival", anchors_by_title["Harbor Town"])
+        self.assertIn("shoreline", anchors_by_title["Salt Coast"])
+        self.assertIn("forest-core", anchors_by_title["Old Pine Forest"])
+        self.assertIn("ridge-vista", anchors_by_title["Broken Ridge"])
+        self.assertIn("center", anchors_by_title["River Village"])
 
     def test_write_world_plan_creates_json_output(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
@@ -71,3 +91,5 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn('"schema": "titanforge.world-plan"', data)
         self.assertIn('"title": "Harbor Town"', data)
         self.assertIn('"bounds"', data)
+        self.assertIn('"anchors"', data)
+        self.assertIn('"ridge-vista"', data)

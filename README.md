@@ -15,6 +15,7 @@ Working now:
 - project draft packs from `titanforge.toml`;
 - bridged project-location packs from `titanforge.toml`;
 - region-specific draft shapes for sea, forests, settlements, and mountains;
+- world-plan story anchors for arrivals, shorelines, forest cores, ridge vistas, and village hearts;
 - project config loading;
 - human-readable world brief review pages from project config;
 - inventory scans for source/donor folders;
@@ -60,6 +61,7 @@ python -m titanforge terrain-grid out\demo-location\layout.json out\demo-locatio
 
 Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
 Large worlds are intentionally scaled into a manageable draft mask. The manifest records `blocksPerPixel` so a 32000-wide world can still be planned without generating a gigantic PNG too early. Draft and project-location commands now also emit human-readable warnings when that scale starts hiding fine detail.
+`world-plan.json` now also includes deterministic anchors inside each region so later placement, roads, or export adapters have explicit story points to target.
 
 The `build-location` command creates:
 

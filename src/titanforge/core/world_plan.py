@@ -12,6 +12,14 @@ WORLD_PLAN_VERSION = 1
 
 
 @dataclass(frozen=True)
+class WorldPlanAnchor:
+    id: str
+    role: str
+    x: int
+    z: int
+
+
+@dataclass(frozen=True)
 class WorldPlanRegion:
     title: str
     kind: str
@@ -23,6 +31,7 @@ class WorldPlanRegion:
     z: int
     width: int
     length: int
+    anchors: tuple[WorldPlanAnchor, ...]
 
 
 @dataclass(frozen=True)
@@ -84,6 +93,7 @@ def build_world_plan(config: ProjectConfig) -> WorldPlan:
                 z=0,
                 width=region_width,
                 length=config.length,
+                anchors=_build_region_anchors(region, cursor_x, 0, region_width, config.length),
             )
         )
         cursor_x += region_width
@@ -136,6 +146,17 @@ def world_plan_to_dict(plan: WorldPlan) -> dict[str, object]:
                     "width": region.width,
                     "length": region.length,
                 },
+                "anchors": [
+                    {
+                        "id": anchor.id,
+                        "role": anchor.role,
+                        "point": {
+                            "x": anchor.x,
+                            "z": anchor.z,
+                        },
+                    }
+                    for anchor in region.anchors
+                ],
             }
             for region in plan.regions
         ],
@@ -158,6 +179,8 @@ def format_world_plan(plan: WorldPlan, output_path: Path | None = None) -> str:
                 f"x={region.x} z={region.z} width={region.width} length={region.length} "
                 f"coverage={region.coverage_percent}%"
             )
+            for anchor in region.anchors:
+                lines.append(f"  anchor {anchor.id}: {anchor.role} at x={anchor.x} z={anchor.z}")
     else:
         lines.append("Regions: <none>")
     return "\n".join(lines)
@@ -169,3 +192,51 @@ def _parse_coverage_percent(value: str) -> float:
         return max(0.0, float(cleaned))
     except ValueError:
         return 0.0
+
+
+def _build_region_anchors(
+    region: ProjectRegion,
+    x: int,
+    z: int,
+    width: int,
+    length: int,
+) -> tuple[WorldPlanAnchor, ...]:
+    center_x = x + width // 2
+    center_z = z + length // 2
+    lower_z = z + max(0, round(length * 0.76))
+    upper_z = z + max(0, round(length * 0.18))
+
+    kind = region.kind.lower()
+    title = region.title.lower()
+    role = region.story_role.lower()
+
+    text = " ".join((kind, title, role))
+
+    if any(keyword in text for keyword in ("city", "town", "village", "settlement")):
+        return (
+            WorldPlanAnchor("arrival", "main player entry or social arrival point", center_x, lower_z),
+            WorldPlanAnchor("center", "dense civic or lived-in heart of the region", center_x, center_z),
+        )
+
+    if any(keyword in text for keyword in ("mountain", "mountains", "ridge", "peak", "cliff", "highland")):
+        return (
+            WorldPlanAnchor("ridge-vista", "high reveal point for skyline and long shots", center_x, upper_z),
+            WorldPlanAnchor("approach", "lower approach before the climb or ruin reveal", center_x, lower_z),
+        )
+
+    if any(keyword in text for keyword in ("forest", "woods", "pine", "grove", "jungle")):
+        return (
+            WorldPlanAnchor("forest-core", "deep interior for mystery, clues, or getting lost", center_x, center_z),
+            WorldPlanAnchor("forest-edge", "transition edge between safe and unknown space", center_x, lower_z),
+        )
+
+    if any(keyword in text for keyword in ("sea", "coast", "shore", "harbor", "port", "bay", "river")):
+        return (
+            WorldPlanAnchor("shoreline", "coast edge for arrival, boats, or weather framing", center_x, lower_z),
+            WorldPlanAnchor("far-water", "open water vista or travel horizon", center_x, upper_z),
+        )
+
+    return (
+        WorldPlanAnchor("entry", "default entry or traversal anchor", center_x, lower_z),
+        WorldPlanAnchor("focus", "default focal point inside the region", center_x, center_z),
+    )

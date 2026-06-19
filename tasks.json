@@ -91,6 +91,17 @@
       ]
     },
     {
+      "id": "TF-014",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add world plan story anchors",
+      "acceptance": [
+        "world-plan.json records deterministic anchors inside each region",
+        "anchors reflect region type such as arrival, shoreline, forest-core, ridge-vista, or village-heart",
+        "tests cover anchor bounds and JSON output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

@@ -28,6 +28,8 @@ Each stage should receive explicit inputs and produce explicit outputs. Intermed
 
 `WorldPlan` should become the first spatial contract between scenario-writer intent and terrain/export logic. It should hold world size, region bounds, story roles, and future placement anchors before Minecraft-specific adapters enter the picture.
 
+That anchor layer now exists in simple deterministic form. Regions can expose points such as `arrival`, `shoreline`, `forest-core`, `ridge-vista`, or `center` so later routing and placement layers have explicit targets instead of guessing from raw rectangles alone.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.

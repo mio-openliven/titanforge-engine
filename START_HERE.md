@@ -12,6 +12,7 @@ Current state:
 - can build a first project draft pack from `titanforge.toml`;
 - can bridge `titanforge.toml` directly into a draft plus location pack;
 - shapes draft regions more like coast / forest / settlement / ridge instead of only straight strips;
+- writes story anchors into `world-plan.json` for later placement and routing passes;
 - creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
 - warns when draft scale is too compressed to trust small details;
 - has a resilient `night-run` command for unattended batch generation;
@@ -112,7 +113,7 @@ After a verified change, update docs/tasks and commit/push to main.
 ## Current Best Next Steps
 
 1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
-2. Add the first neutral placement pass for roads/settlements.
-3. Move from simple shape hints to multi-region composition rules and anchors.
+2. Add the first neutral placement pass for roads/settlements using world-plan anchors.
+3. Move from simple shape hints to multi-region composition rules between anchors.
 4. Add scale-aware warnings for sparse worlds and missing story variety.
 5. Only after that, begin larger exporter experiments.
