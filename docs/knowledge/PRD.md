@@ -60,6 +60,8 @@ Before traversal alone carries too much burden, the draft should also expose sim
 
 The first Minecraft-specific layer should remain inspectable: a simple `material-profile.json` for `1.21.11` that maps neutral planning intent into starter block palettes before any real world or schematic export is attempted.
 
+On top of that, the first exporter-facing contract should still stay readable: an `export-request.json` that tells a future 1.21.11 exporter which region bands, seam bands, road strips, and settlement pads to materialize.
+
 On top of that, a placement plan can promote anchor roles and route junctions into named neutral sites such as entry plazas, dock edges, mystery clusters, overlooks, and route junctions before any Minecraft-specific exporter starts.
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.

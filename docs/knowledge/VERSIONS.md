@@ -69,6 +69,8 @@ Minecraft-version-specific code should live in adapters:
 
 The first concrete adapter artifact is now a `material-profile.json` for Minecraft `1.21.11`. It is intentionally small: it maps neutral regions, transitions, roads, and settlements into starter block palettes. It is not yet a world exporter, but it proves the version layer can stay explicit and testable.
 
+The next concrete exporter artifact is `export-request.json` for Minecraft `1.21.11`. It turns those palettes plus neutral geometry into a first fixture-oriented export contract without pretending that NBT, chunks, or schematic serialization are already solved.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?

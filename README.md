@@ -18,6 +18,7 @@ Working now:
 - world-plan story anchors for arrivals, shorelines, forest cores, ridge vistas, and village hearts;
 - neutral transition-plan and transition-preview artifacts built from neighboring region seams;
 - a first Minecraft 1.21.11 material-profile adapter built from neutral planning artifacts;
+- a first Minecraft 1.21.11 export-request artifact built from neutral planning artifacts;
 - neutral route-plan and route-preview artifacts built from world-plan anchors;
 - neutral placement-plan and placement-preview artifacts built from anchors and routes;
 - neutral road-plan and road-preview artifacts built from routes and placement sites;
@@ -92,6 +93,7 @@ The `project-draft` command creates:
 review.html
 world-plan.json
 material-profile.json
+export-request.json
 transition-plan.json
 transition-preview.png
 route-plan.json
@@ -106,7 +108,7 @@ draft-mask.png
 draft-manifest.json
 ```
 
-Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets a first material profile artifact for future export adapters.
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets both a first material profile and a first export request artifact for future export adapters.
 
 The `project-location` command creates:
 
@@ -116,7 +118,7 @@ location\
 project-location-manifest.json
 ```
 
-Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft transition, route, placement, road, and settlement artifacts too.
+Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft material, export-request, transition, route, placement, road, and settlement artifacts too.
 
 ## Tests
 
