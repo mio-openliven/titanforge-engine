@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 from titanforge.cli import main
-from titanforge.core.project import load_project_config
+from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 from titanforge.core.project_location import write_project_location
 
 
@@ -66,3 +66,40 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn("- location dir: location", stdout.getvalue())
         self.assertIn("Blocks per pixel: 2", stdout.getvalue())
         self.assertIn("Warning:", stdout.getvalue())
+
+    def test_project_location_carries_sparse_world_warning(self) -> None:
+        config = ProjectConfig(
+            name="Wide Empty Reach",
+            target_version="1.21.11",
+            width=4096,
+            length=4096,
+            premise="A huge map with too little authored structure.",
+            player_experience="The player may feel lost without enough contrast.",
+            regions=(
+                ProjectRegion(
+                    title="Outer Sea",
+                    kind="sea",
+                    story_role="border",
+                    mood="open",
+                    coverage_hint="50%",
+                    notes="Large coast.",
+                ),
+                ProjectRegion(
+                    title="Deep Forest",
+                    kind="forest",
+                    story_role="exploration",
+                    mood="dense",
+                    coverage_hint="50%",
+                    notes="Large inland mass.",
+                ),
+            ),
+            pipeline=("preview",),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "project-location"
+            result = write_project_location(config, output_dir, max_draft_side=512, use_cleanup_for_heightmap=True)
+            manifest = json.loads((output_dir / "project-location-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertTrue(any("Sparse world brief:" in warning for warning in result.warnings))
+        self.assertTrue(any("Sparse world brief:" in warning for warning in manifest["warnings"]))

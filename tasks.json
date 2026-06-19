@@ -146,6 +146,17 @@
       ]
     },
     {
+      "id": "TF-019",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add world-brief warnings for sparse scale and weak zone variety",
+      "acceptance": [
+        "project-draft warns when very large worlds define too few story regions",
+        "project-draft warns when region kinds collapse into too few zone families",
+        "project-location carries the same warnings and tests cover both cases"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

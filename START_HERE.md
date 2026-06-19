@@ -19,6 +19,7 @@ Current state:
 - writes first deterministic settlement blockout artifacts from placement sites and roads;
 - creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
 - warns when draft scale is too compressed to trust small details;
+- warns when a large world brief is too sparse or lacks enough zone contrast;
 - has a resilient `night-run` command for unattended batch generation;
 - does not yet export playable Minecraft worlds or schematics.
 
@@ -118,6 +119,6 @@ After a verified change, update docs/tasks and commit/push to main.
 
 1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
 2. Move from simple shape hints to multi-region composition rules between anchors.
-3. Add scale-aware warnings for sparse worlds and missing story variety.
-4. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+3. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+4. Add first deterministic composition rules between neighboring regions instead of only per-region shaping.
 5. Only after that, begin larger exporter experiments.

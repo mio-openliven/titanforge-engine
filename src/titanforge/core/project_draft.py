@@ -116,6 +116,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         raster_width=raster_width,
         raster_length=raster_length,
         blocks_per_pixel=blocks_per_pixel,
+        regions=world_plan.regions,
     )
 
     draft_regions = _build_draft_regions(world_plan, blocks_per_pixel, raster_width, raster_length)
@@ -261,8 +262,13 @@ def get_project_draft_warnings(
     raster_width: int,
     raster_length: int,
     blocks_per_pixel: int,
+    regions: tuple[WorldPlanRegion, ...],
 ) -> tuple[str, ...]:
     warnings: list[str] = []
+    largest_side = max(world_width, world_length)
+    region_count = len(regions)
+    distinct_zone_families = {_infer_zone_id(region) for region in regions}
+
     if blocks_per_pixel > 1:
         warnings.append(
             f"Draft raster is scaled: 1 pixel represents {blocks_per_pixel} x {blocks_per_pixel} world blocks."
@@ -274,6 +280,16 @@ def get_project_draft_warnings(
     if min(raster_width, raster_length) < 128:
         warnings.append(
             "Draft raster is very small on at least one side. Region shapes may read clearly, but fine detail will not."
+        )
+    if largest_side >= 2048 and region_count < 4:
+        warnings.append(
+            f"Sparse world brief: this {world_width} x {world_length} world only defines {region_count} region(s). Add more regions before trusting roads, settlements, or story pacing."
+        )
+    if region_count >= 4 and len(distinct_zone_families) < 3:
+        family_count = len(distinct_zone_families)
+        family_label = "family" if family_count == 1 else "families"
+        warnings.append(
+            f"Weak zone variety: {region_count} region(s) collapse into only {family_count} zone {family_label}. Add stronger contrast before trusting the draft story flow."
         )
     return tuple(warnings)
 

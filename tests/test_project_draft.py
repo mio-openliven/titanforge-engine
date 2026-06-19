@@ -139,6 +139,60 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(image.width, 1000)
         self.assertEqual(image.height, 750)
         self.assertGreaterEqual(len(result.warnings), 2)
+        self.assertTrue(any("Sparse world brief:" in warning for warning in result.warnings))
+
+    def test_write_project_draft_warns_for_weak_zone_variety(self) -> None:
+        config = ProjectConfig(
+            name="Urban Stretch",
+            target_version="1.21.11",
+            width=1024,
+            length=1024,
+            premise="A long built-up corridor with too little contrast.",
+            player_experience="The player should feel the need for stronger variety.",
+            regions=(
+                ProjectRegion(
+                    title="South Gate",
+                    kind="city",
+                    story_role="arrival district",
+                    mood="busy",
+                    coverage_hint="25%",
+                    notes="Main entry.",
+                ),
+                ProjectRegion(
+                    title="Market Town",
+                    kind="town",
+                    story_role="trade zone",
+                    mood="crowded",
+                    coverage_hint="25%",
+                    notes="Dense blocks.",
+                ),
+                ProjectRegion(
+                    title="Old Village",
+                    kind="village",
+                    story_role="memory zone",
+                    mood="quiet",
+                    coverage_hint="25%",
+                    notes="Still urban-family land use.",
+                ),
+                ProjectRegion(
+                    title="Ruined Fort",
+                    kind="fort",
+                    story_role="late reveal",
+                    mood="hard",
+                    coverage_hint="25%",
+                    notes="Still reads as one family in the draft.",
+                ),
+            ),
+            pipeline=("preview",),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "draft"
+            result = write_project_draft(config, output_dir, max_draft_side=1024)
+
+        self.assertEqual(result.blocks_per_pixel, 1)
+        self.assertEqual(len(result.warnings), 1)
+        self.assertIn("Weak zone variety:", result.warnings[0])
 
     def test_project_draft_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
