@@ -33,6 +33,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-015` `P1` Add world plan route preview.
 - `TF-016` `P1` Add neutral placement plan.
 - `TF-017` `P1` Add neutral road plan.
+- `TF-018` `P1` Add neutral settlement blockout plan.
 
 ## Protocol
 

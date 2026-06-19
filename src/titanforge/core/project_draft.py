@@ -11,6 +11,7 @@ from titanforge.core.road_plan import build_road_plan, render_road_preview, writ
 from titanforge.core.project import ProjectConfig
 from titanforge.core.route_plan import build_route_plan, render_route_preview, write_route_plan
 from titanforge.core.project_review import write_project_review_page
+from titanforge.core.settlement_plan import build_settlement_plan, render_settlement_preview, write_settlement_plan
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
 from titanforge.masks.png import write_rgba_png
@@ -61,6 +62,8 @@ class ProjectDraftResult:
     placement_preview_path: Path
     road_plan_path: Path
     road_preview_path: Path
+    settlement_plan_path: Path
+    settlement_preview_path: Path
     draft_mask_path: Path
     manifest_path: Path
     world_width: int
@@ -87,6 +90,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     placement_preview_path = output_dir / "placement-preview.png"
     road_plan_path = output_dir / "road-plan.json"
     road_preview_path = output_dir / "road-preview.png"
+    settlement_plan_path = output_dir / "settlement-plan.json"
+    settlement_preview_path = output_dir / "settlement-preview.png"
     draft_mask_path = output_dir / "draft-mask.png"
     manifest_path = output_dir / "draft-manifest.json"
 
@@ -96,9 +101,11 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     route_plan = build_route_plan(world_plan)
     placement_plan = build_placement_plan(world_plan, route_plan)
     road_plan = build_road_plan(route_plan, placement_plan)
+    settlement_plan = build_settlement_plan(placement_plan, road_plan)
     write_route_plan(world_plan, route_plan_path)
     write_placement_plan(world_plan, route_plan, placement_plan_path)
     write_road_plan(route_plan, placement_plan, road_plan_path)
+    write_settlement_plan(placement_plan, road_plan, settlement_plan_path)
 
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
@@ -137,6 +144,13 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         raster_length=raster_length,
         blocks_per_pixel=blocks_per_pixel,
     )
+    render_settlement_preview(
+        settlement_plan,
+        settlement_preview_path,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
 
     manifest = {
         "schema": PROJECT_DRAFT_SCHEMA,
@@ -164,6 +178,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "placementPreview": placement_preview_path.name,
             "roadPlan": road_plan_path.name,
             "roadPreview": road_preview_path.name,
+            "settlementPlan": settlement_plan_path.name,
+            "settlementPreview": settlement_preview_path.name,
             "draftMask": draft_mask_path.name,
         },
         "warnings": list(warnings),
@@ -201,6 +217,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         placement_preview_path=placement_preview_path,
         road_plan_path=road_plan_path,
         road_preview_path=road_preview_path,
+        settlement_plan_path=settlement_plan_path,
+        settlement_preview_path=settlement_preview_path,
         draft_mask_path=draft_mask_path,
         manifest_path=manifest_path,
         world_width=config.width,
@@ -224,6 +242,8 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- placement preview: {result.placement_preview_path.name}",
             f"- road plan: {result.road_plan_path.name}",
             f"- road preview: {result.road_preview_path.name}",
+            f"- settlement plan: {result.settlement_plan_path.name}",
+            f"- settlement preview: {result.settlement_preview_path.name}",
             f"- draft mask: {result.draft_mask_path.name}",
             f"- manifest: {result.manifest_path.name}",
             f"World size: {result.world_width} x {result.world_length}",

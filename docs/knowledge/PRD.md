@@ -60,6 +60,8 @@ On top of that, a placement plan can promote anchor roles and route junctions in
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.
 
+On top of that, the engine can now turn selected placement sites plus road access into a first settlement blockout plan so a creator sees rough gates, harbor pads, village cores, and junction hubs before any Minecraft exporter exists.
+
 The next user-facing bridge is `project-location`: one command from `titanforge.toml` to `draft/` plus `location/`, with a bridge manifest that keeps logical world size and raster scale explicit.
 
 Draft artifacts should feel like rough places, not spreadsheet stripes. Simple deterministic region shapes are acceptable before full composition rules or Minecraft export exist.

@@ -135,6 +135,17 @@
       ]
     },
     {
+      "id": "TF-018",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add neutral settlement blockout plan",
+      "acceptance": [
+        "project-draft writes settlement-plan.json and settlement-preview.png from placement sites and roads",
+        "project-location carries settlement artifacts in its bridge manifest",
+        "tests cover settlement generation and preview output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

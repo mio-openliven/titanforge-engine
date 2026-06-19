@@ -71,6 +71,8 @@ def write_project_location(
             "placementPreview": str(draft_result.placement_preview_path.relative_to(output_dir)),
             "roadPlan": str(draft_result.road_plan_path.relative_to(output_dir)),
             "roadPreview": str(draft_result.road_preview_path.relative_to(output_dir)),
+            "settlementPlan": str(draft_result.settlement_plan_path.relative_to(output_dir)),
+            "settlementPreview": str(draft_result.settlement_preview_path.relative_to(output_dir)),
             "locationReviewPage": str(location_result.review_page_path.relative_to(output_dir)),
             "locationManifest": str(location_result.manifest_path.relative_to(output_dir)),
         },

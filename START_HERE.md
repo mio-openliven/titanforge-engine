@@ -16,6 +16,7 @@ Current state:
 - writes first deterministic route artifacts from those anchors;
 - writes first deterministic placement artifacts from anchors and routes;
 - writes first deterministic road artifacts from routes and placement sites;
+- writes first deterministic settlement blockout artifacts from placement sites and roads;
 - creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
 - warns when draft scale is too compressed to trust small details;
 - has a resilient `night-run` command for unattended batch generation;
@@ -116,7 +117,7 @@ After a verified change, update docs/tasks and commit/push to main.
 ## Current Best Next Steps
 
 1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
-2. Turn road-plan and placement-plan into a first settlement/blockout pass.
-3. Move from simple shape hints to multi-region composition rules between anchors.
-4. Add scale-aware warnings for sparse worlds and missing story variety.
+2. Move from simple shape hints to multi-region composition rules between anchors.
+3. Add scale-aware warnings for sparse worlds and missing story variety.
+4. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
 5. Only after that, begin larger exporter experiments.
