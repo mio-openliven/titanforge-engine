@@ -212,6 +212,17 @@
       ]
     },
     {
+      "id": "TF-025",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first NBT-oriented fixture artifact for 1.21.11",
+      "acceptance": [
+        "project-draft writes a first binary NBT fixture from block-fixture intent",
+        "project-location carries the NBT fixture in its bridge manifest",
+        "tests cover NBT encode/decode and supported 1.21.11 output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

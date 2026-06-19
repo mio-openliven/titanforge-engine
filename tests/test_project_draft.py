@@ -10,6 +10,7 @@ import unittest
 from titanforge.cli import main
 from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 from titanforge.core.project_draft import write_project_draft
+from titanforge.exporters.nbt_codec import read_nbt
 from titanforge.masks.analyzer import analyze_png_mask
 from titanforge.masks.png import read_png
 
@@ -28,6 +29,7 @@ class ProjectDraftTests(unittest.TestCase):
             export_request = json.loads((output_dir / "export-request.json").read_text(encoding="utf-8"))
             chunk_plan = json.loads((output_dir / "chunk-plan.json").read_text(encoding="utf-8"))
             block_fixture = json.loads((output_dir / "block-fixture.json").read_text(encoding="utf-8"))
+            nbt_root_name, nbt_fixture = read_nbt((output_dir / "block-fixture.nbt").read_bytes())
             transition_preview = read_png(output_dir / "transition-preview.png")
             route_preview = read_png(output_dir / "route-preview.png")
             placement_preview = read_png(output_dir / "placement-preview.png")
@@ -41,6 +43,7 @@ class ProjectDraftTests(unittest.TestCase):
             export_request_exists = (output_dir / "export-request.json").exists()
             chunk_plan_exists = (output_dir / "chunk-plan.json").exists()
             block_fixture_exists = (output_dir / "block-fixture.json").exists()
+            nbt_fixture_exists = (output_dir / "block-fixture.nbt").exists()
             transition_plan_exists = (output_dir / "transition-plan.json").exists()
             transition_preview_exists = (output_dir / "transition-preview.png").exists()
             route_plan_exists = (output_dir / "route-plan.json").exists()
@@ -60,6 +63,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertTrue(export_request_exists)
         self.assertTrue(chunk_plan_exists)
         self.assertTrue(block_fixture_exists)
+        self.assertTrue(nbt_fixture_exists)
         self.assertTrue(transition_plan_exists)
         self.assertTrue(transition_preview_exists)
         self.assertTrue(route_plan_exists)
@@ -91,6 +95,9 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(chunk_plan["adapter"]["supported"], True)
         self.assertEqual(block_fixture["adapter"]["targetVersion"], "1.21.11")
         self.assertEqual(block_fixture["adapter"]["supported"], True)
+        self.assertEqual(nbt_root_name, "TitanForgeFixture")
+        self.assertEqual(nbt_fixture["targetVersion"], "1.21.11")
+        self.assertEqual(nbt_fixture["supported"], True)
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["world"]["width"], 512)
         self.assertEqual(len(manifest["warnings"]), 1)
@@ -99,6 +106,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn('"exportRequest": "export-request.json"', manifest_text)
         self.assertIn('"chunkPlan": "chunk-plan.json"', manifest_text)
         self.assertIn('"blockFixture": "block-fixture.json"', manifest_text)
+        self.assertIn('"nbtFixture": "block-fixture.nbt"', manifest_text)
         self.assertIn('"transitionPlan": "transition-plan.json"', manifest_text)
         self.assertIn('"routePlan": "route-plan.json"', manifest_text)
         self.assertIn('"placementPlan": "placement-plan.json"', manifest_text)
@@ -250,6 +258,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn("- export request: export-request.json", stdout.getvalue())
         self.assertIn("- chunk plan: chunk-plan.json", stdout.getvalue())
         self.assertIn("- block fixture: block-fixture.json", stdout.getvalue())
+        self.assertIn("- NBT fixture: block-fixture.nbt", stdout.getvalue())
         self.assertIn("- transition preview: transition-preview.png", stdout.getvalue())
         self.assertIn("- route preview: route-preview.png", stdout.getvalue())
         self.assertIn("- placement preview: placement-preview.png", stdout.getvalue())

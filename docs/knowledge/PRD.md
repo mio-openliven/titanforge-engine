@@ -66,6 +66,8 @@ The next export-facing contract should become chunk-aware without exploding in s
 
 On top of that, the first block-facing fixture should stay inspectable: a `block-fixture.json` with cuboid operations and starter Y levels for 1.21.11, so the pipeline can approach real block output without committing to full world export too early.
 
+The next safe step is a binary `block-fixture.nbt` artifact that round-trips through a small internal codec. This proves the exporter layer can handle real binary NBT payloads before it claims Minecraft-ready structure serialization.
+
 On top of that, a placement plan can promote anchor roles and route junctions into named neutral sites such as entry plazas, dock edges, mystery clusters, overlooks, and route junctions before any Minecraft-specific exporter starts.
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.
