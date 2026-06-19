@@ -193,6 +193,32 @@ def _format_project_review_html(config: ProjectConfig) -> str:
     </section>
 
     <section class="panel">
+      <h2>What To Open After Project-Draft</h2>
+      <div class="regions">
+        <article class="card">
+          <h3><code>review.html</code></h3>
+          <p>Open this first to keep the world brief and the generated draft in the same mental frame.</p>
+        </article>
+        <article class="card">
+          <h3><code>draft-mask.png</code></h3>
+          <p>Check whether the world silhouette already reads like sea, city, forest, ridge, and village instead of noise.</p>
+        </article>
+        <article class="card">
+          <h3><code>fixture-summary.json</code></h3>
+          <p>Read this before Minecraft testing. It tells you rough footprint, fill-command count, and any safety warnings for the first fixture run.</p>
+        </article>
+        <article class="card">
+          <h3><code>fixture-commands.txt</code></h3>
+          <p>Use this when you need the exact <code>/reload</code>, place, or clear commands without reading mcfunction internals.</p>
+        </article>
+        <article class="card">
+          <h3><code>datapack-fixture.zip</code></h3>
+          <p>This is the easiest handoff artifact for a first world test. Drop it into a world datapacks folder only after the summary looks safe.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Story Regions</h2>
       <div class="regions">
         {region_cards}

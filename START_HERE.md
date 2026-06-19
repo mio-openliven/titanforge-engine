@@ -25,6 +25,7 @@ Current state:
 - writes a first fixture-summary artifact with rough bounds, fill-command counts, and safety warnings;
 - writes a first Minecraft 1.21.11 datapack fixture package from neutral planning artifacts;
 - writes a first zipped Minecraft 1.21.11 datapack fixture package from neutral planning artifacts;
+- explains the key draft artifacts directly inside the world brief review page;
 - writes first deterministic route artifacts from those anchors;
 - writes first deterministic placement artifacts from anchors and routes;
 - writes first deterministic road artifacts from routes and placement sites;

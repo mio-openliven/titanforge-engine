@@ -45,6 +45,10 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn("64 .. 32000", html)
         self.assertIn("player moves from a safe farming edge", html)
         self.assertIn("project-draft", html)
+        self.assertIn("What To Open After Project-Draft", html)
+        self.assertIn("fixture-summary.json", html)
+        self.assertIn("fixture-commands.txt", html)
+        self.assertIn("datapack-fixture.zip", html)
 
     def test_build_world_plan_assigns_region_bounds(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))

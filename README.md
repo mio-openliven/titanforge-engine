@@ -76,6 +76,7 @@ python -m titanforge terrain-grid out\demo-location\layout.json out\demo-locatio
 ```
 
 Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
+The review page now also explains which draft artifacts to open next, including `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.
 Large worlds are intentionally scaled into a manageable draft mask. The manifest records `blocksPerPixel` so a 32000-wide world can still be planned without generating a gigantic PNG too early. Draft and project-location commands now also emit human-readable warnings when that scale starts hiding fine detail, when a huge world brief defines too few regions, or when too many regions collapse into the same zone family.
 `world-plan.json` now also includes deterministic anchors inside each region so later placement, roads, or export adapters have explicit story points to target.
 
