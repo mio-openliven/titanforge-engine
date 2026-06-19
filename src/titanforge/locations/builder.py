@@ -43,6 +43,7 @@ def build_location_pack(
     width: int = 128,
     height: int = 128,
     use_cleanup_for_heightmap: bool = False,
+    source_mode_override: str | None = None,
 ) -> LocationBuildResult:
     if input_mask is None and not demo:
         demo = True
@@ -68,6 +69,8 @@ def build_location_pack(
             raise ValueError("input_mask is required when demo mode is disabled.")
         _copy_input_mask(input_mask, mask_path)
         source_mode = "input"
+    if source_mode_override is not None:
+        source_mode = source_mode_override
 
     mask_image = read_png(mask_path)
     render_mask_preview(mask_path, mask_preview_path, image=mask_image)

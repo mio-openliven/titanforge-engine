@@ -10,6 +10,7 @@ Current state:
 
 - works as a Python CLI prototype;
 - can build a first project draft pack from `titanforge.toml`;
+- can bridge `titanforge.toml` directly into a draft plus location pack;
 - creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
 - has a resilient `night-run` command for unattended batch generation;
 - does not yet export playable Minecraft worlds or schematics.
@@ -35,7 +36,7 @@ If tests pass, run a small smoke:
 
 ```powershell
 $env:PYTHONPATH='src'
-py -3.11 -m titanforge project-draft examples\tiny_project\titanforge.toml previews\tiny-project-draft --max-draft-side 256
+py -3.11 -m titanforge project-location examples\tiny_project\titanforge.toml previews\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
 ```
 
 Then the current location-pack smoke:
@@ -108,8 +109,8 @@ After a verified change, update docs/tasks and commit/push to main.
 
 ## Current Best Next Steps
 
-1. Add coastline smoothing preview.
-2. Bridge `draft-mask.png` into the location-pack pipeline.
-3. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
-4. Add the first neutral placement pass for roads/settlements.
+1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+2. Add the first neutral placement pass for roads/settlements.
+3. Teach `project-location` richer regional shapes instead of simple strips.
+4. Add scale-aware warnings for oversized draft rasters and sparse worlds.
 5. Only after that, begin larger exporter experiments.

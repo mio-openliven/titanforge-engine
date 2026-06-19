@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+from pathlib import Path
+
+from titanforge.core.project import ProjectConfig
+from titanforge.core.project_draft import DEFAULT_MAX_DRAFT_SIDE, ProjectDraftResult, write_project_draft
+from titanforge.locations.builder import LocationBuildResult, build_location_pack
+
+
+PROJECT_LOCATION_SCHEMA = "titanforge.project-location"
+PROJECT_LOCATION_VERSION = 1
+
+
+@dataclass(frozen=True)
+class ProjectLocationResult:
+    output_dir: Path
+    draft_dir: Path
+    location_dir: Path
+    manifest_path: Path
+    draft_result: ProjectDraftResult
+    location_result: LocationBuildResult
+
+
+def write_project_location(
+    config: ProjectConfig,
+    output_dir: Path,
+    *,
+    max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE,
+    use_cleanup_for_heightmap: bool = False,
+) -> ProjectLocationResult:
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    draft_dir = output_dir / "draft"
+    location_dir = output_dir / "location"
+    manifest_path = output_dir / "project-location-manifest.json"
+
+    draft_result = write_project_draft(config, draft_dir, max_draft_side=max_draft_side)
+    location_result = build_location_pack(
+        location_dir,
+        input_mask=draft_result.draft_mask_path,
+        use_cleanup_for_heightmap=use_cleanup_for_heightmap,
+        source_mode_override="project-draft",
+    )
+
+    manifest = {
+        "schema": PROJECT_LOCATION_SCHEMA,
+        "version": PROJECT_LOCATION_VERSION,
+        "project": {
+            "name": config.name,
+            "targetVersion": config.target_version,
+        },
+        "world": {
+            "width": config.width,
+            "length": config.length,
+        },
+        "raster": {
+            "width": draft_result.raster_width,
+            "length": draft_result.raster_length,
+            "blocksPerPixel": draft_result.blocks_per_pixel,
+        },
+        "artifacts": {
+            "draftDir": draft_dir.name,
+            "locationDir": location_dir.name,
+            "draftMask": str(draft_result.draft_mask_path.relative_to(output_dir)),
+            "locationReviewPage": str(location_result.review_page_path.relative_to(output_dir)),
+            "locationManifest": str(location_result.manifest_path.relative_to(output_dir)),
+        },
+        "terrain": {
+            "cleanupApplied": use_cleanup_for_heightmap,
+            "heightmapSource": location_result.heightmap_source_path.name,
+        },
+        "validation": {
+            "errors": location_result.errors,
+            "warnings": location_result.warnings,
+        },
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    return ProjectLocationResult(
+        output_dir=output_dir,
+        draft_dir=draft_dir,
+        location_dir=location_dir,
+        manifest_path=manifest_path,
+        draft_result=draft_result,
+        location_result=location_result,
+    )
+
+
+def format_project_location_result(result: ProjectLocationResult) -> str:
+    return "\n".join(
+        [
+            f"Project location: {result.output_dir}",
+            f"- draft dir: {result.draft_dir.name}",
+            f"- location dir: {result.location_dir.name}",
+            f"- bridge manifest: {result.manifest_path.name}",
+            f"World size: {result.draft_result.world_width} x {result.draft_result.world_length}",
+            f"Draft raster: {result.draft_result.raster_width} x {result.draft_result.raster_length}",
+            f"Blocks per pixel: {result.draft_result.blocks_per_pixel}",
+            f"Validation: {result.location_result.errors} errors, {result.location_result.warnings} warnings",
+        ]
+    )

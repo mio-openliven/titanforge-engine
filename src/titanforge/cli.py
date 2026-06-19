@@ -6,6 +6,7 @@ import sys
 import tomllib
 
 from titanforge import __version__
+from titanforge.core.project_location import format_project_location_result, write_project_location
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_review import write_project_review_page
@@ -62,6 +63,24 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=1024,
         help="Maximum raster side for the generated draft mask.",
+    )
+
+    project_location_parser = subparsers.add_parser(
+        "project-location",
+        help="Build a project draft and location pack directly from titanforge.toml.",
+    )
+    project_location_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
+    project_location_parser.add_argument("output_dir", type=Path, help="Output folder for the bridged project pack.")
+    project_location_parser.add_argument(
+        "--max-draft-side",
+        type=int,
+        default=1024,
+        help="Maximum raster side for the generated draft mask.",
+    )
+    project_location_parser.add_argument(
+        "--use-cleanup-for-heightmap",
+        action="store_true",
+        help="Render location heightmap-preview.png from mask-cleanup-preview.png.",
     )
 
     inventory_parser = subparsers.add_parser(
@@ -233,6 +252,17 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         result = write_project_draft(config, args.output_dir, max_draft_side=args.max_draft_side)
         print(format_project_draft_result(result))
         return 0
+
+    if args.command == "project-location":
+        config = load_project_config(args.config)
+        result = write_project_location(
+            config,
+            args.output_dir,
+            max_draft_side=args.max_draft_side,
+            use_cleanup_for_heightmap=args.use_cleanup_for_heightmap,
+        )
+        print(format_project_location_result(result))
+        return 1 if result.location_result.errors else 0
 
     if args.command == "inventory":
         report = scan_inventory(args.path)

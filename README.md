@@ -13,6 +13,7 @@ This repository is an MVP-stage tool, not a finished map generator.
 Working now:
 
 - project draft packs from `titanforge.toml`;
+- bridged project-location packs from `titanforge.toml`;
 - project config loading;
 - human-readable world brief review pages from project config;
 - inventory scans for source/donor folders;
@@ -47,6 +48,7 @@ Use Python 3.11 or newer.
 $env:PYTHONPATH = "src"
 python -m titanforge info
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
+python -m titanforge project-location examples\tiny_project\titanforge.toml out\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
@@ -85,6 +87,16 @@ draft-manifest.json
 ```
 
 Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks.
+
+The `project-location` command creates:
+
+```text
+draft\
+location\
+project-location-manifest.json
+```
+
+Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size.
 
 ## Tests
 

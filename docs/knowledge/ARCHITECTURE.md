@@ -30,6 +30,8 @@ Each stage should receive explicit inputs and produce explicit outputs. Intermed
 
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
+`project-location` is the next orchestration layer above that. It does not add new terrain logic; it simply wires `project-draft` into the existing location-pack pipeline and records the bridge metadata in one top-level manifest.
+
 ## Suggested Early Modules
 
 - `core`: project loading, paths, logging, shared types.

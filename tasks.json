@@ -58,6 +58,17 @@
       ]
     },
     {
+      "id": "TF-011",
+      "status": "done",
+      "priority": "P0",
+      "title": "Add project-location bridge command",
+      "acceptance": [
+        "CLI builds draft and location subfolders from titanforge.toml",
+        "bridge manifest records world size, raster size, and blocksPerPixel",
+        "tests cover the command and output structure"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
