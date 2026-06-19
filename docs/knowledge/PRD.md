@@ -70,6 +70,8 @@ The next safe step is a binary `block-fixture.nbt` artifact that round-trips thr
 
 The next user-meaningful export step is an executable `place-fixture.mcfunction`. It gives the pipeline a real Minecraft command artifact before the project commits to full schematic or world formats.
 
+That command flow also needs a reversible companion. A paired `clear-fixture.mcfunction` keeps early testing safe because the same fixture can be removed without hand-cleaning the world.
+
 The next practical wrapper is a `datapack-fixture/` folder with `pack.mcmeta` and a packaged function path. This keeps the workflow inspectable while moving one step closer to something a tester can drop into a world.
 
 That wrapper should also be emitted as `datapack-fixture.zip` so the first tester workflow is one file copy, not manual repackaging.

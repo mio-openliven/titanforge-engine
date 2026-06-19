@@ -256,6 +256,18 @@
       ]
     },
     {
+      "id": "TF-029",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add clear-fixture companion commands for 1.21.11",
+      "acceptance": [
+        "project-draft writes clear-fixture.mcfunction alongside place-fixture.mcfunction",
+        "datapack fixture includes clear_fixture.mcfunction alongside place_fixture.mcfunction",
+        "project-location carries the clear mcfunction in its bridge manifest",
+        "tests cover clear command output and packaged contents"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

@@ -10,7 +10,12 @@ from titanforge.core.settlement_plan import build_settlement_plan
 from titanforge.core.transition_plan import build_transition_plan
 from titanforge.core.world_plan import build_world_plan
 from titanforge.exporters.minecraft_12111_block_fixture import build_minecraft_block_fixture
-from titanforge.exporters.minecraft_12111_mcfunction import build_mcfunction_lines, write_minecraft_mcfunction_fixture
+from titanforge.exporters.minecraft_12111_mcfunction import (
+    build_clear_mcfunction_lines,
+    build_mcfunction_lines,
+    write_minecraft_clear_mcfunction_fixture,
+    write_minecraft_mcfunction_fixture,
+)
 
 
 class MinecraftMcfunctionTests(unittest.TestCase):
@@ -43,6 +48,21 @@ class MinecraftMcfunctionTests(unittest.TestCase):
         self.assertIn("fill 0 64 0 76 66 31 oak_planks", lines)
         self.assertIn("fill 0 64 32 76 66 63 oak_planks", lines)
 
+    def test_build_clear_mcfunction_lines_emit_air_commands(self) -> None:
+        config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
+        world_plan = build_world_plan(config)
+        transition_plan = build_transition_plan(world_plan)
+        route_plan = build_route_plan(world_plan)
+        placement_plan = build_placement_plan(world_plan, route_plan)
+        road_plan = build_road_plan(route_plan, placement_plan)
+        settlement_plan = build_settlement_plan(placement_plan, road_plan)
+        fixture = build_minecraft_block_fixture("1.21.11", world_plan, transition_plan, road_plan, settlement_plan)
+
+        lines = build_clear_mcfunction_lines(fixture)
+
+        self.assertTrue(any(line.startswith("fill ") and line.endswith(" air") for line in lines))
+        self.assertTrue(any(line.startswith("# clear ") for line in lines))
+
     def test_write_mcfunction_fixture_creates_file(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
         world_plan = build_world_plan(config)
@@ -55,5 +75,20 @@ class MinecraftMcfunctionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output_path = Path(directory) / "place-fixture.mcfunction"
             write_minecraft_mcfunction_fixture("1.21.11", world_plan, transition_plan, road_plan, settlement_plan, output_path)
+
+            self.assertTrue(output_path.exists())
+
+    def test_write_clear_mcfunction_fixture_creates_file(self) -> None:
+        config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
+        world_plan = build_world_plan(config)
+        transition_plan = build_transition_plan(world_plan)
+        route_plan = build_route_plan(world_plan)
+        placement_plan = build_placement_plan(world_plan, route_plan)
+        road_plan = build_road_plan(route_plan, placement_plan)
+        settlement_plan = build_settlement_plan(placement_plan, road_plan)
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "clear-fixture.mcfunction"
+            write_minecraft_clear_mcfunction_fixture("1.21.11", world_plan, transition_plan, road_plan, settlement_plan, output_path)
 
             self.assertTrue(output_path.exists())

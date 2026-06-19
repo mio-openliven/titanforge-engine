@@ -52,6 +52,8 @@ On top of that, `block-fixture.nbt` can exercise binary NBT writing without clai
 
 `place-fixture.mcfunction` is the first directly executable Minecraft-facing artifact. It converts block cuboids into striped `fill` commands so large surfaces stay practical without waiting for full structure or world writers.
 
+`clear-fixture.mcfunction` is the first reversible companion for that artifact. It mirrors the same cuboids with `air` fills, so a tester can iterate on placement without manually cleaning the world between passes.
+
 `datapack-fixture/` is the next practical wrapper around that command output. It adds `pack.mcmeta` plus the packaged function path so the exporter layer starts resembling a real Minecraft datapack before committing to heavier formats.
 
 `datapack-fixture.zip` is the first handoff-oriented wrapper around that folder. It keeps the same inspectable contents, but gives testers one copyable artifact for quick datapack import checks.

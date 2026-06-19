@@ -23,6 +23,7 @@ Working now:
 - a first Minecraft 1.21.11 block-fixture artifact with cuboid block operations;
 - a first Minecraft 1.21.11 NBT-oriented fixture artifact for binary export experiments;
 - a first Minecraft 1.21.11 mcfunction fixture exporter with real `fill` commands;
+- a first Minecraft 1.21.11 clear-fixture mcfunction companion for reversible test placement;
 - a first Minecraft 1.21.11 datapack fixture package with `pack.mcmeta` and packaged function file;
 - a first zipped Minecraft 1.21.11 datapack fixture package for easy handoff into a test world;
 - neutral route-plan and route-preview artifacts built from world-plan anchors;
@@ -104,6 +105,7 @@ chunk-plan.json
 block-fixture.json
 block-fixture.nbt
 place-fixture.mcfunction
+clear-fixture.mcfunction
 datapack-fixture\
 datapack-fixture.zip
 transition-plan.json
@@ -120,7 +122,7 @@ draft-mask.png
 draft-manifest.json
 ```
 
-Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets a first material profile, export request, chunk plan, block fixture, binary NBT-oriented fixture, executable `mcfunction`, a packaged datapack fixture, and a ready-to-copy `datapack-fixture.zip`.
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets a first material profile, export request, chunk plan, block fixture, binary NBT-oriented fixture, executable `mcfunction`, a reversible `clear-fixture.mcfunction`, a packaged datapack fixture, and a ready-to-copy `datapack-fixture.zip`.
 
 The `project-location` command creates:
 

@@ -44,6 +44,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-026` `P1` Add first Minecraft 1.21.11 mcfunction fixture exporter.
 - `TF-027` `P1` Add first Minecraft 1.21.11 datapack fixture package.
 - `TF-028` `P1` Add zipped datapack fixture package for 1.21.11.
+- `TF-029` `P1` Add clear-fixture companion commands for 1.21.11.
 
 ## Protocol
 

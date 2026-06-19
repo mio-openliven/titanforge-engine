@@ -29,11 +29,13 @@ class MinecraftDatapackTests(unittest.TestCase):
             write_minecraft_datapack_fixture("1.21.11", world_plan, transition_plan, road_plan, settlement_plan, output_dir)
             pack_meta = json.loads((output_dir / "pack.mcmeta").read_text(encoding="utf-8"))
             function_text = (output_dir / "data" / "titanforge" / "function" / "place_fixture.mcfunction").read_text(encoding="utf-8")
+            clear_function_text = (output_dir / "data" / "titanforge" / "function" / "clear_fixture.mcfunction").read_text(encoding="utf-8")
 
         self.assertEqual(pack_meta["pack"]["min_format"], [94, 1])
         self.assertEqual(pack_meta["pack"]["max_format"], [94, 1])
         self.assertIn("TitanForge 1.21.11 fixture pack", pack_meta["pack"]["description"])
         self.assertIn("fill ", function_text)
+        self.assertIn(" air", clear_function_text)
 
     def test_write_datapack_fixture_zip_creates_archive(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
@@ -55,3 +57,4 @@ class MinecraftDatapackTests(unittest.TestCase):
 
         self.assertIn("pack.mcmeta", names)
         self.assertIn("data/titanforge/function/place_fixture.mcfunction", names)
+        self.assertIn("data/titanforge/function/clear_fixture.mcfunction", names)
