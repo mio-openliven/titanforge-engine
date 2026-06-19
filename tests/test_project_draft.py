@@ -21,7 +21,8 @@ class ProjectDraftTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output_dir = Path(directory) / "draft"
             result = write_project_draft(config, output_dir, max_draft_side=256)
-            manifest = json.loads((output_dir / "draft-manifest.json").read_text(encoding="utf-8"))
+            manifest_text = (output_dir / "draft-manifest.json").read_text(encoding="utf-8")
+            manifest = json.loads(manifest_text)
             image = read_png(output_dir / "draft-mask.png")
             analysis = analyze_png_mask(output_dir / "draft-mask.png")
             review_exists = (output_dir / "review.html").exists()
@@ -38,12 +39,33 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["world"]["width"], 512)
         self.assertEqual(len(manifest["warnings"]), 1)
+        self.assertIn('"shape": "coast-band"', manifest_text)
         zone_ids = {stat.zone.zone_id for stat in analysis.zone_stats}
         self.assertIn("city", zone_ids)
         self.assertIn("water", zone_ids)
         self.assertIn("forest", zone_ids)
         self.assertIn("mountain", zone_ids)
         self.assertEqual(analysis.unknown_pixels, 0)
+
+    def test_project_draft_shapes_coast_and_mountain_directionally(self) -> None:
+        config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "draft"
+            write_project_draft(config, output_dir, max_draft_side=256)
+            manifest = json.loads((output_dir / "draft-manifest.json").read_text(encoding="utf-8"))
+            image = read_png(output_dir / "draft-mask.png")
+
+        coast_region = next(region for region in manifest["regions"] if region["zone"] == "water")
+        mountain_region = next(region for region in manifest["regions"] if region["zone"] == "mountain")
+
+        coast_x = coast_region["rasterBounds"]["x"] + coast_region["rasterBounds"]["width"] // 2
+        mountain_x = mountain_region["rasterBounds"]["x"] + mountain_region["rasterBounds"]["width"] // 2
+
+        self.assertNotEqual(image.pixels[0][coast_x], (0, 102, 255, 255))
+        self.assertEqual(image.pixels[-1][coast_x], (0, 102, 255, 255))
+        self.assertEqual(image.pixels[0][mountain_x], (119, 119, 119, 255))
+        self.assertNotEqual(image.pixels[-1][mountain_x], (119, 119, 119, 255))
 
     def test_write_project_draft_scales_large_worlds(self) -> None:
         config = ProjectConfig(

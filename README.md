@@ -14,6 +14,7 @@ Working now:
 
 - project draft packs from `titanforge.toml`;
 - bridged project-location packs from `titanforge.toml`;
+- region-specific draft shapes for sea, forests, settlements, and mountains;
 - project config loading;
 - human-readable world brief review pages from project config;
 - inventory scans for source/donor folders;
@@ -86,7 +87,7 @@ draft-mask.png
 draft-manifest.json
 ```
 
-Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks.
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips.
 
 The `project-location` command creates:
 

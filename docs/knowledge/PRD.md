@@ -54,6 +54,8 @@ The current bridge from story idea to generation is a project draft pack. It kee
 
 The next user-facing bridge is `project-location`: one command from `titanforge.toml` to `draft/` plus `location/`, with a bridge manifest that keeps logical world size and raster scale explicit.
 
+Draft artifacts should feel like rough places, not spreadsheet stripes. Simple deterministic region shapes are acceptable before full composition rules or Minecraft export exist.
+
 ## Must Have
 
 - CLI workflow.

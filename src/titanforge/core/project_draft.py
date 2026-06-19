@@ -35,6 +35,7 @@ _ZONE_KEYWORDS = (
 class DraftRegion:
     title: str
     zone_id: str
+    shape: str
     color: str
     x: int
     z: int
@@ -120,6 +121,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             {
                 "title": region.title,
                 "zone": region.zone_id,
+                "shape": region.shape,
                 "color": region.color,
                 "bounds": {
                     "x": region.x,
@@ -214,6 +216,7 @@ def _build_draft_regions(
             DraftRegion(
                 title=region.title,
                 zone_id=zone_id,
+                shape=_infer_shape(zone_id),
                 color=color.hex_rgb,
                 x=region.x,
                 z=region.z,
@@ -240,10 +243,15 @@ def _render_draft_mask(
 
     for region in draft_regions:
         color = zone_colors[region.zone_id]
-        for z in range(region.raster_z, min(raster_length, region.raster_z + region.raster_length)):
+        max_z = min(raster_length, region.raster_z + region.raster_length)
+        max_x = min(raster_width, region.raster_x + region.raster_width)
+        for z in range(region.raster_z, max_z):
             row = pixels[z]
-            for x in range(region.raster_x, min(raster_width, region.raster_x + region.raster_width)):
-                row[x] = color
+            local_z = _normalized_axis(z - region.raster_z, region.raster_length)
+            for x in range(region.raster_x, max_x):
+                local_x = _normalized_axis(x - region.raster_x, region.raster_width)
+                if _shape_contains(region.shape, local_x, local_z):
+                    row[x] = color
 
     return tuple(tuple(row) for row in pixels)
 
@@ -255,3 +263,55 @@ def _infer_zone_id(region: WorldPlanRegion) -> str:
         if any(keyword in tokens for keyword in keywords):
             return zone_id
     return "land"
+
+
+def _infer_shape(zone_id: str) -> str:
+    if zone_id == "water":
+        return "coast-band"
+    if zone_id == "mountain":
+        return "ridge-cap"
+    if zone_id == "forest":
+        return "oval-core"
+    if zone_id in {"city", "port"}:
+        return "settlement-core"
+    if zone_id == "road":
+        return "corridor"
+    return "full-rect"
+
+
+def _shape_contains(shape: str, local_x: float, local_z: float) -> bool:
+    edge_distance = abs(local_x - 0.5) * 2.0
+
+    if shape == "coast-band":
+        threshold = 0.68 - 0.22 * (1.0 - edge_distance)
+        return local_z >= threshold
+    if shape == "ridge-cap":
+        threshold = 0.32 + 0.22 * (1.0 - edge_distance)
+        return local_z <= threshold
+    if shape == "oval-core":
+        return _ellipse_contains(local_x, local_z, center_x=0.5, center_z=0.52, radius_x=0.48, radius_z=0.34)
+    if shape == "settlement-core":
+        return _ellipse_contains(local_x, local_z, center_x=0.5, center_z=0.68, radius_x=0.42, radius_z=0.22)
+    if shape == "corridor":
+        return 0.42 <= local_z <= 0.58
+    return True
+
+
+def _ellipse_contains(
+    local_x: float,
+    local_z: float,
+    *,
+    center_x: float,
+    center_z: float,
+    radius_x: float,
+    radius_z: float,
+) -> bool:
+    normalized_x = ((local_x - center_x) / radius_x) ** 2
+    normalized_z = ((local_z - center_z) / radius_z) ** 2
+    return normalized_x + normalized_z <= 1.0
+
+
+def _normalized_axis(offset: int, span: int) -> float:
+    if span <= 1:
+        return 0.5
+    return offset / (span - 1)

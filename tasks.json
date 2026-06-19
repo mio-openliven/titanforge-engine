@@ -80,6 +80,17 @@
       ]
     },
     {
+      "id": "TF-013",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add richer draft region shapes",
+      "acceptance": [
+        "project-draft renders region-specific shapes instead of only full-height strips",
+        "draft manifest records each region shape hint",
+        "tests cover coast and mountain directional shaping"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
