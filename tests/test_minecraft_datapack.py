@@ -11,7 +11,11 @@ from titanforge.core.route_plan import build_route_plan
 from titanforge.core.settlement_plan import build_settlement_plan
 from titanforge.core.transition_plan import build_transition_plan
 from titanforge.core.world_plan import build_world_plan
-from titanforge.exporters.minecraft_12111_datapack import write_minecraft_datapack_fixture, write_minecraft_datapack_fixture_zip
+from titanforge.exporters.minecraft_12111_datapack import (
+    build_minecraft_fixture_command_lines,
+    write_minecraft_datapack_fixture,
+    write_minecraft_datapack_fixture_zip,
+)
 
 
 class MinecraftDatapackTests(unittest.TestCase):
@@ -30,12 +34,15 @@ class MinecraftDatapackTests(unittest.TestCase):
             pack_meta = json.loads((output_dir / "pack.mcmeta").read_text(encoding="utf-8"))
             function_text = (output_dir / "data" / "titanforge" / "function" / "place_fixture.mcfunction").read_text(encoding="utf-8")
             clear_function_text = (output_dir / "data" / "titanforge" / "function" / "clear_fixture.mcfunction").read_text(encoding="utf-8")
+            readme_text = (output_dir / "README.txt").read_text(encoding="utf-8")
 
         self.assertEqual(pack_meta["pack"]["min_format"], [94, 1])
         self.assertEqual(pack_meta["pack"]["max_format"], [94, 1])
         self.assertIn("TitanForge 1.21.11 fixture pack", pack_meta["pack"]["description"])
         self.assertIn("fill ", function_text)
         self.assertIn(" air", clear_function_text)
+        self.assertIn("/function titanforge:place_fixture", readme_text)
+        self.assertIn("/function titanforge:clear_fixture", readme_text)
 
     def test_write_datapack_fixture_zip_creates_archive(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
@@ -56,5 +63,12 @@ class MinecraftDatapackTests(unittest.TestCase):
                 names = set(archive.namelist())
 
         self.assertIn("pack.mcmeta", names)
+        self.assertIn("README.txt", names)
         self.assertIn("data/titanforge/function/place_fixture.mcfunction", names)
         self.assertIn("data/titanforge/function/clear_fixture.mcfunction", names)
+
+    def test_build_fixture_command_lines_include_place_and_clear(self) -> None:
+        lines = build_minecraft_fixture_command_lines()
+
+        self.assertIn("/function titanforge:place_fixture", lines)
+        self.assertIn("/function titanforge:clear_fixture", lines)

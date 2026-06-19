@@ -268,6 +268,18 @@
       ]
     },
     {
+      "id": "TF-030",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first fixture command guide artifacts for 1.21.11",
+      "acceptance": [
+        "project-draft writes fixture-commands.txt with exact place and clear function commands",
+        "datapack fixture includes a README.txt with copy, reload, place, and clear steps",
+        "project-location carries the fixture command guide in its bridge manifest",
+        "tests cover guide contents and packaged README output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

@@ -21,6 +21,7 @@ Current state:
 - writes a first Minecraft 1.21.11 NBT-oriented fixture from neutral planning artifacts;
 - writes a first Minecraft 1.21.11 mcfunction fixture from neutral planning artifacts;
 - writes a first Minecraft 1.21.11 clear-fixture mcfunction companion from neutral planning artifacts;
+- writes a first fixture-commands guide with exact place and clear function calls;
 - writes a first Minecraft 1.21.11 datapack fixture package from neutral planning artifacts;
 - writes a first zipped Minecraft 1.21.11 datapack fixture package from neutral planning artifacts;
 - writes first deterministic route artifacts from those anchors;
