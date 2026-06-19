@@ -302,6 +302,17 @@
       ]
     },
     {
+      "id": "TF-033",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add unsupported-target warnings to fixture guides",
+      "acceptance": [
+        "fixture-commands.txt warns clearly when the requested target is unsupported",
+        "datapack README warns clearly when the requested target is unsupported",
+        "tests cover unsupported guide output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

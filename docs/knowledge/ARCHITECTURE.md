@@ -54,7 +54,7 @@ On top of that, `block-fixture.nbt` can exercise binary NBT writing without clai
 
 `clear-fixture.mcfunction` is the first reversible companion for that artifact. It mirrors the same cuboids with `air` fills, so a tester can iterate on placement without manually cleaning the world between passes.
 
-`fixture-commands.txt` is the first tiny operator-facing guide for that flow. It keeps the exact `/reload`, place, and clear calls next to the artifacts so a non-developer tester does not have to inspect datapack internals.
+`fixture-commands.txt` is the first tiny operator-facing guide for that flow. It keeps the exact `/reload`, place, and clear calls next to the artifacts so a non-developer tester does not have to inspect datapack internals, and it now flips into a clear warning mode when the requested target is unsupported.
 
 `fixture-summary.json` is the first safety snapshot for that same flow. It records rough cuboid bounds plus place/clear command counts, and it warns when command load or footprint already look too large for a casual first test world.
 

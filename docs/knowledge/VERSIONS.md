@@ -81,7 +81,7 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `clear-fixture.mcfunction` is the first reversible companion for Minecraft `1.21.11`. It mirrors the same cuboids with `air` fills so early export tests can be repeated safely in one world.
 
-`fixture-commands.txt` is the first operator-facing companion for Minecraft `1.21.11`. It keeps the exact `/reload`, place, and clear calls visible in plain text instead of making the tester inspect datapack internals.
+`fixture-commands.txt` is the first operator-facing companion for Minecraft `1.21.11`. It keeps the exact `/reload`, place, and clear calls visible in plain text instead of making the tester inspect datapack internals, and it warns clearly when another target version falls outside current support.
 
 `fixture-summary.json` is the first safety companion for Minecraft `1.21.11`. It records rough bounds and fill-command counts, then adds warnings when fixture scope already looks too large for a casual first run.
 

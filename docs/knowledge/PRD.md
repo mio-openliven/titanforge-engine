@@ -72,7 +72,7 @@ The next user-meaningful export step is an executable `place-fixture.mcfunction`
 
 That command flow also needs a reversible companion. A paired `clear-fixture.mcfunction` keeps early testing safe because the same fixture can be removed without hand-cleaning the world.
 
-That same flow also needs an operator guide. A small `fixture-commands.txt` artifact keeps the exact place and clear commands visible without asking a tester to inspect mcfunction or datapack internals.
+That same flow also needs an operator guide. A small `fixture-commands.txt` artifact keeps the exact place and clear commands visible without asking a tester to inspect mcfunction or datapack internals, and it must switch to a plain warning when the target version is not yet supported.
 
 Before those commands are executed in a world, the tester also needs a rough safety snapshot. `fixture-summary.json` should report approximate footprint and command counts, and warn when a first in-game pass is likely too large for casual testing.
 

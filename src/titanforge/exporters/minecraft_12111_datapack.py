@@ -8,7 +8,7 @@ from titanforge.core.road_plan import RoadPlan
 from titanforge.core.settlement_plan import SettlementPlan
 from titanforge.core.transition_plan import TransitionPlan
 from titanforge.core.world_plan import WorldPlan
-from titanforge.exporters.minecraft_12111_block_fixture import build_minecraft_block_fixture
+from titanforge.exporters.minecraft_12111_block_fixture import MinecraftBlockFixture, build_minecraft_block_fixture
 from titanforge.exporters.minecraft_12111_mcfunction import build_clear_mcfunction_lines, build_mcfunction_lines
 
 
@@ -46,7 +46,7 @@ def write_minecraft_datapack_fixture(
     pack_meta_path.write_text(json.dumps(pack_meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     function_path.write_text("\n".join(build_mcfunction_lines(fixture)) + "\n", encoding="utf-8")
     clear_function_path.write_text("\n".join(build_clear_mcfunction_lines(fixture)) + "\n", encoding="utf-8")
-    readme_path.write_text("\n".join(build_minecraft_datapack_readme_lines()) + "\n", encoding="utf-8")
+    readme_path.write_text("\n".join(build_minecraft_datapack_readme_lines(fixture)) + "\n", encoding="utf-8")
     return pack_dir
 
 
@@ -65,7 +65,14 @@ def _pack_description(target_version: str, supported: bool) -> str:
     return f"TitanForge 1.21.11 fixture pack for unsupported requested target {target_version}"
 
 
-def build_minecraft_fixture_command_lines() -> tuple[str, ...]:
+def build_minecraft_fixture_command_lines(fixture: MinecraftBlockFixture) -> tuple[str, ...]:
+    if not fixture.supported:
+        return (
+            "TitanForge 1.21.11 fixture commands",
+            "",
+            f"Requested target {fixture.target_version} is not supported by the current 1.21.11 fixture exporter.",
+            "Do not run the place or clear functions in Minecraft for this target.",
+        )
     return (
         "TitanForge 1.21.11 fixture commands",
         "",
@@ -78,7 +85,14 @@ def build_minecraft_fixture_command_lines() -> tuple[str, ...]:
     )
 
 
-def build_minecraft_datapack_readme_lines() -> tuple[str, ...]:
+def build_minecraft_datapack_readme_lines(fixture: MinecraftBlockFixture) -> tuple[str, ...]:
+    if not fixture.supported:
+        return (
+            "TitanForge 1.21.11 fixture datapack",
+            "",
+            f"Requested target {fixture.target_version} is not supported by the current 1.21.11 fixture exporter.",
+            "Keep this pack only for inspection. Do not run the place or clear functions in Minecraft for this target.",
+        )
     return (
         "TitanForge 1.21.11 fixture datapack",
         "",

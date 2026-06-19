@@ -14,7 +14,7 @@ from titanforge.core.project_review import write_project_review_page
 from titanforge.core.settlement_plan import build_settlement_plan, render_settlement_preview, write_settlement_plan
 from titanforge.core.transition_plan import build_transition_plan, render_transition_preview, write_transition_plan
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
-from titanforge.exporters.minecraft_12111_block_fixture import write_minecraft_block_fixture
+from titanforge.exporters.minecraft_12111_block_fixture import build_minecraft_block_fixture, write_minecraft_block_fixture
 from titanforge.exporters.minecraft_12111_chunk_plan import write_minecraft_chunk_plan
 from titanforge.exporters.minecraft_12111_datapack import (
     build_minecraft_fixture_command_lines,
@@ -161,7 +161,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         settlement_plan,
         clear_mcfunction_fixture_path,
     )
-    fixture_commands_path.write_text("\n".join(build_minecraft_fixture_command_lines()) + "\n", encoding="utf-8")
+    fixture = build_minecraft_block_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan)
+    fixture_commands_path.write_text("\n".join(build_minecraft_fixture_command_lines(fixture)) + "\n", encoding="utf-8")
     write_minecraft_fixture_summary(
         config.target_version,
         world_plan,

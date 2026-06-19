@@ -270,6 +270,46 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(len(result.warnings), 1)
         self.assertIn("Weak zone variety:", result.warnings[0])
 
+    def test_write_project_draft_marks_unsupported_fixture_guides(self) -> None:
+        config = ProjectConfig(
+            name="Legacy Coast",
+            target_version="1.12.2",
+            width=512,
+            length=512,
+            premise="A compatibility test world.",
+            player_experience="The player should understand that export support is not ready.",
+            regions=(
+                ProjectRegion(
+                    title="Open Sea",
+                    kind="sea",
+                    story_role="border",
+                    mood="cold",
+                    coverage_hint="50%",
+                    notes="Fog and long views.",
+                ),
+                ProjectRegion(
+                    title="Green Mainland",
+                    kind="forest",
+                    story_role="exploration",
+                    mood="dense",
+                    coverage_hint="50%",
+                    notes="Long walks inland.",
+                ),
+            ),
+            pipeline=("preview",),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "draft"
+            write_project_draft(config, output_dir, max_draft_side=256)
+            fixture_commands_text = (output_dir / "fixture-commands.txt").read_text(encoding="utf-8")
+            datapack_readme_text = (output_dir / "datapack-fixture" / "README.txt").read_text(encoding="utf-8")
+
+        self.assertIn("not supported", fixture_commands_text)
+        self.assertIn("Do not run", fixture_commands_text)
+        self.assertIn("not supported", datapack_readme_text)
+        self.assertIn("Do not run", datapack_readme_text)
+
     def test_project_draft_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output_dir = Path(directory) / "draft"
