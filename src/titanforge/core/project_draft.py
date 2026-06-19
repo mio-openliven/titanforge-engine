@@ -16,6 +16,7 @@ from titanforge.core.transition_plan import build_transition_plan, render_transi
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
 from titanforge.exporters.minecraft_12111_block_fixture import write_minecraft_block_fixture
 from titanforge.exporters.minecraft_12111_chunk_plan import write_minecraft_chunk_plan
+from titanforge.exporters.minecraft_12111_datapack import write_minecraft_datapack_fixture
 from titanforge.exporters.minecraft_12111_mcfunction import write_minecraft_mcfunction_fixture
 from titanforge.exporters.minecraft_12111_nbt_fixture import write_minecraft_nbt_fixture
 from titanforge.exporters.minecraft_12111_request import write_minecraft_export_request
@@ -69,6 +70,7 @@ class ProjectDraftResult:
     block_fixture_path: Path
     nbt_fixture_path: Path
     mcfunction_fixture_path: Path
+    datapack_fixture_dir: Path
     transition_plan_path: Path
     transition_preview_path: Path
     route_plan_path: Path
@@ -105,6 +107,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     block_fixture_path = output_dir / "block-fixture.json"
     nbt_fixture_path = output_dir / "block-fixture.nbt"
     mcfunction_fixture_path = output_dir / "place-fixture.mcfunction"
+    datapack_fixture_dir = output_dir / "datapack-fixture"
     transition_plan_path = output_dir / "transition-plan.json"
     transition_preview_path = output_dir / "transition-preview.png"
     route_plan_path = output_dir / "route-plan.json"
@@ -137,6 +140,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     write_minecraft_block_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, block_fixture_path)
     write_minecraft_nbt_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, nbt_fixture_path)
     write_minecraft_mcfunction_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, mcfunction_fixture_path)
+    write_minecraft_datapack_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, datapack_fixture_dir)
 
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
@@ -217,6 +221,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "blockFixture": block_fixture_path.name,
             "nbtFixture": nbt_fixture_path.name,
             "mcfunctionFixture": mcfunction_fixture_path.name,
+            "datapackFixture": datapack_fixture_dir.name,
             "transitionPlan": transition_plan_path.name,
             "transitionPreview": transition_preview_path.name,
             "routePlan": route_plan_path.name,
@@ -264,6 +269,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         block_fixture_path=block_fixture_path,
         nbt_fixture_path=nbt_fixture_path,
         mcfunction_fixture_path=mcfunction_fixture_path,
+        datapack_fixture_dir=datapack_fixture_dir,
         transition_plan_path=transition_plan_path,
         transition_preview_path=transition_preview_path,
         route_plan_path=route_plan_path,
@@ -297,6 +303,7 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- block fixture: {result.block_fixture_path.name}",
             f"- NBT fixture: {result.nbt_fixture_path.name}",
             f"- mcfunction fixture: {result.mcfunction_fixture_path.name}",
+            f"- datapack fixture: {result.datapack_fixture_dir.name}",
             f"- transition plan: {result.transition_plan_path.name}",
             f"- transition preview: {result.transition_preview_path.name}",
             f"- route plan: {result.route_plan_path.name}",

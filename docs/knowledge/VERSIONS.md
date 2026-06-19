@@ -79,6 +79,8 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `place-fixture.mcfunction` is the first directly runnable companion for Minecraft `1.21.11`. It expresses fixture cuboids as striped `fill` commands, which is primitive but genuinely usable inside the game before full structure serialization exists.
 
+`datapack-fixture/` is the first package-shaped companion for Minecraft `1.21.11`. It wraps the mcfunction output in `pack.mcmeta` and a namespaced function path, which is closer to a real game-facing workflow than raw loose files.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?

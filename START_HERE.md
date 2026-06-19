@@ -20,6 +20,7 @@ Current state:
 - writes a first Minecraft 1.21.11 block fixture from neutral planning artifacts;
 - writes a first Minecraft 1.21.11 NBT-oriented fixture from neutral planning artifacts;
 - writes a first Minecraft 1.21.11 mcfunction fixture from neutral planning artifacts;
+- writes a first Minecraft 1.21.11 datapack fixture package from neutral planning artifacts;
 - writes first deterministic route artifacts from those anchors;
 - writes first deterministic placement artifacts from anchors and routes;
 - writes first deterministic road artifacts from routes and placement sites;
@@ -126,6 +127,6 @@ After a verified change, update docs/tasks and commit/push to main.
 
 1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
 2. Move from simple shape hints to multi-region composition rules between anchors.
-3. Turn the first mcfunction/NBT fixtures into the first tiny Minecraft-consumable structure workflow.
+3. Turn the datapack fixture into the first tiny Minecraft-consumable structure workflow.
 4. Deepen transition/composition rules between neighboring regions instead of only seam bands.
 5. Only after that, begin larger exporter experiments.

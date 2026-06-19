@@ -71,6 +71,7 @@ def write_project_location(
             "blockFixture": str(draft_result.block_fixture_path.relative_to(output_dir)),
             "nbtFixture": str(draft_result.nbt_fixture_path.relative_to(output_dir)),
             "mcfunctionFixture": str(draft_result.mcfunction_fixture_path.relative_to(output_dir)),
+            "datapackFixture": str(draft_result.datapack_fixture_dir.relative_to(output_dir)),
             "transitionPlan": str(draft_result.transition_plan_path.relative_to(output_dir)),
             "transitionPreview": str(draft_result.transition_preview_path.relative_to(output_dir)),
             "routePlan": str(draft_result.route_plan_path.relative_to(output_dir)),

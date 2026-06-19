@@ -70,6 +70,8 @@ The next safe step is a binary `block-fixture.nbt` artifact that round-trips thr
 
 The next user-meaningful export step is an executable `place-fixture.mcfunction`. It gives the pipeline a real Minecraft command artifact before the project commits to full schematic or world formats.
 
+The next practical wrapper is a `datapack-fixture/` folder with `pack.mcmeta` and a packaged function path. This keeps the workflow inspectable while moving one step closer to something a tester can drop into a world.
+
 On top of that, a placement plan can promote anchor roles and route junctions into named neutral sites such as entry plazas, dock edges, mystery clusters, overlooks, and route junctions before any Minecraft-specific exporter starts.
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.

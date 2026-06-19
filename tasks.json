@@ -234,6 +234,17 @@
       ]
     },
     {
+      "id": "TF-027",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first Minecraft 1.21.11 datapack fixture package",
+      "acceptance": [
+        "project-draft writes a datapack fixture folder with pack.mcmeta and a function file",
+        "project-location carries the datapack fixture in its bridge manifest",
+        "tests cover pack metadata and packaged function output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
