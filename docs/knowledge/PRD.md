@@ -74,7 +74,7 @@ That command flow also needs a reversible companion. A paired `clear-fixture.mcf
 
 That same flow also needs an operator guide. A small `fixture-commands.txt` artifact keeps the exact place and clear commands visible without asking a tester to inspect mcfunction or datapack internals.
 
-Before those commands are executed in a world, the tester also needs a rough safety snapshot. `fixture-summary.json` should report approximate footprint and command counts so the first in-game pass is not blind.
+Before those commands are executed in a world, the tester also needs a rough safety snapshot. `fixture-summary.json` should report approximate footprint and command counts, and warn when a first in-game pass is likely too large for casual testing.
 
 The next practical wrapper is a `datapack-fixture/` folder with `pack.mcmeta` and a packaged function path. This keeps the workflow inspectable while moving one step closer to something a tester can drop into a world.
 

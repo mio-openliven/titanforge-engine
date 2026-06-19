@@ -15,6 +15,9 @@ from titanforge.exporters.minecraft_12111_mcfunction import count_mcfunction_fil
 
 FIXTURE_SUMMARY_SCHEMA = "titanforge.minecraft-fixture-summary"
 FIXTURE_SUMMARY_VERSION = 1
+MAX_SAFE_FILL_COMMANDS = 256
+MAX_SAFE_FOOTPRINT_SIDE = 1024
+MAX_SAFE_CUBOIDS = 64
 
 
 def write_minecraft_fixture_summary(
@@ -34,6 +37,7 @@ def write_minecraft_fixture_summary(
 def build_minecraft_fixture_summary_dict(fixture: MinecraftBlockFixture) -> dict[str, Any]:
     fill_command_count = count_mcfunction_fill_commands(fixture)
     bounds = _build_bounds(fixture)
+    warnings = _build_warnings(fixture, bounds, fill_command_count)
     return {
         "schema": FIXTURE_SUMMARY_SCHEMA,
         "version": FIXTURE_SUMMARY_VERSION,
@@ -52,6 +56,7 @@ def build_minecraft_fixture_summary_dict(fixture: MinecraftBlockFixture) -> dict
             "clearFillCommands": fill_command_count,
         },
         "bounds": bounds,
+        "warnings": warnings,
         "notes": list(fixture.notes),
     }
 
@@ -77,3 +82,35 @@ def _build_bounds(fixture: MinecraftBlockFixture) -> dict[str, int] | None:
         "height": max_y - min_y + 1,
         "length": max_z - min_z + 1,
     }
+
+
+def _build_warnings(
+    fixture: MinecraftBlockFixture,
+    bounds: dict[str, int] | None,
+    fill_command_count: int,
+) -> list[str]:
+    warnings: list[str] = []
+
+    if not fixture.supported:
+        warnings.append(
+            f"No supported 1.21.11 fixture export is available for requested target {fixture.target_version}."
+        )
+        return warnings
+
+    if len(fixture.cuboids) > MAX_SAFE_CUBOIDS:
+        warnings.append(
+            f"Fixture complexity is high: {len(fixture.cuboids)} cuboids exceed the starter comfort limit of {MAX_SAFE_CUBOIDS}."
+        )
+
+    if fill_command_count > MAX_SAFE_FILL_COMMANDS:
+        warnings.append(
+            f"Fixture command load is high: {fill_command_count} fill commands exceed the starter comfort limit of {MAX_SAFE_FILL_COMMANDS}."
+        )
+
+    if bounds is not None and max(bounds["width"], bounds["length"]) > MAX_SAFE_FOOTPRINT_SIDE:
+        warnings.append(
+            "Fixture footprint is large: at least one side exceeds "
+            f"{MAX_SAFE_FOOTPRINT_SIDE} blocks. Test in a disposable world first."
+        )
+
+    return warnings

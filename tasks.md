@@ -47,6 +47,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-029` `P1` Add clear-fixture companion commands for 1.21.11.
 - `TF-030` `P1` Add first fixture command guide artifacts for 1.21.11.
 - `TF-031` `P1` Add first fixture summary artifact for 1.21.11.
+- `TF-032` `P1` Add fixture safety warnings for 1.21.11.
 
 ## Protocol
 

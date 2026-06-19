@@ -291,6 +291,17 @@
       ]
     },
     {
+      "id": "TF-032",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add fixture safety warnings for 1.21.11",
+      "acceptance": [
+        "fixture-summary.json includes human-readable warnings for unsupported or overly large fixture runs",
+        "small supported fixture summaries stay quiet",
+        "tests cover a warned large fixture case"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
