@@ -46,6 +46,8 @@ The next exporter-facing artifact can stay inspectable too: `export-request.json
 
 On top of that, `chunk-plan.json` can translate those export requests into compact 16x16 chunk coverages. This stays much smaller than enumerating every touched chunk while still matching the coordinate system a future Minecraft writer will need.
 
+The next exporter fixture can stay explicit too: `block-fixture.json`. It turns export requests into simple block cuboids with starter Y levels, so the team can test fixture/NBT ideas without pretending terrain-aware world writing already exists.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.

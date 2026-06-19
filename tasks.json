@@ -201,6 +201,17 @@
       ]
     },
     {
+      "id": "TF-024",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first Minecraft 1.21.11 block fixture artifact",
+      "acceptance": [
+        "project-draft writes block-fixture.json from the 1.21.11 export request",
+        "project-location carries the block fixture in its bridge manifest",
+        "tests cover supported 1.21.11 output and unsupported target fallback"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

@@ -73,6 +73,8 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `chunk-plan.json` is the next companion artifact for Minecraft `1.21.11`. It projects export requests onto 16x16 chunk space using compact coverages, so large worlds stay inspectable without materializing millions of chunk entries too early.
 
+`block-fixture.json` is the next fixture-oriented companion for Minecraft `1.21.11`. It turns those requests into simple cuboid block operations with starter Y levels, which is closer to real output while still stopping short of full schematic or NBT serialization.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?
