@@ -10,7 +10,7 @@ Current state:
 
 - works as a Python CLI prototype;
 - can build a first project draft pack from `titanforge.toml`;
-- creates PNG masks, previews, layout JSON, heightmap previews, reports, and location-pack folders;
+- creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
 - has a resilient `night-run` command for unattended batch generation;
 - does not yet export playable Minecraft worlds or schematics.
 
@@ -108,8 +108,8 @@ After a verified change, update docs/tasks and commit/push to main.
 
 ## Current Best Next Steps
 
-1. Add terrain color preview.
-2. Add coastline smoothing preview.
-3. Bridge `draft-mask.png` into the location-pack pipeline.
-4. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+1. Add coastline smoothing preview.
+2. Bridge `draft-mask.png` into the location-pack pipeline.
+3. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+4. Add the first neutral placement pass for roads/settlements.
 5. Only after that, begin larger exporter experiments.

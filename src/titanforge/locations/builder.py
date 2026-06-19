@@ -11,6 +11,7 @@ from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.demo import generate_demo_mask
 from titanforge.masks.png import read_png
 from titanforge.preview.mask_preview import render_mask_preview
+from titanforge.terrain.color_preview import render_terrain_color_preview
 from titanforge.terrain.heightmap_preview import render_heightmap_preview
 from titanforge.validation.layout_report import write_layout_validation_report
 
@@ -22,6 +23,7 @@ class LocationBuildResult:
     mask_preview_path: Path
     cleanup_preview_path: Path
     layout_path: Path
+    terrain_color_preview_path: Path
     heightmap_path: Path
     heightmap_source_path: Path
     report_path: Path
@@ -49,6 +51,7 @@ def build_location_pack(
     mask_preview_path = output_dir / "mask-preview.png"
     cleanup_preview_path = output_dir / "mask-cleanup-preview.png"
     layout_path = output_dir / "layout.json"
+    terrain_color_preview_path = output_dir / "terrain-color-preview.png"
     heightmap_path = output_dir / "heightmap-preview.png"
     report_path = output_dir / "report.txt"
     review_page_path = output_dir / "review.html"
@@ -68,6 +71,12 @@ def build_location_pack(
     render_mask_cleanup_preview(mask_path, cleanup_preview_path, image=mask_image)
     write_mask_layout(mask_path, layout_path, image=mask_image)
     heightmap_source_path = cleanup_preview_path if use_cleanup_for_heightmap else mask_path
+    render_terrain_color_preview(
+        layout_path,
+        terrain_color_preview_path,
+        mask_override_path=heightmap_source_path if use_cleanup_for_heightmap else None,
+        mask_image=None if use_cleanup_for_heightmap else mask_image,
+    )
     render_heightmap_preview(
         layout_path,
         heightmap_path,
@@ -86,6 +95,7 @@ def build_location_pack(
             "maskPreview": mask_preview_path.name,
             "maskCleanupPreview": cleanup_preview_path.name,
             "layout": layout_path.name,
+            "terrainColorPreview": terrain_color_preview_path.name,
             "heightmapPreview": heightmap_path.name,
             "report": report_path.name,
             "reviewPage": review_page_path.name,
@@ -117,6 +127,7 @@ def build_location_pack(
         mask_preview_path=mask_preview_path,
         cleanup_preview_path=cleanup_preview_path,
         layout_path=layout_path,
+        terrain_color_preview_path=terrain_color_preview_path,
         heightmap_path=heightmap_path,
         heightmap_source_path=heightmap_source_path,
         report_path=report_path,
@@ -135,6 +146,7 @@ def format_location_build_result(result: LocationBuildResult) -> str:
             f"- preview: {result.mask_preview_path.name}",
             f"- cleanup preview: {result.cleanup_preview_path.name}",
             f"- layout: {result.layout_path.name}",
+            f"- terrain color preview: {result.terrain_color_preview_path.name}",
             f"- heightmap: {result.heightmap_path.name}",
             f"- heightmap source: {result.heightmap_source_path.name}",
             f"- report: {result.report_path.name}",

@@ -2,7 +2,7 @@
 
 TitanForge Engine is an early Python toolkit for turning simple map inputs into inspectable Minecraft map-planning artifacts.
 
-It currently works with PNG masks and produces preview images, layout JSON, heightmap previews, validation reports, and small location-pack folders. It does **not** yet export playable Minecraft worlds or schematics.
+It currently works with PNG masks and produces preview images, terrain color previews, layout JSON, heightmap previews, validation reports, and small location-pack folders. It does **not** yet export playable Minecraft worlds or schematics.
 
 For a short handoff guide, see [START_HERE.md](START_HERE.md).
 
@@ -20,6 +20,7 @@ Working now:
 - demo mask generation;
 - mask analysis and cleanup previews;
 - mask-to-layout JSON;
+- terrain color previews;
 - grayscale heightmap previews;
 - validation reports;
 - simple human-readable location summaries inside reports;
@@ -49,6 +50,7 @@ python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tin
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
+python -m titanforge terrain-color-preview out\demo-location\layout.json out\demo-location\terrain-color-preview.png --mask out\demo-location\mask-cleanup-preview.png
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
@@ -62,13 +64,14 @@ mask.png
 mask-preview.png
 mask-cleanup-preview.png
 layout.json
+terrain-color-preview.png
 heightmap-preview.png
 report.txt
 review.html
 manifest.json
 ```
 
-Open `review.html` in a browser to inspect the first local TitanForge review page for that pack.
+Open `review.html` in a browser to inspect the first local TitanForge review page for that pack. It now includes a readable terrain color draft before the grayscale heightmap.
 
 The `project-draft` command creates:
 

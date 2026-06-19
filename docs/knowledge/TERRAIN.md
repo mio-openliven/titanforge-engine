@@ -27,6 +27,23 @@ python -m titanforge mask-layout out\demo-mask.png out\demo-layout.json
 python -m titanforge heightmap-preview out\demo-layout.json out\demo-heightmap-preview.png
 ```
 
+## First Terrain Color Preview
+
+Before reading grayscale heights, TitanForge can render a color terrain draft:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge terrain-color-preview out\layout.json out\terrain-color-preview.png
+```
+
+To render it from a cleaned mask while preserving the original layout:
+
+```powershell
+python -m titanforge terrain-color-preview out\layout.json out\terrain-color-cleaned-preview.png --mask out\mask-cleanup-preview.png
+```
+
+This preview is still neutral and diagnostic. It exists to make the map readable to a human before Minecraft export.
+
 ## Initial Height Rules
 
 These are diagnostic grayscale values, not final Minecraft Y values.
@@ -49,7 +66,7 @@ Unknown colors are rendered as `#ff00ff` so bad masks remain visible.
 
 Keep this pass simple. It exists to verify map intent before adding smoothing, coastline cleanup, erosion-style filters, water depth, or Minecraft exporters.
 
-For normal use, prefer `build-location`; it runs the mask, layout, heightmap, and report steps together. Add `--use-cleanup-for-heightmap` when tiny water/land noise should be cleaned before terrain preview.
+For normal use, prefer `build-location`; it runs the mask, layout, terrain-color, heightmap, and report steps together. Add `--use-cleanup-for-heightmap` when tiny water/land noise should be cleaned before terrain preview.
 
 ## Neutral Terrain Grid
 

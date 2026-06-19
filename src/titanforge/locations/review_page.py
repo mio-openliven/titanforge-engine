@@ -262,6 +262,11 @@ def write_location_review_page(
         <p>Tiny water and land noise removed for inspection.</p>
       </article>
       <article class="card">
+        <h2>Terrain Color Preview</h2>
+        <img src="terrain-color-preview.png" alt="Terrain color preview">
+        <p>First readable terrain surface draft before block-level export.</p>
+      </article>
+      <article class="card">
         <h2>Heightmap Preview</h2>
         <img src="heightmap-preview.png" alt="Heightmap preview">
         <p>First grayscale terrain draft based on the current terrain source.</p>
@@ -276,6 +281,7 @@ def write_location_review_page(
             <li><a href="mask.png">mask.png</a></li>
             <li><a href="mask-preview.png">mask-preview.png</a></li>
             <li><a href="mask-cleanup-preview.png">mask-cleanup-preview.png</a></li>
+            <li><a href="terrain-color-preview.png">terrain-color-preview.png</a></li>
           </ul>
         </div>
         <div>

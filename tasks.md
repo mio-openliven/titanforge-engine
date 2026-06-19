@@ -4,7 +4,6 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## To Do
 
-- `TF-002` `P0` Add terrain color preview.
 - `TF-004` `P1` Add coastline smoothing preview.
 
 ## In Progress
@@ -25,6 +24,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-005` `P1` Design first neutral block/terrain model.
 - `TF-009` `P1` Add neutral WorldPlan artifact.
 - `TF-010` `P0` Add project draft pack from world brief.
+- `TF-002` `P0` Add terrain color preview.
 
 ## Protocol
 
