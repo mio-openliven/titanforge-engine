@@ -69,6 +69,17 @@
       ]
     },
     {
+      "id": "TF-012",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add scale-aware draft warnings",
+      "acceptance": [
+        "project-draft manifest includes warnings when raster scale hides detail",
+        "project-location carries the same warnings upward",
+        "tests cover small and large world warning behavior"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

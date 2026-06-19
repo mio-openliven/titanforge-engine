@@ -12,6 +12,7 @@ Current state:
 - can build a first project draft pack from `titanforge.toml`;
 - can bridge `titanforge.toml` directly into a draft plus location pack;
 - creates PNG masks, terrain previews, layout JSON, reports, and location-pack folders;
+- warns when draft scale is too compressed to trust small details;
 - has a resilient `night-run` command for unattended batch generation;
 - does not yet export playable Minecraft worlds or schematics.
 

@@ -31,6 +31,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["artifacts"]["draftDir"], "draft")
         self.assertEqual(manifest["artifacts"]["locationDir"], "location")
+        self.assertEqual(len(manifest["warnings"]), 1)
         self.assertEqual(location_manifest["sourceMode"], "project-draft")
         self.assertEqual(location_manifest["terrain"]["cleanupApplied"], True)
 
@@ -56,3 +57,4 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn("- draft dir: draft", stdout.getvalue())
         self.assertIn("- location dir: location", stdout.getvalue())
         self.assertIn("Blocks per pixel: 2", stdout.getvalue())
+        self.assertIn("Warning:", stdout.getvalue())

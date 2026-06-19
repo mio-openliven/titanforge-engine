@@ -21,6 +21,7 @@ class ProjectLocationResult:
     manifest_path: Path
     draft_result: ProjectDraftResult
     location_result: LocationBuildResult
+    warnings: tuple[str, ...]
 
 
 def write_project_location(
@@ -71,6 +72,7 @@ def write_project_location(
             "cleanupApplied": use_cleanup_for_heightmap,
             "heightmapSource": location_result.heightmap_source_path.name,
         },
+        "warnings": list(draft_result.warnings),
         "validation": {
             "errors": location_result.errors,
             "warnings": location_result.warnings,
@@ -85,6 +87,7 @@ def write_project_location(
         manifest_path=manifest_path,
         draft_result=draft_result,
         location_result=location_result,
+        warnings=draft_result.warnings,
     )
 
 
@@ -98,6 +101,7 @@ def format_project_location_result(result: ProjectLocationResult) -> str:
             f"World size: {result.draft_result.world_width} x {result.draft_result.world_length}",
             f"Draft raster: {result.draft_result.raster_width} x {result.draft_result.raster_length}",
             f"Blocks per pixel: {result.draft_result.blocks_per_pixel}",
+            *[f"Warning: {warning}" for warning in result.warnings],
             f"Validation: {result.location_result.errors} errors, {result.location_result.warnings} warnings",
         ]
     )

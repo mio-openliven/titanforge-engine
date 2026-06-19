@@ -58,6 +58,7 @@ class ProjectDraftResult:
     raster_width: int
     raster_length: int
     blocks_per_pixel: int
+    warnings: tuple[str, ...]
 
 
 def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE) -> ProjectDraftResult:
@@ -80,6 +81,13 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
     raster_length = ceil(config.length / blocks_per_pixel)
+    warnings = get_project_draft_warnings(
+        world_width=config.width,
+        world_length=config.length,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
 
     draft_regions = _build_draft_regions(world_plan, blocks_per_pixel, raster_width, raster_length)
     pixels = _render_draft_mask(draft_regions, raster_width, raster_length)
@@ -107,6 +115,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "worldPlan": world_plan_path.name,
             "draftMask": draft_mask_path.name,
         },
+        "warnings": list(warnings),
         "regions": [
             {
                 "title": region.title,
@@ -141,6 +150,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         raster_width=raster_width,
         raster_length=raster_length,
         blocks_per_pixel=blocks_per_pixel,
+        warnings=warnings,
     )
 
 
@@ -155,8 +165,33 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"World size: {result.world_width} x {result.world_length}",
             f"Draft raster: {result.raster_width} x {result.raster_length}",
             f"Blocks per pixel: {result.blocks_per_pixel}",
+            *[f"Warning: {warning}" for warning in result.warnings],
         ]
     )
+
+
+def get_project_draft_warnings(
+    *,
+    world_width: int,
+    world_length: int,
+    raster_width: int,
+    raster_length: int,
+    blocks_per_pixel: int,
+) -> tuple[str, ...]:
+    warnings: list[str] = []
+    if blocks_per_pixel > 1:
+        warnings.append(
+            f"Draft raster is scaled: 1 pixel represents {blocks_per_pixel} x {blocks_per_pixel} world blocks."
+        )
+    if blocks_per_pixel >= 16:
+        warnings.append(
+            "Large scale compression is active. Coastlines, roads, and small villages may be only approximate in the draft mask."
+        )
+    if min(raster_width, raster_length) < 128:
+        warnings.append(
+            "Draft raster is very small on at least one side. Region shapes may read clearly, but fine detail will not."
+        )
+    return tuple(warnings)
 
 
 def _build_draft_regions(

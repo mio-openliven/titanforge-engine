@@ -27,6 +27,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-002` `P0` Add terrain color preview.
 - `TF-004` `P1` Add coastline smoothing preview.
 - `TF-011` `P0` Add project-location bridge command.
+- `TF-012` `P1` Add scale-aware draft warnings.
 
 ## Protocol
 

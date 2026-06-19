@@ -37,6 +37,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(manifest["schema"], "titanforge.project-draft")
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["world"]["width"], 512)
+        self.assertEqual(len(manifest["warnings"]), 1)
         zone_ids = {stat.zone.zone_id for stat in analysis.zone_stats}
         self.assertIn("city", zone_ids)
         self.assertIn("water", zone_ids)
@@ -83,6 +84,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(result.raster_length, 750)
         self.assertEqual(image.width, 1000)
         self.assertEqual(image.height, 750)
+        self.assertGreaterEqual(len(result.warnings), 2)
 
     def test_project_draft_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -103,3 +105,4 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Project draft:", stdout.getvalue())
         self.assertIn("Blocks per pixel: 2", stdout.getvalue())
+        self.assertIn("Warning:", stdout.getvalue())

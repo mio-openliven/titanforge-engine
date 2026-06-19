@@ -50,7 +50,7 @@ review.html
 manifest.json
 ```
 
-The current bridge from story idea to generation is a project draft pack. It keeps the world brief readable, gives regions deterministic spatial bounds through `WorldPlan`, and auto-scales large worlds into a manageable `draft-mask.png` with `blocksPerPixel` metadata.
+The current bridge from story idea to generation is a project draft pack. It keeps the world brief readable, gives regions deterministic spatial bounds through `WorldPlan`, and auto-scales large worlds into a manageable `draft-mask.png` with `blocksPerPixel` metadata and human-readable scale warnings.
 
 The next user-facing bridge is `project-location`: one command from `titanforge.toml` to `draft/` plus `location/`, with a bridge manifest that keeps logical world size and raster scale explicit.
 
