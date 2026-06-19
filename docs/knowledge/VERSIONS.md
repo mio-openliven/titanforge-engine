@@ -67,6 +67,8 @@ Minecraft-version-specific code should live in adapters:
 - biome and palette behavior
 - exporter compatibility
 
+The first concrete adapter artifact is now a `material-profile.json` for Minecraft `1.21.11`. It is intentionally small: it maps neutral regions, transitions, roads, and settlements into starter block palettes. It is not yet a world exporter, but it proves the version layer can stay explicit and testable.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?

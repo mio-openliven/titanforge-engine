@@ -14,6 +14,7 @@ Current state:
 - shapes draft regions more like coast / forest / settlement / ridge instead of only straight strips;
 - writes story anchors into `world-plan.json` for later placement and routing passes;
 - writes first deterministic transition artifacts between neighboring regions;
+- writes a first Minecraft 1.21.11 material profile from neutral planning artifacts;
 - writes first deterministic route artifacts from those anchors;
 - writes first deterministic placement artifacts from anchors and routes;
 - writes first deterministic road artifacts from routes and placement sites;
@@ -120,6 +121,6 @@ After a verified change, update docs/tasks and commit/push to main.
 
 1. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
 2. Move from simple shape hints to multi-region composition rules between anchors.
-3. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+3. Turn the new 1.21.11 material profile into the first actual export request/fixture format.
 4. Deepen transition/composition rules between neighboring regions instead of only seam bands.
 5. Only after that, begin larger exporter experiments.

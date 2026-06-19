@@ -65,6 +65,7 @@ def write_project_location(
             "draftDir": draft_dir.name,
             "locationDir": location_dir.name,
             "draftMask": str(draft_result.draft_mask_path.relative_to(output_dir)),
+            "materialProfile": str(draft_result.material_profile_path.relative_to(output_dir)),
             "transitionPlan": str(draft_result.transition_plan_path.relative_to(output_dir)),
             "transitionPreview": str(draft_result.transition_preview_path.relative_to(output_dir)),
             "routePlan": str(draft_result.route_plan_path.relative_to(output_dir)),

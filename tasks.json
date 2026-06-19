@@ -168,6 +168,17 @@
       ]
     },
     {
+      "id": "TF-021",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first Minecraft 1.21.11 material profile adapter",
+      "acceptance": [
+        "project-draft writes a first material-profile.json for target 1.21.11 from neutral planning artifacts",
+        "project-location carries the material profile in its bridge manifest",
+        "tests cover supported 1.21.11 output and unsupported target fallback"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
