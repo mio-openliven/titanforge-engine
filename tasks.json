@@ -37,7 +37,7 @@
     },
     {
       "id": "TF-004",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "title": "Add coastline smoothing preview",
       "acceptance": [

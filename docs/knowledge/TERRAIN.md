@@ -44,6 +44,17 @@ python -m titanforge terrain-color-preview out\layout.json out\terrain-color-cle
 
 This preview is still neutral and diagnostic. It exists to make the map readable to a human before Minecraft export.
 
+## Coastline Smoothing Preview
+
+TitanForge can also render a separate coastline smoothing preview:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge coastline-smoothing-preview path\to\mask.png out\coastline-smoothing-preview.png
+```
+
+This pass is deliberately conservative. It smooths obvious stair-step coast edges for review, but it does not rewrite the source mask or silently replace later layout artifacts.
+
 ## Initial Height Rules
 
 These are diagnostic grayscale values, not final Minecraft Y values.

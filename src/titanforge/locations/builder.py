@@ -7,6 +7,7 @@ import shutil
 
 from titanforge.layouts.mask_layout import write_mask_layout
 from titanforge.locations.review_page import write_location_review_page
+from titanforge.masks.coastline import render_coastline_smoothing_preview
 from titanforge.masks.cleanup import render_mask_cleanup_preview
 from titanforge.masks.demo import generate_demo_mask
 from titanforge.masks.png import read_png
@@ -22,6 +23,7 @@ class LocationBuildResult:
     mask_path: Path
     mask_preview_path: Path
     cleanup_preview_path: Path
+    coastline_smoothing_preview_path: Path
     layout_path: Path
     terrain_color_preview_path: Path
     heightmap_path: Path
@@ -50,6 +52,7 @@ def build_location_pack(
     mask_path = output_dir / "mask.png"
     mask_preview_path = output_dir / "mask-preview.png"
     cleanup_preview_path = output_dir / "mask-cleanup-preview.png"
+    coastline_smoothing_preview_path = output_dir / "coastline-smoothing-preview.png"
     layout_path = output_dir / "layout.json"
     terrain_color_preview_path = output_dir / "terrain-color-preview.png"
     heightmap_path = output_dir / "heightmap-preview.png"
@@ -69,6 +72,7 @@ def build_location_pack(
     mask_image = read_png(mask_path)
     render_mask_preview(mask_path, mask_preview_path, image=mask_image)
     render_mask_cleanup_preview(mask_path, cleanup_preview_path, image=mask_image)
+    render_coastline_smoothing_preview(mask_path, coastline_smoothing_preview_path, image=mask_image)
     write_mask_layout(mask_path, layout_path, image=mask_image)
     heightmap_source_path = cleanup_preview_path if use_cleanup_for_heightmap else mask_path
     render_terrain_color_preview(
@@ -94,6 +98,7 @@ def build_location_pack(
             "mask": mask_path.name,
             "maskPreview": mask_preview_path.name,
             "maskCleanupPreview": cleanup_preview_path.name,
+            "coastlineSmoothingPreview": coastline_smoothing_preview_path.name,
             "layout": layout_path.name,
             "terrainColorPreview": terrain_color_preview_path.name,
             "heightmapPreview": heightmap_path.name,
@@ -126,6 +131,7 @@ def build_location_pack(
         mask_path=mask_path,
         mask_preview_path=mask_preview_path,
         cleanup_preview_path=cleanup_preview_path,
+        coastline_smoothing_preview_path=coastline_smoothing_preview_path,
         layout_path=layout_path,
         terrain_color_preview_path=terrain_color_preview_path,
         heightmap_path=heightmap_path,
@@ -145,6 +151,7 @@ def format_location_build_result(result: LocationBuildResult) -> str:
             f"- mask: {result.mask_path.name}",
             f"- preview: {result.mask_preview_path.name}",
             f"- cleanup preview: {result.cleanup_preview_path.name}",
+            f"- coastline smoothing preview: {result.coastline_smoothing_preview_path.name}",
             f"- layout: {result.layout_path.name}",
             f"- terrain color preview: {result.terrain_color_preview_path.name}",
             f"- heightmap: {result.heightmap_path.name}",

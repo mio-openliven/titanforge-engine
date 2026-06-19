@@ -18,7 +18,7 @@ Working now:
 - inventory scans for source/donor folders;
 - PNG mask read/write;
 - demo mask generation;
-- mask analysis and cleanup previews;
+- mask analysis, cleanup previews, and coastline smoothing previews;
 - mask-to-layout JSON;
 - terrain color previews;
 - grayscale heightmap previews;
@@ -50,6 +50,7 @@ python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tin
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
+python -m titanforge coastline-smoothing-preview out\demo-location\mask.png out\demo-location\coastline-smoothing-preview.png
 python -m titanforge terrain-color-preview out\demo-location\layout.json out\demo-location\terrain-color-preview.png --mask out\demo-location\mask-cleanup-preview.png
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
@@ -63,6 +64,7 @@ The `build-location` command creates:
 mask.png
 mask-preview.png
 mask-cleanup-preview.png
+coastline-smoothing-preview.png
 layout.json
 terrain-color-preview.png
 heightmap-preview.png
@@ -71,7 +73,7 @@ review.html
 manifest.json
 ```
 
-Open `review.html` in a browser to inspect the first local TitanForge review page for that pack. It now includes a readable terrain color draft before the grayscale heightmap.
+Open `review.html` in a browser to inspect the first local TitanForge review page for that pack. It now includes coastline smoothing and terrain color drafts before the grayscale heightmap.
 
 The `project-draft` command creates:
 

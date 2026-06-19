@@ -14,6 +14,7 @@ from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.locations.builder import build_location_pack, format_location_build_result
 from titanforge.masks.analyzer import analyze_png_mask, format_mask_analysis
+from titanforge.masks.coastline import format_coastline_smoothing_result, render_coastline_smoothing_preview
 from titanforge.masks.cleanup import format_mask_cleanup_result, render_mask_cleanup_preview
 from titanforge.masks.png import PngError
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
@@ -97,6 +98,13 @@ def build_parser() -> argparse.ArgumentParser:
     mask_cleanup_parser.add_argument("input", type=Path, help="PNG mask to clean up.")
     mask_cleanup_parser.add_argument("output", type=Path, help="Cleanup preview PNG output path.")
     mask_cleanup_parser.add_argument("--threshold", type=int, default=5, help="Neighbor threshold from 1 to 8.")
+
+    coastline_smoothing_parser = subparsers.add_parser(
+        "coastline-smoothing-preview",
+        help="Render a coastline smoothing preview that softens stair-step coast edges.",
+    )
+    coastline_smoothing_parser.add_argument("input", type=Path, help="PNG mask to smooth.")
+    coastline_smoothing_parser.add_argument("output", type=Path, help="Coastline smoothing preview PNG output path.")
 
     mask_layout_parser = subparsers.add_parser(
         "mask-layout",
@@ -252,6 +260,11 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             return 2
         result = render_mask_cleanup_preview(args.input, args.output, threshold=args.threshold)
         print(format_mask_cleanup_result(result))
+        return 0
+
+    if args.command == "coastline-smoothing-preview":
+        result = render_coastline_smoothing_preview(args.input, args.output)
+        print(format_coastline_smoothing_result(result))
         return 0
 
     if args.command == "mask-layout":

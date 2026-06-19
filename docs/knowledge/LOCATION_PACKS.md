@@ -9,6 +9,7 @@ location/
   mask.png
   mask-preview.png
   mask-cleanup-preview.png
+  coastline-smoothing-preview.png
   layout.json
   terrain-color-preview.png
   heightmap-preview.png
@@ -78,11 +79,13 @@ Current warnings include:
 
 `mask-cleanup-preview.png` is included to reveal tiny water/land noise before terrain generation.
 
+`coastline-smoothing-preview.png` is a separate diagnostic pass that softens stair-step coast edges. It is meant for human review, not as a silent replacement for the source mask.
+
 `terrain-color-preview.png` is the first readable terrain surface draft. It lets a human distinguish water, beach, forest, city, roads, ports, land, and mountains before relying on grayscale heightmaps.
 
 `mask-cleanup-preview.png` can optionally be used for `terrain-color-preview.png` and `heightmap-preview.png`, but it does not replace `mask.png`.
 
-`review.html` is a static local review page for the pack. Open it in a browser to inspect the four preview images, validation status, raw file links, and the full text report without building a GUI or starting a server.
+`review.html` is a static local review page for the pack. Open it in a browser to inspect the five preview images, validation status, raw file links, and the full text report without building a GUI or starting a server.
 
 ## Product Meaning
 
@@ -91,6 +94,7 @@ This is the first useful "touch it" version of TitanForge:
 ```text
 PNG mask or generated demo
 -> visible mask preview
+-> coastline smoothing preview
 -> terrain color preview
 -> neutral layout JSON
 -> heightmap preview
