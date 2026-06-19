@@ -13,6 +13,7 @@ This repository is an MVP-stage tool, not a finished map generator.
 Working now:
 
 - project config loading;
+- human-readable world brief review pages from project config;
 - inventory scans for source/donor folders;
 - PNG mask read/write;
 - demo mask generation;
@@ -42,9 +43,12 @@ Use Python 3.11 or newer.
 ```powershell
 $env:PYTHONPATH = "src"
 python -m titanforge info
+python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 ```
+
+Open `out\project-review.html` in a browser to review the world brief in plain language before dealing with masks and preview artifacts.
 
 The `build-location` command creates:
 

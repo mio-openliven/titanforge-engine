@@ -58,6 +58,17 @@
       ]
     },
     {
+      "id": "TF-008",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add project world-brief review page",
+      "acceptance": [
+        "plan can write a static HTML world brief page from titanforge.toml",
+        "page shows world size, premise, player feeling, and story regions",
+        "tests cover config loading and HTML review page generation"
+      ]
+    },
+    {
       "id": "TF-007",
       "status": "done",
       "priority": "P1",

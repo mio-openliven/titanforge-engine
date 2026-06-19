@@ -6,6 +6,50 @@ target_version = "1.21.11"
 width = 512
 length = 512
 
+[creative]
+premise = "A lost valley where the player moves from a safe farming edge toward older and stranger ruins in the mountains."
+player_experience = "The player should feel curious, slightly lost, and pulled deeper into the valley story."
+
+[[regions]]
+title = "Harbor Town"
+kind = "city"
+story_role = "safe arrival and trade hub"
+mood = "busy, human, believable"
+coverage_hint = "15%"
+notes = "The place where players first feel grounded before the world opens wider."
+
+[[regions]]
+title = "Salt Coast"
+kind = "sea"
+story_role = "travel border and weather mood source"
+mood = "open, windy, cinematic"
+coverage_hint = "25%"
+notes = "Supports coast shots, boats, fog, and distance."
+
+[[regions]]
+title = "Old Pine Forest"
+kind = "forest"
+story_role = "mystery buffer between civilization and danger"
+mood = "quiet, dense, unsettling"
+coverage_hint = "30%"
+notes = "Good place for getting lost and hiding small story clues."
+
+[[regions]]
+title = "Broken Ridge"
+kind = "mountains"
+story_role = "late exploration and reveal zone"
+mood = "cold, ancient, exposed"
+coverage_hint = "20%"
+notes = "Contains ruins, views, and the strongest sense of forgotten history."
+
+[[regions]]
+title = "River Village"
+kind = "village"
+story_role = "human story anchor away from the main city"
+mood = "fragile, warm, isolated"
+coverage_hint = "10%"
+notes = "A smaller place that helps the world feel lived in rather than staged."
+
 [pipeline]
 stages = [
     "load_masks",

@@ -44,6 +44,7 @@ manifest.json
 ## Must Have
 
 - CLI workflow.
+- Human-readable planning surface before raw artifact overload.
 - Inspectable intermediate files.
 - Tests for each pass.
 - Git-backed small commits.

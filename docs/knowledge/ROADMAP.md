@@ -60,3 +60,4 @@
 - Batch generation.
 - Larger cinematic map examples.
 - Human-friendly editor only after CLI artifacts and previews are stable.
+- Before a full editor, prefer static human-readable planning/review pages generated from project config and output packs.

@@ -22,6 +22,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-003` `P0` Add location summary report for non-technical review.
 - `TF-006` `P0` Add resilient night-run command and new-PC handoff docs.
 - `TF-007` `P1` Add static location review page.
+- `TF-008` `P1` Add project world-brief review page.
 
 ## Protocol
 
