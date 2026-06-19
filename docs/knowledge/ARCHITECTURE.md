@@ -28,6 +28,8 @@ Each stage should receive explicit inputs and produce explicit outputs. Intermed
 
 `WorldPlan` should become the first spatial contract between scenario-writer intent and terrain/export logic. It should hold world size, region bounds, story roles, and future placement anchors before Minecraft-specific adapters enter the picture.
 
+`project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
+
 ## Suggested Early Modules
 
 - `core`: project loading, paths, logging, shared types.
@@ -73,6 +75,19 @@ manifest.json
 ```
 
 This is intentionally not a Minecraft world yet. It gives the user something inspectable while keeping exporter work behind later adapters.
+
+## First Project Draft Pack
+
+The first scenario-writer output is a project draft pack:
+
+```text
+review.html
+world-plan.json
+draft-mask.png
+draft-manifest.json
+```
+
+This pack sits one step earlier than a location pack. It exists so a non-technical user can define world size, premise, and regions in `titanforge.toml`, then immediately inspect a first spatial draft before touching raw PNG work.
 
 ## Design Bias
 

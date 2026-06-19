@@ -9,6 +9,7 @@ TitanForge Engine is an external toolkit for generating cinematic Minecraft map/
 Current state:
 
 - works as a Python CLI prototype;
+- can build a first project draft pack from `titanforge.toml`;
 - creates PNG masks, previews, layout JSON, heightmap previews, reports, and location-pack folders;
 - has a resilient `night-run` command for unattended batch generation;
 - does not yet export playable Minecraft worlds or schematics.
@@ -31,6 +32,13 @@ Windows note:
 - run `unittest` and `compileall` sequentially, not in parallel, or Windows may throw false `__pycache__` permission errors.
 
 If tests pass, run a small smoke:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge project-draft examples\tiny_project\titanforge.toml previews\tiny-project-draft --max-draft-side 256
+```
+
+Then the current location-pack smoke:
 
 ```powershell
 $env:PYTHONPATH='src'
@@ -101,7 +109,7 @@ After a verified change, update docs/tasks and commit/push to main.
 ## Current Best Next Steps
 
 1. Add terrain color preview.
-2. Add simple human-readable location summary.
-3. Add coastline smoothing preview.
-4. Design the first neutral block/terrain model.
-5. Only after that, begin schematic/world export experiments.
+2. Add coastline smoothing preview.
+3. Bridge `draft-mask.png` into the location-pack pipeline.
+4. Design the first Minecraft 1.21.11 export adapter from neutral artifacts.
+5. Only after that, begin larger exporter experiments.

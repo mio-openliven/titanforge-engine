@@ -86,3 +86,11 @@ It does not modify the source mask or feed cleaned pixels into terrain yet. This
 `heightmap-preview` can now render from an explicit mask override, and `build-location --use-cleanup-for-heightmap` uses `mask-cleanup-preview.png` as the heightmap source.
 
 The original mask remains the source of `layout.json` and `report.txt`. This keeps input problems visible while allowing cleaner terrain previews.
+
+## 2026-06-19: Project Draft Scaling
+
+`project-draft` is the first scenario-writer entry point from `titanforge.toml`.
+
+It writes a review page, `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
+
+Large worlds should not force giant block-accurate PNG masks this early. The draft mask may be downscaled to a manageable raster size, and the manifest must record `blocksPerPixel` so logical world size remains explicit.

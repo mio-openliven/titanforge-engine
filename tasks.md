@@ -24,6 +24,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-008` `P1` Add project world-brief review page.
 - `TF-005` `P1` Design first neutral block/terrain model.
 - `TF-009` `P1` Add neutral WorldPlan artifact.
+- `TF-010` `P0` Add project draft pack from world brief.
 
 ## Protocol
 

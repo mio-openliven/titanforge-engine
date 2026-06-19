@@ -1,0 +1,222 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+from math import ceil
+from pathlib import Path
+import re
+
+from titanforge.core.project import ProjectConfig
+from titanforge.core.project_review import write_project_review_page
+from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
+from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
+from titanforge.masks.png import write_rgba_png
+
+
+PROJECT_DRAFT_SCHEMA = "titanforge.project-draft"
+PROJECT_DRAFT_VERSION = 1
+DEFAULT_MAX_DRAFT_SIDE = 1024
+MIN_DRAFT_SIDE = 64
+MAX_DRAFT_SIDE = 4096
+
+_ZONE_KEYWORDS = (
+    ("port", ("port", "harbor", "dock")),
+    ("mountain", ("mountain", "mountains", "ridge", "peak", "cliff", "highland")),
+    ("forest", ("forest", "woods", "pine", "jungle", "grove")),
+    ("road", ("road", "path", "bridge", "route")),
+    ("city", ("city", "town", "village", "settlement", "ruins", "fort", "castle")),
+    ("beach", ("beach", "dune", "sand")),
+    ("water", ("sea", "ocean", "water", "bay", "coast", "shore", "lake", "river")),
+    ("land", ("land", "field", "farm", "plains", "meadow", "valley")),
+)
+
+
+@dataclass(frozen=True)
+class DraftRegion:
+    title: str
+    zone_id: str
+    color: str
+    x: int
+    z: int
+    width: int
+    length: int
+    raster_x: int
+    raster_z: int
+    raster_width: int
+    raster_length: int
+
+
+@dataclass(frozen=True)
+class ProjectDraftResult:
+    output_dir: Path
+    review_page_path: Path
+    world_plan_path: Path
+    draft_mask_path: Path
+    manifest_path: Path
+    world_width: int
+    world_length: int
+    raster_width: int
+    raster_length: int
+    blocks_per_pixel: int
+
+
+def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE) -> ProjectDraftResult:
+    if not MIN_DRAFT_SIDE <= max_draft_side <= MAX_DRAFT_SIDE:
+        raise ValueError(
+            f"max_draft_side must be between {MIN_DRAFT_SIDE} and {MAX_DRAFT_SIDE}, got {max_draft_side}."
+        )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    review_page_path = output_dir / "review.html"
+    world_plan_path = output_dir / "world-plan.json"
+    draft_mask_path = output_dir / "draft-mask.png"
+    manifest_path = output_dir / "draft-manifest.json"
+
+    world_plan = build_world_plan(config)
+    write_project_review_page(config, review_page_path)
+    write_world_plan(config, world_plan_path)
+
+    blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
+    raster_width = ceil(config.width / blocks_per_pixel)
+    raster_length = ceil(config.length / blocks_per_pixel)
+
+    draft_regions = _build_draft_regions(world_plan, blocks_per_pixel, raster_width, raster_length)
+    pixels = _render_draft_mask(draft_regions, raster_width, raster_length)
+    write_rgba_png(draft_mask_path, raster_width, raster_length, pixels)
+
+    manifest = {
+        "schema": PROJECT_DRAFT_SCHEMA,
+        "version": PROJECT_DRAFT_VERSION,
+        "project": {
+            "name": config.name,
+            "targetVersion": config.target_version,
+        },
+        "world": {
+            "width": config.width,
+            "length": config.length,
+        },
+        "raster": {
+            "width": raster_width,
+            "length": raster_length,
+            "blocksPerPixel": blocks_per_pixel,
+            "maxDraftSide": max_draft_side,
+        },
+        "artifacts": {
+            "reviewPage": review_page_path.name,
+            "worldPlan": world_plan_path.name,
+            "draftMask": draft_mask_path.name,
+        },
+        "regions": [
+            {
+                "title": region.title,
+                "zone": region.zone_id,
+                "color": region.color,
+                "bounds": {
+                    "x": region.x,
+                    "z": region.z,
+                    "width": region.width,
+                    "length": region.length,
+                },
+                "rasterBounds": {
+                    "x": region.raster_x,
+                    "z": region.raster_z,
+                    "width": region.raster_width,
+                    "length": region.raster_length,
+                },
+            }
+            for region in draft_regions
+        ],
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    return ProjectDraftResult(
+        output_dir=output_dir,
+        review_page_path=review_page_path,
+        world_plan_path=world_plan_path,
+        draft_mask_path=draft_mask_path,
+        manifest_path=manifest_path,
+        world_width=config.width,
+        world_length=config.length,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
+
+
+def format_project_draft_result(result: ProjectDraftResult) -> str:
+    return "\n".join(
+        [
+            f"Project draft: {result.output_dir}",
+            f"- review page: {result.review_page_path.name}",
+            f"- world plan: {result.world_plan_path.name}",
+            f"- draft mask: {result.draft_mask_path.name}",
+            f"- manifest: {result.manifest_path.name}",
+            f"World size: {result.world_width} x {result.world_length}",
+            f"Draft raster: {result.raster_width} x {result.raster_length}",
+            f"Blocks per pixel: {result.blocks_per_pixel}",
+        ]
+    )
+
+
+def _build_draft_regions(
+    world_plan: WorldPlan,
+    blocks_per_pixel: int,
+    raster_width: int,
+    raster_length: int,
+) -> tuple[DraftRegion, ...]:
+    palette_by_zone = {zone.zone_id: zone.color for zone in DEFAULT_ZONE_PALETTE}
+    draft_regions: list[DraftRegion] = []
+
+    for region in world_plan.regions:
+        zone_id = _infer_zone_id(region)
+        color = palette_by_zone[zone_id]
+        raster_x = max(0, region.x // blocks_per_pixel)
+        raster_z = max(0, region.z // blocks_per_pixel)
+        raster_end_x = min(raster_width, ceil((region.x + region.width) / blocks_per_pixel))
+        raster_end_z = min(raster_length, ceil((region.z + region.length) / blocks_per_pixel))
+        draft_regions.append(
+            DraftRegion(
+                title=region.title,
+                zone_id=zone_id,
+                color=color.hex_rgb,
+                x=region.x,
+                z=region.z,
+                width=region.width,
+                length=region.length,
+                raster_x=raster_x,
+                raster_z=raster_z,
+                raster_width=max(1, raster_end_x - raster_x),
+                raster_length=max(1, raster_end_z - raster_z),
+            )
+        )
+
+    return tuple(draft_regions)
+
+
+def _render_draft_mask(
+    draft_regions: tuple[DraftRegion, ...],
+    raster_width: int,
+    raster_length: int,
+) -> tuple[tuple[tuple[int, int, int, int], ...], ...]:
+    zone_colors = {zone.zone_id: zone.color.rgba for zone in DEFAULT_ZONE_PALETTE}
+    base_color = zone_colors["land"]
+    pixels = [[base_color for _x in range(raster_width)] for _z in range(raster_length)]
+
+    for region in draft_regions:
+        color = zone_colors[region.zone_id]
+        for z in range(region.raster_z, min(raster_length, region.raster_z + region.raster_length)):
+            row = pixels[z]
+            for x in range(region.raster_x, min(raster_width, region.raster_x + region.raster_width)):
+                row[x] = color
+
+    return tuple(tuple(row) for row in pixels)
+
+
+def _infer_zone_id(region: WorldPlanRegion) -> str:
+    text = " ".join((region.kind, region.title, region.story_role, region.notes)).lower()
+    tokens = set(re.findall(r"[a-z]+", text))
+    for zone_id, keywords in _ZONE_KEYWORDS:
+        if any(keyword in tokens for keyword in keywords):
+            return zone_id
+    return "land"

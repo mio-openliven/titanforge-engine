@@ -187,7 +187,8 @@ def _format_project_review_html(config: ProjectConfig) -> str:
       <ul>
         <li>Edit <code>titanforge.toml</code> with the world size, premise, and region list.</li>
         <li>Open this page to review whether the world concept already feels like a place with a story.</li>
-        <li>Only after the brief feels right should TitanForge move on to masks, previews, terrain, and later export work.</li>
+        <li>Run <code>py -3.11 -m titanforge project-draft path\to\titanforge.toml out\my-world</code> to get the first draft pack.</li>
+        <li>Large worlds are scaled into a smaller draft mask on purpose, so planning stays readable before later terrain and export passes.</li>
       </ul>
     </section>
 

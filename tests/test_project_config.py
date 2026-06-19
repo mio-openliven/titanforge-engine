@@ -44,6 +44,7 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn("Harbor Town", html)
         self.assertIn("64 .. 32000", html)
         self.assertIn("player moves from a safe farming edge", html)
+        self.assertIn("project-draft", html)
 
     def test_build_world_plan_assigns_region_bounds(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))

@@ -19,7 +19,7 @@ Large Minecraft locations take too long to plan and block out by hand. Existing 
 Create a controlled deterministic pipeline:
 
 ```text
-world brief / world plan / PNG mask / structured layout
+world brief / project draft / world plan / PNG mask / structured layout
 -> previews
 -> validation report
 -> terrain/location artifacts
@@ -27,6 +27,15 @@ world brief / world plan / PNG mask / structured layout
 ```
 
 ## Current MVP
+
+Project draft pack:
+
+```text
+review.html
+world-plan.json
+draft-mask.png
+draft-manifest.json
+```
 
 Location pack:
 
@@ -41,7 +50,7 @@ review.html
 manifest.json
 ```
 
-The next bridge from story idea to generation is a neutral `WorldPlan` artifact that gives regions spatial bounds before exporter work begins.
+The current bridge from story idea to generation is a project draft pack. It keeps the world brief readable, gives regions deterministic spatial bounds through `WorldPlan`, and auto-scales large worlds into a manageable `draft-mask.png` with `blocksPerPixel` metadata.
 
 ## Must Have
 
@@ -64,4 +73,4 @@ The next bridge from story idea to generation is a neutral `WorldPlan` artifact 
 
 ## Success For First Week
 
-The user can run one command, get a useful location pack, inspect previews, read a report, and understand what the engine will generate next.
+The user can run one command, get a useful project draft or location pack, inspect previews, read a report, and understand what the engine will generate next.

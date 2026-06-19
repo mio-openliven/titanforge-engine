@@ -47,6 +47,17 @@
       ]
     },
     {
+      "id": "TF-010",
+      "status": "done",
+      "priority": "P0",
+      "title": "Add project draft pack from world brief",
+      "acceptance": [
+        "CLI writes a project draft folder from titanforge.toml",
+        "draft pack includes review page, world-plan, draft-mask, and manifest",
+        "large worlds auto-scale into a manageable draft mask with blocksPerPixel metadata"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

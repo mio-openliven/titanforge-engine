@@ -6,6 +6,7 @@ import sys
 import tomllib
 
 from titanforge import __version__
+from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_review import write_project_review_page
 from titanforge.core.world_plan import build_world_plan, format_world_plan, write_world_plan
@@ -46,6 +47,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--world-plan",
         type=Path,
         help="Optional JSON output path for a neutral spatial world-plan artifact.",
+    )
+
+    project_draft_parser = subparsers.add_parser(
+        "project-draft",
+        help="Build a first human-friendly draft pack from titanforge.toml.",
+    )
+    project_draft_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
+    project_draft_parser.add_argument("output_dir", type=Path, help="Output folder for the project draft pack.")
+    project_draft_parser.add_argument(
+        "--max-draft-side",
+        type=int,
+        default=1024,
+        help="Maximum raster side for the generated draft mask.",
     )
 
     inventory_parser = subparsers.add_parser(
@@ -191,6 +205,12 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             print(f"World plan: {world_plan_path}")
             print(format_world_plan(build_world_plan(config), world_plan_path))
         print_project_plan(config)
+        return 0
+
+    if args.command == "project-draft":
+        config = load_project_config(args.config)
+        result = write_project_draft(config, args.output_dir, max_draft_side=args.max_draft_side)
+        print(format_project_draft_result(result))
         return 0
 
     if args.command == "inventory":

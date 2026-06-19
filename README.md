@@ -12,6 +12,7 @@ This repository is an MVP-stage tool, not a finished map generator.
 
 Working now:
 
+- project draft packs from `titanforge.toml`;
 - project config loading;
 - human-readable world brief review pages from project config;
 - inventory scans for source/donor folders;
@@ -44,14 +45,15 @@ Use Python 3.11 or newer.
 ```powershell
 $env:PYTHONPATH = "src"
 python -m titanforge info
+python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
-Open `out\project-review.html` in a browser to review the world brief in plain language before dealing with masks and preview artifacts.
-Open `out\world-plan.json` to inspect the first spatial world contract that later terrain and export layers can consume.
+Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
+Large worlds are intentionally scaled into a manageable draft mask. The manifest records `blocksPerPixel` so a 32000-wide world can still be planned without generating a gigantic PNG too early.
 
 The `build-location` command creates:
 
@@ -67,6 +69,17 @@ manifest.json
 ```
 
 Open `review.html` in a browser to inspect the first local TitanForge review page for that pack.
+
+The `project-draft` command creates:
+
+```text
+review.html
+world-plan.json
+draft-mask.png
+draft-manifest.json
+```
+
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks.
 
 ## Tests
 
