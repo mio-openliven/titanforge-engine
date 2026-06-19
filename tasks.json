@@ -124,6 +124,17 @@
       ]
     },
     {
+      "id": "TF-017",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add neutral road plan",
+      "acceptance": [
+        "project-draft writes road-plan.json and road-preview.png from routes and placement sites",
+        "project-location carries road artifacts in its bridge manifest",
+        "tests cover road generation and preview output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

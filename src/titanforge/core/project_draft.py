@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 
 from titanforge.core.placement_plan import build_placement_plan, render_placement_preview, write_placement_plan
+from titanforge.core.road_plan import build_road_plan, render_road_preview, write_road_plan
 from titanforge.core.project import ProjectConfig
 from titanforge.core.route_plan import build_route_plan, render_route_preview, write_route_plan
 from titanforge.core.project_review import write_project_review_page
@@ -58,6 +59,8 @@ class ProjectDraftResult:
     route_preview_path: Path
     placement_plan_path: Path
     placement_preview_path: Path
+    road_plan_path: Path
+    road_preview_path: Path
     draft_mask_path: Path
     manifest_path: Path
     world_width: int
@@ -82,6 +85,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     route_preview_path = output_dir / "route-preview.png"
     placement_plan_path = output_dir / "placement-plan.json"
     placement_preview_path = output_dir / "placement-preview.png"
+    road_plan_path = output_dir / "road-plan.json"
+    road_preview_path = output_dir / "road-preview.png"
     draft_mask_path = output_dir / "draft-mask.png"
     manifest_path = output_dir / "draft-manifest.json"
 
@@ -90,8 +95,10 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     write_world_plan(config, world_plan_path)
     route_plan = build_route_plan(world_plan)
     placement_plan = build_placement_plan(world_plan, route_plan)
+    road_plan = build_road_plan(route_plan, placement_plan)
     write_route_plan(world_plan, route_plan_path)
     write_placement_plan(world_plan, route_plan, placement_plan_path)
+    write_road_plan(route_plan, placement_plan, road_plan_path)
 
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
@@ -122,6 +129,14 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         raster_length=raster_length,
         blocks_per_pixel=blocks_per_pixel,
     )
+    render_road_preview(
+        road_plan,
+        placement_plan,
+        road_preview_path,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
 
     manifest = {
         "schema": PROJECT_DRAFT_SCHEMA,
@@ -147,6 +162,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "routePreview": route_preview_path.name,
             "placementPlan": placement_plan_path.name,
             "placementPreview": placement_preview_path.name,
+            "roadPlan": road_plan_path.name,
+            "roadPreview": road_preview_path.name,
             "draftMask": draft_mask_path.name,
         },
         "warnings": list(warnings),
@@ -182,6 +199,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         route_preview_path=route_preview_path,
         placement_plan_path=placement_plan_path,
         placement_preview_path=placement_preview_path,
+        road_plan_path=road_plan_path,
+        road_preview_path=road_preview_path,
         draft_mask_path=draft_mask_path,
         manifest_path=manifest_path,
         world_width=config.width,
@@ -203,6 +222,8 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- route preview: {result.route_preview_path.name}",
             f"- placement plan: {result.placement_plan_path.name}",
             f"- placement preview: {result.placement_preview_path.name}",
+            f"- road plan: {result.road_plan_path.name}",
+            f"- road preview: {result.road_preview_path.name}",
             f"- draft mask: {result.draft_mask_path.name}",
             f"- manifest: {result.manifest_path.name}",
             f"World size: {result.world_width} x {result.world_length}",

@@ -34,6 +34,8 @@ The first route layer can now connect those anchors into a neutral `route-plan.j
 
 The next neutral layer can now promote anchors and route midpoints into `placement-plan.json` plus `placement-preview.png`. This is still not Minecraft placement, but it gives future roads, settlements, viewpoints, and POI passes named target sites instead of raw geometry alone.
 
+On top of that, a first `road-plan.json` plus `road-preview.png` can classify route segments into simple road intent such as `main-road` and `local-path`, with width hints like `wide` and `narrow`. This is still neutral planning data, not Minecraft block placement.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.
