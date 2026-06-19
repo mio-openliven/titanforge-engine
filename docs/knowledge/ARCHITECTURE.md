@@ -54,6 +54,8 @@ On top of that, `block-fixture.nbt` can exercise binary NBT writing without clai
 
 `datapack-fixture/` is the next practical wrapper around that command output. It adds `pack.mcmeta` plus the packaged function path so the exporter layer starts resembling a real Minecraft datapack before committing to heavier formats.
 
+`datapack-fixture.zip` is the first handoff-oriented wrapper around that folder. It keeps the same inspectable contents, but gives testers one copyable artifact for quick datapack import checks.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.

@@ -245,6 +245,17 @@
       ]
     },
     {
+      "id": "TF-028",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add zipped datapack fixture package for 1.21.11",
+      "acceptance": [
+        "project-draft writes datapack-fixture.zip alongside the datapack folder",
+        "project-location carries the datapack zip in its bridge manifest",
+        "tests cover zip structure and packaged contents"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

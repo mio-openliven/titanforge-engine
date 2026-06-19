@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import zipfile
 
 from titanforge.core.road_plan import RoadPlan
 from titanforge.core.settlement_plan import SettlementPlan
@@ -41,6 +42,15 @@ def write_minecraft_datapack_fixture(
     pack_meta_path.write_text(json.dumps(pack_meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     function_path.write_text("\n".join(build_mcfunction_lines(fixture)) + "\n", encoding="utf-8")
     return pack_dir
+
+
+def write_minecraft_datapack_fixture_zip(pack_dir: Path, output_path: Path) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(pack_dir.rglob("*")):
+            if path.is_file():
+                archive.write(path, arcname=path.relative_to(pack_dir))
+    return output_path
 
 
 def _pack_description(target_version: str, supported: bool) -> str:

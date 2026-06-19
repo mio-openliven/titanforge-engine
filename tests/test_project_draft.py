@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import zipfile
 
 from titanforge.cli import main
 from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
@@ -32,6 +33,8 @@ class ProjectDraftTests(unittest.TestCase):
             nbt_root_name, nbt_fixture = read_nbt((output_dir / "block-fixture.nbt").read_bytes())
             mcfunction_text = (output_dir / "place-fixture.mcfunction").read_text(encoding="utf-8")
             datapack_meta = json.loads((output_dir / "datapack-fixture" / "pack.mcmeta").read_text(encoding="utf-8"))
+            with zipfile.ZipFile(output_dir / "datapack-fixture.zip") as archive:
+                datapack_zip_entries = set(archive.namelist())
             transition_preview = read_png(output_dir / "transition-preview.png")
             route_preview = read_png(output_dir / "route-preview.png")
             placement_preview = read_png(output_dir / "placement-preview.png")
@@ -48,6 +51,7 @@ class ProjectDraftTests(unittest.TestCase):
             nbt_fixture_exists = (output_dir / "block-fixture.nbt").exists()
             mcfunction_fixture_exists = (output_dir / "place-fixture.mcfunction").exists()
             datapack_fixture_exists = (output_dir / "datapack-fixture" / "pack.mcmeta").exists()
+            datapack_zip_exists = (output_dir / "datapack-fixture.zip").exists()
             transition_plan_exists = (output_dir / "transition-plan.json").exists()
             transition_preview_exists = (output_dir / "transition-preview.png").exists()
             route_plan_exists = (output_dir / "route-plan.json").exists()
@@ -70,6 +74,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertTrue(nbt_fixture_exists)
         self.assertTrue(mcfunction_fixture_exists)
         self.assertTrue(datapack_fixture_exists)
+        self.assertTrue(datapack_zip_exists)
         self.assertTrue(transition_plan_exists)
         self.assertTrue(transition_preview_exists)
         self.assertTrue(route_plan_exists)
@@ -106,6 +111,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(nbt_fixture["supported"], True)
         self.assertIn("fill ", mcfunction_text)
         self.assertEqual(datapack_meta["pack"]["min_format"], [94, 1])
+        self.assertIn("pack.mcmeta", datapack_zip_entries)
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["world"]["width"], 512)
         self.assertEqual(len(manifest["warnings"]), 1)
@@ -117,6 +123,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn('"nbtFixture": "block-fixture.nbt"', manifest_text)
         self.assertIn('"mcfunctionFixture": "place-fixture.mcfunction"', manifest_text)
         self.assertIn('"datapackFixture": "datapack-fixture"', manifest_text)
+        self.assertIn('"datapackFixtureZip": "datapack-fixture.zip"', manifest_text)
         self.assertIn('"transitionPlan": "transition-plan.json"', manifest_text)
         self.assertIn('"routePlan": "route-plan.json"', manifest_text)
         self.assertIn('"placementPlan": "placement-plan.json"', manifest_text)
@@ -271,6 +278,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn("- NBT fixture: block-fixture.nbt", stdout.getvalue())
         self.assertIn("- mcfunction fixture: place-fixture.mcfunction", stdout.getvalue())
         self.assertIn("- datapack fixture: datapack-fixture", stdout.getvalue())
+        self.assertIn("- datapack zip: datapack-fixture.zip", stdout.getvalue())
         self.assertIn("- transition preview: transition-preview.png", stdout.getvalue())
         self.assertIn("- route preview: route-preview.png", stdout.getvalue())
         self.assertIn("- placement preview: placement-preview.png", stdout.getvalue())

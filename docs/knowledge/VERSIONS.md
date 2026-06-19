@@ -81,6 +81,8 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `datapack-fixture/` is the first package-shaped companion for Minecraft `1.21.11`. It wraps the mcfunction output in `pack.mcmeta` and a namespaced function path, which is closer to a real game-facing workflow than raw loose files.
 
+`datapack-fixture.zip` is the first easy-handoff companion for Minecraft `1.21.11`. It packages that folder unchanged so a tester can move one artifact into a datapacks workflow without repacking it manually.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?
