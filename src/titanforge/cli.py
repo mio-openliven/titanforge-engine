@@ -18,6 +18,7 @@ from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.operations.night_run import format_night_run_result, run_night_run
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
+from titanforge.terrain.model import format_terrain_grid_result, write_terrain_grid
 from titanforge.validation.layout_report import format_layout_validation_report, validate_layout_file, write_layout_validation_report
 from titanforge.versions.targets import ACTIVE_TARGETS, PARKING_LOT_TARGETS, PRIMARY_TARGET
 
@@ -90,6 +91,18 @@ def build_parser() -> argparse.ArgumentParser:
     heightmap_preview_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
     heightmap_preview_parser.add_argument("output", type=Path, help="Heightmap preview PNG output path.")
     heightmap_preview_parser.add_argument(
+        "--mask",
+        type=Path,
+        help="Optional mask PNG override, useful for cleaned terrain inputs.",
+    )
+
+    terrain_grid_parser = subparsers.add_parser(
+        "terrain-grid",
+        help="Write a neutral terrain grid JSON artifact from a mask layout JSON.",
+    )
+    terrain_grid_parser.add_argument("layout", type=Path, help="Mask layout JSON input path.")
+    terrain_grid_parser.add_argument("output", type=Path, help="Terrain grid JSON output path.")
+    terrain_grid_parser.add_argument(
         "--mask",
         type=Path,
         help="Optional mask PNG override, useful for cleaned terrain inputs.",
@@ -206,6 +219,11 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "heightmap-preview":
         result = render_heightmap_preview(args.layout, args.output, mask_override_path=args.mask)
         print(format_heightmap_preview_result(result))
+        return 0
+
+    if args.command == "terrain-grid":
+        result = write_terrain_grid(args.layout, args.output, mask_override_path=args.mask)
+        print(format_terrain_grid_result(result))
         return 0
 
     if args.command == "validate-layout":

@@ -50,3 +50,23 @@ Unknown colors are rendered as `#ff00ff` so bad masks remain visible.
 Keep this pass simple. It exists to verify map intent before adding smoothing, coastline cleanup, erosion-style filters, water depth, or Minecraft exporters.
 
 For normal use, prefer `build-location`; it runs the mask, layout, heightmap, and report steps together. Add `--use-cleanup-for-heightmap` when tiny water/land noise should be cleaned before terrain preview.
+
+## Neutral Terrain Grid
+
+The next terrain layer is a neutral cell grid, not Minecraft blocks yet.
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m titanforge terrain-grid out\layout.json out\terrain-grid.json
+```
+
+Each cell records neutral intent:
+
+- `zone`
+- `elevation`
+- `surface`
+- `walkable`
+- `buildable`
+- `moisture`
+
+This keeps the core terrain model version-neutral and ready for later 1.21.11 exporters, structure placement, roads, settlements, and story-region passes.

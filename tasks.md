@@ -6,7 +6,6 @@ Canonical machine-readable backlog: `tasks.json`.
 
 - `TF-002` `P0` Add terrain color preview.
 - `TF-004` `P1` Add coastline smoothing preview.
-- `TF-005` `P1` Design first neutral block/terrain model.
 
 ## In Progress
 
@@ -23,6 +22,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-006` `P0` Add resilient night-run command and new-PC handoff docs.
 - `TF-007` `P1` Add static location review page.
 - `TF-008` `P1` Add project world-brief review page.
+- `TF-005` `P1` Design first neutral block/terrain model.
 
 ## Protocol
 

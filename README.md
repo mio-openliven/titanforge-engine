@@ -23,6 +23,7 @@ Working now:
 - validation reports;
 - simple human-readable location summaries inside reports;
 - static HTML review pages inside location packs;
+- neutral terrain grid JSON artifacts for future generation/export layers;
 - location-pack folder output;
 - resilient batch generation with `night-run`;
 - unit tests for the current pipeline.
@@ -46,6 +47,7 @@ python -m titanforge info
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
+python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
 Open `out\project-review.html` in a browser to review the world brief in plain language before dealing with masks and preview artifacts.

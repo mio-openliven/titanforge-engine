@@ -48,6 +48,8 @@ The initial `layouts` module writes a neutral JSON artifact from a PNG mask. It 
 
 The initial `terrain` module can render a grayscale heightmap preview from a mask layout. It is a diagnostic terrain artifact, not the final terrain algorithm. This lets us inspect height intent before adding coastline smoothing, erosion-style noise, or Minecraft exporters.
 
+The next terrain layer should be a neutral terrain grid artifact. It should describe cells, elevations, surfaces, walkability, and buildability without leaking Minecraft block IDs or version rules into core generation.
+
 `demo-mask` belongs to the mask tooling, not generation. Its job is to provide stable smoke-test input for the current pipeline.
 
 `mask-cleanup-preview` is the first cleanup pass. It should stay conservative and inspectable: produce a preview artifact first, then later decide whether terrain generation should consume cleaned masks.
