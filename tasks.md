@@ -35,6 +35,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-017` `P1` Add neutral road plan.
 - `TF-018` `P1` Add neutral settlement blockout plan.
 - `TF-019` `P1` Add world-brief warnings for sparse scale and weak zone variety.
+- `TF-020` `P1` Add neutral transition plan between neighboring regions.
 
 ## Protocol
 

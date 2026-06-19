@@ -56,6 +56,8 @@ The current bridge from story idea to generation is a project draft pack. It kee
 
 The next neutral artifact is a route plan that connects those anchors into a first traversal skeleton. It is not yet a block path or Minecraft road, but it gives the engine a deterministic map of likely movement and reveal lines.
 
+Before traversal alone carries too much burden, the draft should also expose simple transition seams between neighboring regions so terrain, roads, and later exporters can read where coast joins town, forest climbs into ridge, or settlement gives way to wilderness.
+
 On top of that, a placement plan can promote anchor roles and route junctions into named neutral sites such as entry plazas, dock edges, mystery clusters, overlooks, and route junctions before any Minecraft-specific exporter starts.
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.

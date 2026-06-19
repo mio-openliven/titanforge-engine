@@ -12,6 +12,7 @@ from titanforge.core.project import ProjectConfig
 from titanforge.core.route_plan import build_route_plan, render_route_preview, write_route_plan
 from titanforge.core.project_review import write_project_review_page
 from titanforge.core.settlement_plan import build_settlement_plan, render_settlement_preview, write_settlement_plan
+from titanforge.core.transition_plan import build_transition_plan, render_transition_preview, write_transition_plan
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
 from titanforge.masks.png import write_rgba_png
@@ -56,6 +57,8 @@ class ProjectDraftResult:
     output_dir: Path
     review_page_path: Path
     world_plan_path: Path
+    transition_plan_path: Path
+    transition_preview_path: Path
     route_plan_path: Path
     route_preview_path: Path
     placement_plan_path: Path
@@ -84,6 +87,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
 
     review_page_path = output_dir / "review.html"
     world_plan_path = output_dir / "world-plan.json"
+    transition_plan_path = output_dir / "transition-plan.json"
+    transition_preview_path = output_dir / "transition-preview.png"
     route_plan_path = output_dir / "route-plan.json"
     route_preview_path = output_dir / "route-preview.png"
     placement_plan_path = output_dir / "placement-plan.json"
@@ -98,10 +103,12 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     world_plan = build_world_plan(config)
     write_project_review_page(config, review_page_path)
     write_world_plan(config, world_plan_path)
+    transition_plan = build_transition_plan(world_plan)
     route_plan = build_route_plan(world_plan)
     placement_plan = build_placement_plan(world_plan, route_plan)
     road_plan = build_road_plan(route_plan, placement_plan)
     settlement_plan = build_settlement_plan(placement_plan, road_plan)
+    write_transition_plan(world_plan, transition_plan_path)
     write_route_plan(world_plan, route_plan_path)
     write_placement_plan(world_plan, route_plan, placement_plan_path)
     write_road_plan(route_plan, placement_plan, road_plan_path)
@@ -125,6 +132,13 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     render_route_preview(
         route_plan,
         route_preview_path,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
+    render_transition_preview(
+        transition_plan,
+        transition_preview_path,
         raster_width=raster_width,
         raster_length=raster_length,
         blocks_per_pixel=blocks_per_pixel,
@@ -173,6 +187,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         "artifacts": {
             "reviewPage": review_page_path.name,
             "worldPlan": world_plan_path.name,
+            "transitionPlan": transition_plan_path.name,
+            "transitionPreview": transition_preview_path.name,
             "routePlan": route_plan_path.name,
             "routePreview": route_preview_path.name,
             "placementPlan": placement_plan_path.name,
@@ -212,6 +228,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         output_dir=output_dir,
         review_page_path=review_page_path,
         world_plan_path=world_plan_path,
+        transition_plan_path=transition_plan_path,
+        transition_preview_path=transition_preview_path,
         route_plan_path=route_plan_path,
         route_preview_path=route_preview_path,
         placement_plan_path=placement_plan_path,
@@ -237,6 +255,8 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"Project draft: {result.output_dir}",
             f"- review page: {result.review_page_path.name}",
             f"- world plan: {result.world_plan_path.name}",
+            f"- transition plan: {result.transition_plan_path.name}",
+            f"- transition preview: {result.transition_preview_path.name}",
             f"- route plan: {result.route_plan_path.name}",
             f"- route preview: {result.route_preview_path.name}",
             f"- placement plan: {result.placement_plan_path.name}",

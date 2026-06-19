@@ -16,6 +16,7 @@ Working now:
 - bridged project-location packs from `titanforge.toml`;
 - region-specific draft shapes for sea, forests, settlements, and mountains;
 - world-plan story anchors for arrivals, shorelines, forest cores, ridge vistas, and village hearts;
+- neutral transition-plan and transition-preview artifacts built from neighboring region seams;
 - neutral route-plan and route-preview artifacts built from world-plan anchors;
 - neutral placement-plan and placement-preview artifacts built from anchors and routes;
 - neutral road-plan and road-preview artifacts built from routes and placement sites;
@@ -89,6 +90,8 @@ The `project-draft` command creates:
 ```text
 review.html
 world-plan.json
+transition-plan.json
+transition-preview.png
 route-plan.json
 route-preview.png
 placement-plan.json
@@ -101,7 +104,7 @@ draft-mask.png
 draft-manifest.json
 ```
 
-Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, and placement hubs become a first neutral settlement blockout draft.
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, and placement hubs become a first neutral settlement blockout draft.
 
 The `project-location` command creates:
 
@@ -111,7 +114,7 @@ location\
 project-location-manifest.json
 ```
 
-Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft route, placement, road, and settlement artifacts too.
+Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft transition, route, placement, road, and settlement artifacts too.
 
 ## Tests
 

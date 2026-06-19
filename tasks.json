@@ -157,6 +157,17 @@
       ]
     },
     {
+      "id": "TF-020",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add neutral transition plan between neighboring regions",
+      "acceptance": [
+        "project-draft writes transition-plan.json and transition-preview.png from adjacent world-plan regions",
+        "project-location carries transition artifacts in its bridge manifest",
+        "tests cover transition generation and preview output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

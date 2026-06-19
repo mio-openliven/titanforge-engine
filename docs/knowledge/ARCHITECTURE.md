@@ -38,6 +38,8 @@ On top of that, a first `road-plan.json` plus `road-preview.png` can classify ro
 
 On top of roads and named sites, a first `settlement-plan.json` plus `settlement-preview.png` can sketch gate, core, harbor, and junction blockouts. This is still neutral planning data, but it starts turning the scenario-writer brief into readable place footprints instead of only lines and points.
 
+Between raw region strips and traversal, a first `transition-plan.json` plus `transition-preview.png` can describe neighboring seams such as coast transitions, treeline rises, and settled edges. This gives later terrain and composition passes a deterministic place to thicken borders instead of guessing only from rectangles.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.
