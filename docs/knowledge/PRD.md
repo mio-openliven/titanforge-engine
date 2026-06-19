@@ -19,7 +19,7 @@ Large Minecraft locations take too long to plan and block out by hand. Existing 
 Create a controlled deterministic pipeline:
 
 ```text
-PNG mask / structured layout
+world brief / world plan / PNG mask / structured layout
 -> previews
 -> validation report
 -> terrain/location artifacts
@@ -40,6 +40,8 @@ report.txt
 review.html
 manifest.json
 ```
+
+The next bridge from story idea to generation is a neutral `WorldPlan` artifact that gives regions spatial bounds before exporter work begins.
 
 ## Must Have
 

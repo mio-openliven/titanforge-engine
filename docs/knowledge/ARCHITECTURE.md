@@ -26,6 +26,8 @@ The repository now starts as a Python package with a command-line interface. Thi
 
 Each stage should receive explicit inputs and produce explicit outputs. Intermediate artifacts should be inspectable so broken generation can be debugged without rerunning the entire world.
 
+`WorldPlan` should become the first spatial contract between scenario-writer intent and terrain/export logic. It should hold world size, region bounds, story roles, and future placement anchors before Minecraft-specific adapters enter the picture.
+
 ## Suggested Early Modules
 
 - `core`: project loading, paths, logging, shared types.

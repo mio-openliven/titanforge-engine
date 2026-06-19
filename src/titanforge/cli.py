@@ -8,6 +8,7 @@ import tomllib
 from titanforge import __version__
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_review import write_project_review_page
+from titanforge.core.world_plan import build_world_plan, format_world_plan, write_world_plan
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
 from titanforge.layouts.mask_layout import format_mask_layout_result, write_mask_layout
 from titanforge.locations.builder import build_location_pack, format_location_build_result
@@ -40,6 +41,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--review-page",
         type=Path,
         help="Optional HTML output path for a human-friendly world brief review page.",
+    )
+    plan_parser.add_argument(
+        "--world-plan",
+        type=Path,
+        help="Optional JSON output path for a neutral spatial world-plan artifact.",
     )
 
     inventory_parser = subparsers.add_parser(
@@ -180,6 +186,10 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         if args.review_page:
             review_page = write_project_review_page(config, args.review_page)
             print(f"Project review page: {review_page}")
+        if args.world_plan:
+            world_plan_path = write_world_plan(config, args.world_plan)
+            print(f"World plan: {world_plan_path}")
+            print(format_world_plan(build_world_plan(config), world_plan_path))
         print_project_plan(config)
         return 0
 

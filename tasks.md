@@ -23,6 +23,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-007` `P1` Add static location review page.
 - `TF-008` `P1` Add project world-brief review page.
 - `TF-005` `P1` Design first neutral block/terrain model.
+- `TF-009` `P1` Add neutral WorldPlan artifact.
 
 ## Protocol
 

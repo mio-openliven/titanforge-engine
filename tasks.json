@@ -69,6 +69,17 @@
       ]
     },
     {
+      "id": "TF-009",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add neutral WorldPlan artifact",
+      "acceptance": [
+        "plan can write a world-plan.json artifact from titanforge.toml",
+        "artifact gives each region deterministic spatial bounds",
+        "tests cover world plan generation"
+      ]
+    },
+    {
       "id": "TF-007",
       "status": "done",
       "priority": "P1",

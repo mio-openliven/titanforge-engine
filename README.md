@@ -44,13 +44,14 @@ Use Python 3.11 or newer.
 ```powershell
 $env:PYTHONPATH = "src"
 python -m titanforge info
-python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html
+python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
 python -m titanforge demo-mask out\demo-mask.png
 python -m titanforge build-location out\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
 Open `out\project-review.html` in a browser to review the world brief in plain language before dealing with masks and preview artifacts.
+Open `out\world-plan.json` to inspect the first spatial world contract that later terrain and export layers can consume.
 
 The `build-location` command creates:
 
