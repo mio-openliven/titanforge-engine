@@ -36,6 +36,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(manifest["artifacts"]["chunkPlan"], "draft\\chunk-plan.json")
         self.assertEqual(manifest["artifacts"]["blockFixture"], "draft\\block-fixture.json")
         self.assertEqual(manifest["artifacts"]["nbtFixture"], "draft\\block-fixture.nbt")
+        self.assertEqual(manifest["artifacts"]["mcfunctionFixture"], "draft\\place-fixture.mcfunction")
         self.assertEqual(manifest["artifacts"]["transitionPlan"], "draft\\transition-plan.json")
         self.assertEqual(manifest["artifacts"]["transitionPreview"], "draft\\transition-preview.png")
         self.assertEqual(manifest["artifacts"]["routePlan"], "draft\\route-plan.json")

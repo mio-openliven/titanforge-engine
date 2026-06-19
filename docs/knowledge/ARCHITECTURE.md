@@ -50,6 +50,8 @@ The next exporter fixture can stay explicit too: `block-fixture.json`. It turns 
 
 On top of that, `block-fixture.nbt` can exercise binary NBT writing without claiming full Minecraft structure compatibility yet. This lets the exporter layer start handling real binary payloads before chunk serialization and full format rules arrive.
 
+`place-fixture.mcfunction` is the first directly executable Minecraft-facing artifact. It converts block cuboids into striped `fill` commands so large surfaces stay practical without waiting for full structure or world writers.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.

@@ -223,6 +223,17 @@
       ]
     },
     {
+      "id": "TF-026",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first Minecraft 1.21.11 mcfunction fixture exporter",
+      "acceptance": [
+        "project-draft writes a first mcfunction fixture from block cuboids",
+        "project-location carries the mcfunction fixture in its bridge manifest",
+        "tests cover supported 1.21.11 output and command chunking behavior"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

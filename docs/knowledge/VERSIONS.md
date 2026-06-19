@@ -77,6 +77,8 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `block-fixture.nbt` is the first binary companion for Minecraft `1.21.11`. It currently carries TitanForge fixture data through a small internal NBT codec, proving binary export plumbing before full Minecraft structure rules are locked down.
 
+`place-fixture.mcfunction` is the first directly runnable companion for Minecraft `1.21.11`. It expresses fixture cuboids as striped `fill` commands, which is primitive but genuinely usable inside the game before full structure serialization exists.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?

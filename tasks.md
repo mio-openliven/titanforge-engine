@@ -41,6 +41,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-023` `P1` Add first Minecraft 1.21.11 chunk plan artifact.
 - `TF-024` `P1` Add first Minecraft 1.21.11 block fixture artifact.
 - `TF-025` `P1` Add first NBT-oriented fixture artifact for 1.21.11.
+- `TF-026` `P1` Add first Minecraft 1.21.11 mcfunction fixture exporter.
 
 ## Protocol
 
