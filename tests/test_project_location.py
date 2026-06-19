@@ -39,6 +39,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(manifest["artifacts"]["mcfunctionFixture"], "draft\\place-fixture.mcfunction")
         self.assertEqual(manifest["artifacts"]["clearMcfunctionFixture"], "draft\\clear-fixture.mcfunction")
         self.assertEqual(manifest["artifacts"]["fixtureCommands"], "draft\\fixture-commands.txt")
+        self.assertEqual(manifest["artifacts"]["fixtureSummary"], "draft\\fixture-summary.json")
         self.assertEqual(manifest["artifacts"]["datapackFixture"], "draft\\datapack-fixture")
         self.assertEqual(manifest["artifacts"]["datapackFixtureZip"], "draft\\datapack-fixture.zip")
         self.assertEqual(manifest["artifacts"]["transitionPlan"], "draft\\transition-plan.json")

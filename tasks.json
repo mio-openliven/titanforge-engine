@@ -280,6 +280,17 @@
       ]
     },
     {
+      "id": "TF-031",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first fixture summary artifact for 1.21.11",
+      "acceptance": [
+        "project-draft writes fixture-summary.json with bounds and fill-command counts",
+        "project-location carries the fixture summary in its bridge manifest",
+        "tests cover supported summary output and artifact wiring"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

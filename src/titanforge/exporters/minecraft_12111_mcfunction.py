@@ -79,6 +79,12 @@ def build_clear_mcfunction_lines(fixture: MinecraftBlockFixture) -> tuple[str, .
     return tuple(lines)
 
 
+def count_mcfunction_fill_commands(fixture: MinecraftBlockFixture) -> int:
+    if not fixture.supported:
+        return 0
+    return sum(len(_cuboid_fill_commands(cuboid)) for cuboid in fixture.cuboids)
+
+
 def _cuboid_fill_commands(cuboid, *, block_name: str | None = None) -> tuple[str, ...]:
     commands: list[str] = []
     if cuboid.width >= cuboid.length:

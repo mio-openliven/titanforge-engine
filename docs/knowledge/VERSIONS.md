@@ -83,6 +83,8 @@ The next concrete exporter artifact is `export-request.json` for Minecraft `1.21
 
 `fixture-commands.txt` is the first operator-facing companion for Minecraft `1.21.11`. It keeps the exact `/reload`, place, and clear calls visible in plain text instead of making the tester inspect datapack internals.
 
+`fixture-summary.json` is the first safety companion for Minecraft `1.21.11`. It records rough bounds and fill-command counts so a tester can judge scope before running the place function inside a world.
+
 `datapack-fixture/` is the first package-shaped companion for Minecraft `1.21.11`. It wraps the mcfunction output in `pack.mcmeta` and a namespaced function path, which is closer to a real game-facing workflow than raw loose files.
 
 `datapack-fixture.zip` is the first easy-handoff companion for Minecraft `1.21.11`. It packages that folder unchanged so a tester can move one artifact into a datapacks workflow without repacking it manually.

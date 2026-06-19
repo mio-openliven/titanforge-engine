@@ -73,6 +73,7 @@ def write_project_location(
             "mcfunctionFixture": str(draft_result.mcfunction_fixture_path.relative_to(output_dir)),
             "clearMcfunctionFixture": str(draft_result.clear_mcfunction_fixture_path.relative_to(output_dir)),
             "fixtureCommands": str(draft_result.fixture_commands_path.relative_to(output_dir)),
+            "fixtureSummary": str(draft_result.fixture_summary_path.relative_to(output_dir)),
             "datapackFixture": str(draft_result.datapack_fixture_dir.relative_to(output_dir)),
             "datapackFixtureZip": str(draft_result.datapack_fixture_zip_path.relative_to(output_dir)),
             "transitionPlan": str(draft_result.transition_plan_path.relative_to(output_dir)),

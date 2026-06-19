@@ -21,6 +21,7 @@ from titanforge.exporters.minecraft_12111_datapack import (
     write_minecraft_datapack_fixture,
     write_minecraft_datapack_fixture_zip,
 )
+from titanforge.exporters.minecraft_12111_fixture_summary import write_minecraft_fixture_summary
 from titanforge.exporters.minecraft_12111_mcfunction import write_minecraft_clear_mcfunction_fixture, write_minecraft_mcfunction_fixture
 from titanforge.exporters.minecraft_12111_nbt_fixture import write_minecraft_nbt_fixture
 from titanforge.exporters.minecraft_12111_request import write_minecraft_export_request
@@ -76,6 +77,7 @@ class ProjectDraftResult:
     mcfunction_fixture_path: Path
     clear_mcfunction_fixture_path: Path
     fixture_commands_path: Path
+    fixture_summary_path: Path
     datapack_fixture_dir: Path
     datapack_fixture_zip_path: Path
     transition_plan_path: Path
@@ -116,6 +118,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     mcfunction_fixture_path = output_dir / "place-fixture.mcfunction"
     clear_mcfunction_fixture_path = output_dir / "clear-fixture.mcfunction"
     fixture_commands_path = output_dir / "fixture-commands.txt"
+    fixture_summary_path = output_dir / "fixture-summary.json"
     datapack_fixture_dir = output_dir / "datapack-fixture"
     datapack_fixture_zip_path = output_dir / "datapack-fixture.zip"
     transition_plan_path = output_dir / "transition-plan.json"
@@ -159,6 +162,14 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         clear_mcfunction_fixture_path,
     )
     fixture_commands_path.write_text("\n".join(build_minecraft_fixture_command_lines()) + "\n", encoding="utf-8")
+    write_minecraft_fixture_summary(
+        config.target_version,
+        world_plan,
+        transition_plan,
+        road_plan,
+        settlement_plan,
+        fixture_summary_path,
+    )
     write_minecraft_datapack_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, datapack_fixture_dir)
     write_minecraft_datapack_fixture_zip(datapack_fixture_dir, datapack_fixture_zip_path)
 
@@ -243,6 +254,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "mcfunctionFixture": mcfunction_fixture_path.name,
             "clearMcfunctionFixture": clear_mcfunction_fixture_path.name,
             "fixtureCommands": fixture_commands_path.name,
+            "fixtureSummary": fixture_summary_path.name,
             "datapackFixture": datapack_fixture_dir.name,
             "datapackFixtureZip": datapack_fixture_zip_path.name,
             "transitionPlan": transition_plan_path.name,
@@ -294,6 +306,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         mcfunction_fixture_path=mcfunction_fixture_path,
         clear_mcfunction_fixture_path=clear_mcfunction_fixture_path,
         fixture_commands_path=fixture_commands_path,
+        fixture_summary_path=fixture_summary_path,
         datapack_fixture_dir=datapack_fixture_dir,
         datapack_fixture_zip_path=datapack_fixture_zip_path,
         transition_plan_path=transition_plan_path,
@@ -331,6 +344,7 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- mcfunction fixture: {result.mcfunction_fixture_path.name}",
             f"- clear mcfunction fixture: {result.clear_mcfunction_fixture_path.name}",
             f"- fixture commands: {result.fixture_commands_path.name}",
+            f"- fixture summary: {result.fixture_summary_path.name}",
             f"- datapack fixture: {result.datapack_fixture_dir.name}",
             f"- datapack zip: {result.datapack_fixture_zip_path.name}",
             f"- transition plan: {result.transition_plan_path.name}",

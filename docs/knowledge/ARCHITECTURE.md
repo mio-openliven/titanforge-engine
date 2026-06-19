@@ -56,6 +56,8 @@ On top of that, `block-fixture.nbt` can exercise binary NBT writing without clai
 
 `fixture-commands.txt` is the first tiny operator-facing guide for that flow. It keeps the exact `/reload`, place, and clear calls next to the artifacts so a non-developer tester does not have to inspect datapack internals.
 
+`fixture-summary.json` is the first safety snapshot for that same flow. It records rough cuboid bounds plus place/clear command counts so a tester can estimate scope before touching a Minecraft world.
+
 `datapack-fixture/` is the next practical wrapper around that command output. It adds `pack.mcmeta` plus the packaged function path so the exporter layer starts resembling a real Minecraft datapack before committing to heavier formats.
 
 `datapack-fixture.zip` is the first handoff-oriented wrapper around that folder. It keeps the same inspectable contents, but gives testers one copyable artifact for quick datapack import checks.
