@@ -113,6 +113,17 @@
       ]
     },
     {
+      "id": "TF-016",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add neutral placement plan",
+      "acceptance": [
+        "project-draft writes placement-plan.json and placement-preview.png from anchors and routes",
+        "project-location carries placement artifacts in its bridge manifest",
+        "tests cover placement generation and preview output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

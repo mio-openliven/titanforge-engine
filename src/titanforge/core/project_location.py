@@ -67,6 +67,8 @@ def write_project_location(
             "draftMask": str(draft_result.draft_mask_path.relative_to(output_dir)),
             "routePlan": str(draft_result.route_plan_path.relative_to(output_dir)),
             "routePreview": str(draft_result.route_preview_path.relative_to(output_dir)),
+            "placementPlan": str(draft_result.placement_plan_path.relative_to(output_dir)),
+            "placementPreview": str(draft_result.placement_preview_path.relative_to(output_dir)),
             "locationReviewPage": str(location_result.review_page_path.relative_to(output_dir)),
             "locationManifest": str(location_result.manifest_path.relative_to(output_dir)),
         },

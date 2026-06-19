@@ -32,6 +32,8 @@ That anchor layer now exists in simple deterministic form. Regions can expose po
 
 The first route layer can now connect those anchors into a neutral `route-plan.json` plus `route-preview.png`. This is still diagnostic, but it gives later road, path, and traversal passes a deterministic skeleton.
 
+The next neutral layer can now promote anchors and route midpoints into `placement-plan.json` plus `placement-preview.png`. This is still not Minecraft placement, but it gives future roads, settlements, viewpoints, and POI passes named target sites instead of raw geometry alone.
+
 `project-draft` is now the first user-facing bridge on top of that contract. It writes a review page, `world-plan.json`, and a `draft-mask.png` that may be smaller than the logical world. The manifest records `blocksPerPixel` so large worlds stay planable without pretending the early PNG is already block-accurate export data.
 
 The draft mask no longer needs to render every region as a full-height strip. Deterministic shape hints such as `coast-band`, `ridge-cap`, `oval-core`, and `settlement-core` make the draft easier to read while keeping generation logic simple and testable.
