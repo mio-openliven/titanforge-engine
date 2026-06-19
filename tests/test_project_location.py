@@ -31,6 +31,8 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 2)
         self.assertEqual(manifest["artifacts"]["draftDir"], "draft")
         self.assertEqual(manifest["artifacts"]["locationDir"], "location")
+        self.assertEqual(manifest["artifacts"]["routePlan"], "draft\\route-plan.json")
+        self.assertEqual(manifest["artifacts"]["routePreview"], "draft\\route-preview.png")
         self.assertEqual(len(manifest["warnings"]), 1)
         self.assertEqual(location_manifest["sourceMode"], "project-draft")
         self.assertEqual(location_manifest["terrain"]["cleanupApplied"], True)

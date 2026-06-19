@@ -54,6 +54,8 @@ The current bridge from story idea to generation is a project draft pack. It kee
 
 `WorldPlan` should also carry simple story anchors so the engine can later place routes, settlements, viewpoints, and reveals against named points instead of only against region rectangles.
 
+The next neutral artifact is a route plan that connects those anchors into a first traversal skeleton. It is not yet a block path or Minecraft road, but it gives the engine a deterministic map of likely movement and reveal lines.
+
 The next user-facing bridge is `project-location`: one command from `titanforge.toml` to `draft/` plus `location/`, with a bridge manifest that keeps logical world size and raster scale explicit.
 
 Draft artifacts should feel like rough places, not spreadsheet stripes. Simple deterministic region shapes are acceptable before full composition rules or Minecraft export exist.

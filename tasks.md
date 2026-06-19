@@ -30,6 +30,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-012` `P1` Add scale-aware draft warnings.
 - `TF-013` `P1` Add richer draft region shapes.
 - `TF-014` `P1` Add world plan story anchors.
+- `TF-015` `P1` Add world plan route preview.
 
 ## Protocol
 

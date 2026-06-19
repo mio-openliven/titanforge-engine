@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 
 from titanforge.core.project import ProjectConfig
+from titanforge.core.route_plan import build_route_plan, render_route_preview, write_route_plan
 from titanforge.core.project_review import write_project_review_page
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
@@ -52,6 +53,8 @@ class ProjectDraftResult:
     output_dir: Path
     review_page_path: Path
     world_plan_path: Path
+    route_plan_path: Path
+    route_preview_path: Path
     draft_mask_path: Path
     manifest_path: Path
     world_width: int
@@ -72,12 +75,16 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
 
     review_page_path = output_dir / "review.html"
     world_plan_path = output_dir / "world-plan.json"
+    route_plan_path = output_dir / "route-plan.json"
+    route_preview_path = output_dir / "route-preview.png"
     draft_mask_path = output_dir / "draft-mask.png"
     manifest_path = output_dir / "draft-manifest.json"
 
     world_plan = build_world_plan(config)
     write_project_review_page(config, review_page_path)
     write_world_plan(config, world_plan_path)
+    route_plan = build_route_plan(world_plan)
+    write_route_plan(world_plan, route_plan_path)
 
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
@@ -93,6 +100,13 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     draft_regions = _build_draft_regions(world_plan, blocks_per_pixel, raster_width, raster_length)
     pixels = _render_draft_mask(draft_regions, raster_width, raster_length)
     write_rgba_png(draft_mask_path, raster_width, raster_length, pixels)
+    render_route_preview(
+        route_plan,
+        route_preview_path,
+        raster_width=raster_width,
+        raster_length=raster_length,
+        blocks_per_pixel=blocks_per_pixel,
+    )
 
     manifest = {
         "schema": PROJECT_DRAFT_SCHEMA,
@@ -114,6 +128,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         "artifacts": {
             "reviewPage": review_page_path.name,
             "worldPlan": world_plan_path.name,
+            "routePlan": route_plan_path.name,
+            "routePreview": route_preview_path.name,
             "draftMask": draft_mask_path.name,
         },
         "warnings": list(warnings),
@@ -145,6 +161,8 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         output_dir=output_dir,
         review_page_path=review_page_path,
         world_plan_path=world_plan_path,
+        route_plan_path=route_plan_path,
+        route_preview_path=route_preview_path,
         draft_mask_path=draft_mask_path,
         manifest_path=manifest_path,
         world_width=config.width,
@@ -162,6 +180,8 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"Project draft: {result.output_dir}",
             f"- review page: {result.review_page_path.name}",
             f"- world plan: {result.world_plan_path.name}",
+            f"- route plan: {result.route_plan_path.name}",
+            f"- route preview: {result.route_preview_path.name}",
             f"- draft mask: {result.draft_mask_path.name}",
             f"- manifest: {result.manifest_path.name}",
             f"World size: {result.world_width} x {result.world_length}",

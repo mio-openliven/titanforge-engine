@@ -102,6 +102,17 @@
       ]
     },
     {
+      "id": "TF-015",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add world plan route preview",
+      "acceptance": [
+        "project-draft writes route-plan.json and route-preview.png from story anchors",
+        "project-location carries route artifacts in its bridge manifest",
+        "tests cover route generation and preview output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
