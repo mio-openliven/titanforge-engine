@@ -38,6 +38,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-020` `P1` Add neutral transition plan between neighboring regions.
 - `TF-021` `P1` Add first Minecraft 1.21.11 material profile adapter.
 - `TF-022` `P1` Add first Minecraft 1.21.11 export request artifact.
+- `TF-023` `P1` Add first Minecraft 1.21.11 chunk plan artifact.
 
 ## Protocol
 

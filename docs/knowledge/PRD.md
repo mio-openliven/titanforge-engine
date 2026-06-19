@@ -62,6 +62,8 @@ The first Minecraft-specific layer should remain inspectable: a simple `material
 
 On top of that, the first exporter-facing contract should still stay readable: an `export-request.json` that tells a future 1.21.11 exporter which region bands, seam bands, road strips, and settlement pads to materialize.
 
+The next export-facing contract should become chunk-aware without exploding in size: a compact `chunk-plan.json` that records chunk coverages for those operations instead of pretending the writer can already stream real world files.
+
 On top of that, a placement plan can promote anchor roles and route junctions into named neutral sites such as entry plazas, dock edges, mystery clusters, overlooks, and route junctions before any Minecraft-specific exporter starts.
 
 The next neutral layer can promote traversal lines plus named sites into a first road plan so the engine starts distinguishing main roads from local paths before block or schematic export exists.

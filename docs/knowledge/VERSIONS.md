@@ -71,6 +71,8 @@ The first concrete adapter artifact is now a `material-profile.json` for Minecra
 
 The next concrete exporter artifact is `export-request.json` for Minecraft `1.21.11`. It turns those palettes plus neutral geometry into a first fixture-oriented export contract without pretending that NBT, chunks, or schematic serialization are already solved.
 
+`chunk-plan.json` is the next companion artifact for Minecraft `1.21.11`. It projects export requests onto 16x16 chunk space using compact coverages, so large worlds stay inspectable without materializing millions of chunk entries too early.
+
 ## Open Questions
 
 - Which output formats are required for primary 1.21.11?

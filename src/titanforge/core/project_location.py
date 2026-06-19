@@ -67,6 +67,7 @@ def write_project_location(
             "draftMask": str(draft_result.draft_mask_path.relative_to(output_dir)),
             "materialProfile": str(draft_result.material_profile_path.relative_to(output_dir)),
             "exportRequest": str(draft_result.export_request_path.relative_to(output_dir)),
+            "chunkPlan": str(draft_result.chunk_plan_path.relative_to(output_dir)),
             "transitionPlan": str(draft_result.transition_plan_path.relative_to(output_dir)),
             "transitionPreview": str(draft_result.transition_preview_path.relative_to(output_dir)),
             "routePlan": str(draft_result.route_plan_path.relative_to(output_dir)),

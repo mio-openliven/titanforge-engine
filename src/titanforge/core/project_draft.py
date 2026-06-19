@@ -14,6 +14,7 @@ from titanforge.core.project_review import write_project_review_page
 from titanforge.core.settlement_plan import build_settlement_plan, render_settlement_preview, write_settlement_plan
 from titanforge.core.transition_plan import build_transition_plan, render_transition_preview, write_transition_plan
 from titanforge.core.world_plan import WorldPlan, WorldPlanRegion, build_world_plan, write_world_plan
+from titanforge.exporters.minecraft_12111_chunk_plan import write_minecraft_chunk_plan
 from titanforge.exporters.minecraft_12111_request import write_minecraft_export_request
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
 from titanforge.masks.png import write_rgba_png
@@ -61,6 +62,7 @@ class ProjectDraftResult:
     world_plan_path: Path
     material_profile_path: Path
     export_request_path: Path
+    chunk_plan_path: Path
     transition_plan_path: Path
     transition_preview_path: Path
     route_plan_path: Path
@@ -93,6 +95,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     world_plan_path = output_dir / "world-plan.json"
     material_profile_path = output_dir / "material-profile.json"
     export_request_path = output_dir / "export-request.json"
+    chunk_plan_path = output_dir / "chunk-plan.json"
     transition_plan_path = output_dir / "transition-plan.json"
     transition_preview_path = output_dir / "transition-preview.png"
     route_plan_path = output_dir / "route-plan.json"
@@ -121,6 +124,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     write_settlement_plan(placement_plan, road_plan, settlement_plan_path)
     write_material_profile(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, material_profile_path)
     write_minecraft_export_request(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, export_request_path)
+    write_minecraft_chunk_plan(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, chunk_plan_path)
 
     blocks_per_pixel = max(1, ceil(max(config.width, config.length) / max_draft_side))
     raster_width = ceil(config.width / blocks_per_pixel)
@@ -197,6 +201,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "worldPlan": world_plan_path.name,
             "materialProfile": material_profile_path.name,
             "exportRequest": export_request_path.name,
+            "chunkPlan": chunk_plan_path.name,
             "transitionPlan": transition_plan_path.name,
             "transitionPreview": transition_preview_path.name,
             "routePlan": route_plan_path.name,
@@ -240,6 +245,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         world_plan_path=world_plan_path,
         material_profile_path=material_profile_path,
         export_request_path=export_request_path,
+        chunk_plan_path=chunk_plan_path,
         transition_plan_path=transition_plan_path,
         transition_preview_path=transition_preview_path,
         route_plan_path=route_plan_path,
@@ -269,6 +275,7 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- world plan: {result.world_plan_path.name}",
             f"- material profile: {result.material_profile_path.name}",
             f"- export request: {result.export_request_path.name}",
+            f"- chunk plan: {result.chunk_plan_path.name}",
             f"- transition plan: {result.transition_plan_path.name}",
             f"- transition preview: {result.transition_preview_path.name}",
             f"- route plan: {result.route_plan_path.name}",
