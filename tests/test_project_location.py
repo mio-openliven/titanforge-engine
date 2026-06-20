@@ -21,6 +21,7 @@ class ProjectLocationTests(unittest.TestCase):
             result = write_project_location(config, output_dir, max_draft_side=256, use_cleanup_for_heightmap=True)
             manifest = json.loads((output_dir / "project-location-manifest.json").read_text(encoding="utf-8"))
             location_manifest = json.loads((output_dir / "location" / "manifest.json").read_text(encoding="utf-8"))
+            location_review_html = (output_dir / "location" / "review.html").read_text(encoding="utf-8")
             draft_mask_exists = (output_dir / "draft" / "draft-mask.png").exists()
             location_review_exists = (output_dir / "location" / "review.html").exists()
 
@@ -55,6 +56,10 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(len(manifest["warnings"]), 1)
         self.assertEqual(location_manifest["sourceMode"], "project-draft")
         self.assertEqual(location_manifest["terrain"]["cleanupApplied"], True)
+        self.assertIn("Project-Draft Links", location_review_html)
+        self.assertIn('../draft/fixture-summary.json', location_review_html)
+        self.assertIn('../draft/fixture-commands.txt', location_review_html)
+        self.assertIn('../draft/datapack-fixture.zip', location_review_html)
 
     def test_project_location_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

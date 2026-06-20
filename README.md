@@ -138,6 +138,7 @@ project-location-manifest.json
 ```
 
 Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft material, export-request, datapack zip, transition, route, placement, road, and settlement artifacts too.
+When the location pack came from `project-location`, its `location/review.html` now also links back to the key draft-side files like `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.
 
 ## Tests
 

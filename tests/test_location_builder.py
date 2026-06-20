@@ -58,6 +58,7 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertIn('src="heightmap-preview.png"', review_html)
         self.assertIn("TitanForge Layout Report", review_html)
         self.assertIn("report.txt", review_html)
+        self.assertNotIn("Project-Draft Links", review_html)
 
     def test_build_location_pack_from_input_mask_reports_warnings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

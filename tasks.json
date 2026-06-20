@@ -324,6 +324,17 @@
       ]
     },
     {
+      "id": "TF-035",
+      "status": "done",
+      "priority": "P1",
+      "title": "Link draft artifacts from the project-location review page",
+      "acceptance": [
+        "project-location review.html links to the key draft artifacts a tester should inspect next",
+        "plain build-location review.html stays unchanged when no draft artifacts exist",
+        "tests cover the draft artifact links in project-location review output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

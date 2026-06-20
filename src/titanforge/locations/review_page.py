@@ -14,10 +14,29 @@ def write_location_review_page(
     cleanup_applied: bool,
     heightmap_source: str,
     report_text: str,
+    draft_artifacts: tuple[tuple[str, str], ...] = (),
 ) -> Path:
     review_page_path = output_dir / "review.html"
     status = "ERROR" if validation_errors else "OK"
     cleanup_text = "yes" if cleanup_applied else "no"
+    draft_links_html = ""
+    if draft_artifacts:
+        draft_link_items = "\n".join(
+            f'            <li><a href="{escape(path)}">{escape(label)}</a></li>' for label, path in draft_artifacts
+        )
+        draft_links_html = f"""
+    <section class="panel">
+      <h2>Project-Draft Links</h2>
+      <p>Open these first when this location pack came from <code>project-location</code> and you need the draft-side planning context.</p>
+      <div class="raw-grid">
+        <div>
+          <ul>
+{draft_link_items}
+          </ul>
+        </div>
+      </div>
+    </section>
+"""
 
     html = f"""<!doctype html>
 <html lang="en">
@@ -299,6 +318,7 @@ def write_location_review_page(
         </div>
       </div>
     </section>
+{draft_links_html}
 
     <section class="panel">
       <h2>Validation Report</h2>

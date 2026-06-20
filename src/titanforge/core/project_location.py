@@ -38,11 +38,19 @@ def write_project_location(
     manifest_path = output_dir / "project-location-manifest.json"
 
     draft_result = write_project_draft(config, draft_dir, max_draft_side=max_draft_side)
+    draft_review_links = (
+        ("draft/review.html", "../draft/review.html"),
+        ("draft/draft-mask.png", "../draft/draft-mask.png"),
+        ("draft/fixture-summary.json", "../draft/fixture-summary.json"),
+        ("draft/fixture-commands.txt", "../draft/fixture-commands.txt"),
+        ("draft/datapack-fixture.zip", "../draft/datapack-fixture.zip"),
+    )
     location_result = build_location_pack(
         location_dir,
         input_mask=draft_result.draft_mask_path,
         use_cleanup_for_heightmap=use_cleanup_for_heightmap,
         source_mode_override="project-draft",
+        draft_artifacts=draft_review_links,
     )
 
     manifest = {

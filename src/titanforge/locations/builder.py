@@ -44,6 +44,7 @@ def build_location_pack(
     height: int = 128,
     use_cleanup_for_heightmap: bool = False,
     source_mode_override: str | None = None,
+    draft_artifacts: tuple[tuple[str, str], ...] = (),
 ) -> LocationBuildResult:
     if input_mask is None and not demo:
         demo = True
@@ -127,6 +128,7 @@ def build_location_pack(
         cleanup_applied=use_cleanup_for_heightmap,
         heightmap_source=heightmap_source_path.name,
         report_text=report_text,
+        draft_artifacts=draft_artifacts,
     )
 
     return LocationBuildResult(
