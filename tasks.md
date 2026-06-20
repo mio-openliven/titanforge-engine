@@ -51,6 +51,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-033` `P1` Add unsupported-target warnings to fixture guides.
 - `TF-034` `P1` Add draft artifact guide to the world brief review page.
 - `TF-035` `P1` Link draft artifacts from the project-location review page.
+- `TF-036` `P1` Show draft fixture summary inside the project-location review page.
 
 ## Protocol
 

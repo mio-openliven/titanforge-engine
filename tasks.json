@@ -335,6 +335,18 @@
       ]
     },
     {
+      "id": "TF-036",
+      "status": "done",
+      "priority": "P1",
+      "title": "Show draft fixture summary inside the project-location review page",
+      "acceptance": [
+        "project-location review.html shows fixture command counts and footprint from fixture-summary.json",
+        "project-location review.html shows fixture warnings when they exist",
+        "plain build-location review.html stays unchanged when no draft summary exists",
+        "tests cover the fixture summary block in project-location review output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",

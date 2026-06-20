@@ -15,6 +15,7 @@ def write_location_review_page(
     heightmap_source: str,
     report_text: str,
     draft_artifacts: tuple[tuple[str, str], ...] = (),
+    draft_fixture_summary: dict[str, object] | None = None,
 ) -> Path:
     review_page_path = output_dir / "review.html"
     status = "ERROR" if validation_errors else "OK"
@@ -35,6 +36,43 @@ def write_location_review_page(
           </ul>
         </div>
       </div>
+    </section>
+"""
+    draft_summary_html = ""
+    if draft_fixture_summary is not None:
+        counts = draft_fixture_summary["counts"]
+        bounds = draft_fixture_summary["bounds"]
+        warnings = draft_fixture_summary["warnings"]
+        warning_items = ""
+        if warnings:
+            warning_items = "\n".join(f"            <li>{escape(str(warning))}</li>" for warning in warnings)
+            warning_items = f"""
+      <div>
+        <h3>Fixture Warnings</h3>
+        <ul>
+{warning_items}
+        </ul>
+      </div>
+"""
+        draft_summary_html = f"""
+    <section class="panel">
+      <h2>Draft Fixture Summary</h2>
+      <p>Use this before the first Minecraft test so command load and footprint are visible without opening JSON by hand.</p>
+      <div class="summary-grid">
+        <div class="metric">
+          <p class="metric-label">Place fill commands</p>
+          <p class="metric-value">{escape(str(counts["placeFillCommands"]))}</p>
+        </div>
+        <div class="metric">
+          <p class="metric-label">Fixture cuboids</p>
+          <p class="metric-value">{escape(str(counts["cuboids"]))}</p>
+        </div>
+        <div class="metric">
+          <p class="metric-label">Fixture footprint</p>
+          <p class="metric-value">{escape(str(bounds["width"]))} x {escape(str(bounds["length"]))} x {escape(str(bounds["height"]))}</p>
+        </div>
+      </div>
+{warning_items}
     </section>
 """
 
@@ -319,6 +357,7 @@ def write_location_review_page(
       </div>
     </section>
 {draft_links_html}
+{draft_summary_html}
 
     <section class="panel">
       <h2>Validation Report</h2>
