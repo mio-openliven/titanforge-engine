@@ -16,6 +16,7 @@ def write_location_review_page(
     report_text: str,
     draft_artifacts: tuple[tuple[str, str], ...] = (),
     draft_fixture_summary: dict[str, object] | None = None,
+    draft_fixture_commands: tuple[str, ...] = (),
 ) -> Path:
     review_page_path = output_dir / "review.html"
     status = "ERROR" if validation_errors else "OK"
@@ -73,6 +74,15 @@ def write_location_review_page(
         </div>
       </div>
 {warning_items}
+    </section>
+"""
+    draft_commands_html = ""
+    if draft_fixture_commands:
+        draft_commands_html = f"""
+    <section class="panel">
+      <h2>Next Minecraft Test</h2>
+      <p>Use this exact command guide when you move from review artifacts into a first in-world datapack test.</p>
+      <pre>{escape(chr(10).join(draft_fixture_commands))}</pre>
     </section>
 """
 
@@ -358,6 +368,7 @@ def write_location_review_page(
     </section>
 {draft_links_html}
 {draft_summary_html}
+{draft_commands_html}
 
     <section class="panel">
       <h2>Validation Report</h2>

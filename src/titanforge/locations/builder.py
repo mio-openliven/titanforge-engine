@@ -46,6 +46,7 @@ def build_location_pack(
     source_mode_override: str | None = None,
     draft_artifacts: tuple[tuple[str, str], ...] = (),
     draft_fixture_summary: dict[str, object] | None = None,
+    draft_fixture_commands: tuple[str, ...] = (),
 ) -> LocationBuildResult:
     if input_mask is None and not demo:
         demo = True
@@ -131,6 +132,7 @@ def build_location_pack(
         report_text=report_text,
         draft_artifacts=draft_artifacts,
         draft_fixture_summary=draft_fixture_summary,
+        draft_fixture_commands=draft_fixture_commands,
     )
 
     return LocationBuildResult(

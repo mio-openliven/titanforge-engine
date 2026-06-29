@@ -39,6 +39,9 @@ def write_project_location(
 
     draft_result = write_project_draft(config, draft_dir, max_draft_side=max_draft_side)
     fixture_summary = json.loads(draft_result.fixture_summary_path.read_text(encoding="utf-8"))
+    fixture_commands = tuple(
+        line for line in draft_result.fixture_commands_path.read_text(encoding="utf-8").splitlines() if line.strip()
+    )
     draft_review_links = (
         ("draft/review.html", "../draft/review.html"),
         ("draft/draft-mask.png", "../draft/draft-mask.png"),
@@ -53,6 +56,7 @@ def write_project_location(
         source_mode_override="project-draft",
         draft_artifacts=draft_review_links,
         draft_fixture_summary=fixture_summary,
+        draft_fixture_commands=fixture_commands,
     )
 
     manifest = {

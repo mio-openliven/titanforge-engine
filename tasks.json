@@ -347,6 +347,18 @@
       ]
     },
     {
+      "id": "TF-037",
+      "status": "done",
+      "priority": "P1",
+      "title": "Show fixture commands inside the project-location review page",
+      "acceptance": [
+        "project-location review.html shows the fixture command guide inline",
+        "unsupported target wording is preserved in that inline guide",
+        "plain build-location review.html stays unchanged when no draft fixture commands exist",
+        "tests cover the inline fixture command block in project-location review output"
+      ]
+    },
+    {
       "id": "TF-005",
       "status": "done",
       "priority": "P1",
