@@ -77,7 +77,7 @@ python -m titanforge terrain-color-preview out\demo-location\layout.json out\dem
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
-Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, and tells you exactly which `review.html` to open first.
+Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, and tells you to open that root page first.
 
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range and prints the exact next `project-location` command to run.
 
@@ -147,6 +147,17 @@ Use it when you want one command from `titanforge.toml` to an inspectable locati
 When the location pack came from `project-location`, its `location/review.html` now also links back to the key draft-side files like `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.
 That same location review page now also shows the draft fixture command count and footprint inline, so a tester can judge scope without opening the JSON separately.
 It now also shows the exact next Minecraft test commands inline, so the tester does not need to leave the review page to find `/reload` or `/function` calls.
+
+The `first-map` command creates:
+
+```text
+review.html
+first-map-manifest.json
+titanforge.toml
+first-map\
+```
+
+Use it when you want the quickest scenario-writer flow. Open the root `review.html` first, then jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files only when the overview still matches the story you want.
 
 ## Tests
 

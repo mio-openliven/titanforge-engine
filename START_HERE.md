@@ -67,6 +67,12 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map previews\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
 ```
 
+Then open:
+
+```text
+previews\my-first-world\review.html
+```
+
 If you need a fresh world brief instead of the example file, start here:
 
 ```powershell

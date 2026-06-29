@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-040",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add root review page for the one-command first-map workflow",
+      "acceptance": [
+        "first-map writes a root review.html in the project folder",
+        "root review page links to the starter config, first location review, draft review, fixture summary, and datapack zip",
+        "CLI output points the user at the root review page as the first thing to open",
+        "tests cover the root review page links and CLI output"
+      ]
+    },
+    {
       "id": "TF-039",
       "status": "done",
       "priority": "P1",

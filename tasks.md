@@ -55,6 +55,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-037` `P1` Show fixture commands inside the project-location review page.
 - `TF-038` `P1` Add starter project template command for scenario writers.
 - `TF-039` `P1` Add one-command first-map workflow for scenario writers.
+- `TF-040` `P1` Add root review page for the one-command first-map workflow.
 
 ## Protocol
 

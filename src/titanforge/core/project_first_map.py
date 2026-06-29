@@ -6,6 +6,7 @@ from pathlib import Path
 
 from titanforge.core.project_draft import DEFAULT_MAX_DRAFT_SIDE
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
+from titanforge.core.project_first_map_review import write_project_first_map_review_page
 from titanforge.core.project_template import ProjectTemplateResult, write_project_template
 
 
@@ -17,6 +18,7 @@ PROJECT_FIRST_MAP_VERSION = 1
 class ProjectFirstMapResult:
     project_dir: Path
     manifest_path: Path
+    review_page_path: Path
     template_result: ProjectTemplateResult
     location_result: ProjectLocationResult
 
@@ -33,9 +35,12 @@ def write_project_first_map(
     use_cleanup_for_heightmap: bool = True,
 ) -> ProjectFirstMapResult:
     manifest_path = project_dir / "first-map-manifest.json"
+    review_page_path = project_dir / "review.html"
     suggested_output_dir = project_dir / "first-map"
     if manifest_path.exists():
         raise FileExistsError(f"First-map manifest already exists: {manifest_path}")
+    if review_page_path.exists():
+        raise FileExistsError(f"First-map review page already exists: {review_page_path}")
     if suggested_output_dir.exists():
         raise FileExistsError(f"First map output already exists: {suggested_output_dir}")
 
@@ -55,6 +60,15 @@ def write_project_first_map(
         use_cleanup_for_heightmap=use_cleanup_for_heightmap,
     )
 
+    provisional_result = ProjectFirstMapResult(
+        project_dir=project_dir,
+        manifest_path=manifest_path,
+        review_page_path=review_page_path,
+        template_result=template_result,
+        location_result=location_result,
+    )
+    write_project_first_map_review_page(provisional_result, review_page_path)
+
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
         "version": PROJECT_FIRST_MAP_VERSION,
@@ -69,8 +83,9 @@ def write_project_first_map(
             "length": template_result.config.length,
         },
         "artifacts": {
+            "rootReviewPage": review_page_path.name,
             "projectLocationDir": location_result.output_dir.name,
-            "reviewPage": str(location_result.location_result.review_page_path.relative_to(project_dir)),
+            "locationReviewPage": str(location_result.location_result.review_page_path.relative_to(project_dir)),
             "bridgeManifest": str(location_result.manifest_path.relative_to(project_dir)),
             "draftMask": str(location_result.draft_result.draft_mask_path.relative_to(project_dir)),
             "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
@@ -97,13 +112,13 @@ def write_project_first_map(
     return ProjectFirstMapResult(
         project_dir=project_dir,
         manifest_path=manifest_path,
+        review_page_path=review_page_path,
         template_result=template_result,
         location_result=location_result,
     )
 
 
 def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
-    review_page = result.location_result.location_result.review_page_path.relative_to(result.project_dir)
     return "\n".join(
         (
             f"First map: {result.project_dir}",
@@ -111,11 +126,12 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"- preset: {result.template_result.preset_name}",
             f"- project-location dir: {result.location_result.output_dir.name}",
             f"- root manifest: {result.manifest_path.name}",
+            f"- root review: {result.review_page_path.name}",
             f"World size: {result.template_result.config.width} x {result.template_result.config.length}",
             f"Draft raster: {result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}",
             f"Blocks per pixel: {result.location_result.draft_result.blocks_per_pixel}",
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
-            f"Open first: {review_page}",
+            f"Open first: {result.review_page_path.name}",
         )
     )
