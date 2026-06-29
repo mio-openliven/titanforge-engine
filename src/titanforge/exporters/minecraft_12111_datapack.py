@@ -10,6 +10,11 @@ from titanforge.core.transition_plan import TransitionPlan
 from titanforge.core.world_plan import WorldPlan
 from titanforge.exporters.minecraft_12111_block_fixture import MinecraftBlockFixture, build_minecraft_block_fixture
 from titanforge.exporters.minecraft_12111_mcfunction import build_clear_mcfunction_lines, build_mcfunction_lines
+from titanforge.exporters.minecraft_12111_structure_template import (
+    STRUCTURE_TEMPLATE_NAME,
+    build_minecraft_structure_template_bytes,
+    build_structure_template_note_lines,
+)
 
 
 DATAPACK_MIN_FORMAT = [94, 1]
@@ -30,10 +35,12 @@ def write_minecraft_datapack_fixture(
     pack_dir = output_dir
     function_path = pack_dir / "data" / "titanforge" / "function" / "place_fixture.mcfunction"
     clear_function_path = pack_dir / "data" / "titanforge" / "function" / "clear_fixture.mcfunction"
+    structure_path = pack_dir / "data" / "titanforge" / "structures" / f"{STRUCTURE_TEMPLATE_NAME}.nbt"
     pack_meta_path = pack_dir / "pack.mcmeta"
     readme_path = pack_dir / "README.txt"
 
     function_path.parent.mkdir(parents=True, exist_ok=True)
+    structure_path.parent.mkdir(parents=True, exist_ok=True)
     pack_meta_path.parent.mkdir(parents=True, exist_ok=True)
 
     pack_meta = {
@@ -46,6 +53,7 @@ def write_minecraft_datapack_fixture(
     pack_meta_path.write_text(json.dumps(pack_meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     function_path.write_text("\n".join(build_mcfunction_lines(fixture)) + "\n", encoding="utf-8")
     clear_function_path.write_text("\n".join(build_clear_mcfunction_lines(fixture)) + "\n", encoding="utf-8")
+    structure_path.write_bytes(build_minecraft_structure_template_bytes(fixture))
     readme_path.write_text("\n".join(build_minecraft_datapack_readme_lines(fixture)) + "\n", encoding="utf-8")
     return pack_dir
 
@@ -80,6 +88,8 @@ def build_minecraft_fixture_command_lines(fixture: MinecraftBlockFixture) -> tup
         "/reload",
         f"/function {PLACE_FUNCTION_ID}",
         "",
+        *build_structure_template_note_lines(fixture),
+        "",
         "To remove the same fixture again, run:",
         f"/function {CLEAR_FUNCTION_ID}",
     )
@@ -100,6 +110,8 @@ def build_minecraft_datapack_readme_lines(fixture: MinecraftBlockFixture) -> tup
         "2. Open the world and run:",
         "   /reload",
         f"   /function {PLACE_FUNCTION_ID}",
+        "",
+        *build_structure_template_note_lines(fixture),
         "",
         "To clear the same fixture again, run:",
         f"   /function {CLEAR_FUNCTION_ID}",

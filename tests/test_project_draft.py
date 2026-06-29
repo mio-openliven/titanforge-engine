@@ -11,6 +11,7 @@ import zipfile
 from titanforge.cli import main
 from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 from titanforge.core.project_draft import write_project_draft
+from titanforge.exporters.minecraft_12111_structure_template import read_minecraft_structure_template
 from titanforge.exporters.nbt_codec import read_nbt
 from titanforge.masks.analyzer import analyze_png_mask
 from titanforge.masks.png import read_png
@@ -31,6 +32,7 @@ class ProjectDraftTests(unittest.TestCase):
             chunk_plan = json.loads((output_dir / "chunk-plan.json").read_text(encoding="utf-8"))
             block_fixture = json.loads((output_dir / "block-fixture.json").read_text(encoding="utf-8"))
             nbt_root_name, nbt_fixture = read_nbt((output_dir / "block-fixture.nbt").read_bytes())
+            structure_root_name, structure_template = read_minecraft_structure_template((output_dir / "structure-template.nbt").read_bytes())
             mcfunction_text = (output_dir / "place-fixture.mcfunction").read_text(encoding="utf-8")
             clear_mcfunction_text = (output_dir / "clear-fixture.mcfunction").read_text(encoding="utf-8")
             fixture_commands_text = (output_dir / "fixture-commands.txt").read_text(encoding="utf-8")
@@ -52,6 +54,7 @@ class ProjectDraftTests(unittest.TestCase):
             chunk_plan_exists = (output_dir / "chunk-plan.json").exists()
             block_fixture_exists = (output_dir / "block-fixture.json").exists()
             nbt_fixture_exists = (output_dir / "block-fixture.nbt").exists()
+            structure_template_exists = (output_dir / "structure-template.nbt").exists()
             mcfunction_fixture_exists = (output_dir / "place-fixture.mcfunction").exists()
             clear_mcfunction_fixture_exists = (output_dir / "clear-fixture.mcfunction").exists()
             fixture_commands_exists = (output_dir / "fixture-commands.txt").exists()
@@ -78,6 +81,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertTrue(chunk_plan_exists)
         self.assertTrue(block_fixture_exists)
         self.assertTrue(nbt_fixture_exists)
+        self.assertTrue(structure_template_exists)
         self.assertTrue(mcfunction_fixture_exists)
         self.assertTrue(clear_mcfunction_fixture_exists)
         self.assertTrue(fixture_commands_exists)
@@ -118,9 +122,13 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(nbt_root_name, "TitanForgeFixture")
         self.assertEqual(nbt_fixture["targetVersion"], "1.21.11")
         self.assertEqual(nbt_fixture["supported"], True)
+        self.assertEqual(structure_root_name, "")
+        self.assertGreater(len(structure_template["palette"]), 0)
+        self.assertGreater(len(structure_template["blocks"]), 0)
         self.assertIn("fill ", mcfunction_text)
         self.assertIn(" air", clear_mcfunction_text)
         self.assertIn("/function titanforge:place_fixture", fixture_commands_text)
+        self.assertIn("/place template titanforge:fixture", fixture_commands_text)
         self.assertIn("/function titanforge:clear_fixture", fixture_commands_text)
         self.assertGreater(fixture_summary["counts"]["cuboids"], 0)
         self.assertGreater(fixture_summary["counts"]["placeFillCommands"], 0)
@@ -137,6 +145,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn('"chunkPlan": "chunk-plan.json"', manifest_text)
         self.assertIn('"blockFixture": "block-fixture.json"', manifest_text)
         self.assertIn('"nbtFixture": "block-fixture.nbt"', manifest_text)
+        self.assertIn('"structureTemplate": "structure-template.nbt"', manifest_text)
         self.assertIn('"mcfunctionFixture": "place-fixture.mcfunction"', manifest_text)
         self.assertIn('"clearMcfunctionFixture": "clear-fixture.mcfunction"', manifest_text)
         self.assertIn('"fixtureCommands": "fixture-commands.txt"', manifest_text)
@@ -208,6 +217,10 @@ class ProjectDraftTests(unittest.TestCase):
             output_dir = Path(directory) / "draft"
             result = write_project_draft(config, output_dir, max_draft_side=1024)
             image = read_png(output_dir / "draft-mask.png")
+            fixture_commands_text = (output_dir / "fixture-commands.txt").read_text(encoding="utf-8")
+            structure_root_name, structure_template = read_minecraft_structure_template(
+                (output_dir / "structure-template.nbt").read_bytes()
+            )
 
         self.assertEqual(result.blocks_per_pixel, 32)
         self.assertEqual(result.raster_width, 1000)
@@ -216,6 +229,11 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertEqual(image.height, 750)
         self.assertGreaterEqual(len(result.warnings), 2)
         self.assertTrue(any("Sparse world brief:" in warning for warning in result.warnings))
+        self.assertTrue(any("too large for a safe vanilla structure-template export" in warning for warning in result.warnings))
+        self.assertEqual(structure_root_name, "")
+        self.assertEqual(structure_template["size"], [0, 0, 0])
+        self.assertEqual(structure_template["blocks"], [])
+        self.assertIn("too large for a safe vanilla structure-template export", fixture_commands_text)
 
     def test_write_project_draft_warns_for_weak_zone_variety(self) -> None:
         config = ProjectConfig(
@@ -335,6 +353,7 @@ class ProjectDraftTests(unittest.TestCase):
         self.assertIn("- chunk plan: chunk-plan.json", stdout.getvalue())
         self.assertIn("- block fixture: block-fixture.json", stdout.getvalue())
         self.assertIn("- NBT fixture: block-fixture.nbt", stdout.getvalue())
+        self.assertIn("- structure template: structure-template.nbt", stdout.getvalue())
         self.assertIn("- mcfunction fixture: place-fixture.mcfunction", stdout.getvalue())
         self.assertIn("- clear mcfunction fixture: clear-fixture.mcfunction", stdout.getvalue())
         self.assertIn("- fixture commands: fixture-commands.txt", stdout.getvalue())

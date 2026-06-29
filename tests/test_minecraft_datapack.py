@@ -18,6 +18,10 @@ from titanforge.exporters.minecraft_12111_datapack import (
     write_minecraft_datapack_fixture,
     write_minecraft_datapack_fixture_zip,
 )
+from titanforge.exporters.minecraft_12111_structure_template import (
+    STRUCTURE_TEMPLATE_ID,
+    read_minecraft_structure_template,
+)
 
 
 class MinecraftDatapackTests(unittest.TestCase):
@@ -36,6 +40,9 @@ class MinecraftDatapackTests(unittest.TestCase):
             pack_meta = json.loads((output_dir / "pack.mcmeta").read_text(encoding="utf-8"))
             function_text = (output_dir / "data" / "titanforge" / "function" / "place_fixture.mcfunction").read_text(encoding="utf-8")
             clear_function_text = (output_dir / "data" / "titanforge" / "function" / "clear_fixture.mcfunction").read_text(encoding="utf-8")
+            structure_root_name, structure_payload = read_minecraft_structure_template(
+                (output_dir / "data" / "titanforge" / "structures" / "fixture.nbt").read_bytes()
+            )
             readme_text = (output_dir / "README.txt").read_text(encoding="utf-8")
 
         self.assertEqual(pack_meta["pack"]["min_format"], [94, 1])
@@ -43,8 +50,11 @@ class MinecraftDatapackTests(unittest.TestCase):
         self.assertIn("TitanForge 1.21.11 fixture pack", pack_meta["pack"]["description"])
         self.assertIn("fill ", function_text)
         self.assertIn(" air", clear_function_text)
+        self.assertEqual(structure_root_name, "")
+        self.assertGreater(len(structure_payload["blocks"]), 0)
         self.assertIn("/function titanforge:place_fixture", readme_text)
         self.assertIn("/function titanforge:clear_fixture", readme_text)
+        self.assertIn(f"/place template {STRUCTURE_TEMPLATE_ID}", readme_text)
 
     def test_write_datapack_fixture_zip_creates_archive(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
@@ -68,6 +78,7 @@ class MinecraftDatapackTests(unittest.TestCase):
         self.assertIn("README.txt", names)
         self.assertIn("data/titanforge/function/place_fixture.mcfunction", names)
         self.assertIn("data/titanforge/function/clear_fixture.mcfunction", names)
+        self.assertIn("data/titanforge/structures/fixture.nbt", names)
 
     def test_build_fixture_command_lines_include_place_and_clear(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
@@ -82,6 +93,7 @@ class MinecraftDatapackTests(unittest.TestCase):
 
         self.assertIn("/function titanforge:place_fixture", lines)
         self.assertIn("/function titanforge:clear_fixture", lines)
+        self.assertIn(f"Alternative vanilla structure test: /place template {STRUCTURE_TEMPLATE_ID}", lines)
 
     def test_unsupported_fixture_guides_warn_clearly(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))

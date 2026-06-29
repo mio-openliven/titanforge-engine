@@ -84,6 +84,7 @@ def write_project_location(
             "chunkPlan": str(draft_result.chunk_plan_path.relative_to(output_dir)),
             "blockFixture": str(draft_result.block_fixture_path.relative_to(output_dir)),
             "nbtFixture": str(draft_result.nbt_fixture_path.relative_to(output_dir)),
+            "structureTemplate": str(draft_result.structure_template_path.relative_to(output_dir)),
             "mcfunctionFixture": str(draft_result.mcfunction_fixture_path.relative_to(output_dir)),
             "clearMcfunctionFixture": str(draft_result.clear_mcfunction_fixture_path.relative_to(output_dir)),
             "fixtureCommands": str(draft_result.fixture_commands_path.relative_to(output_dir)),

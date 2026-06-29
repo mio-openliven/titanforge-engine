@@ -113,6 +113,7 @@ export-request.json
 chunk-plan.json
 block-fixture.json
 block-fixture.nbt
+structure-template.nbt
 place-fixture.mcfunction
 clear-fixture.mcfunction
 fixture-commands.txt
@@ -133,7 +134,7 @@ draft-mask.png
 draft-manifest.json
 ```
 
-Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets a first material profile, export request, chunk plan, block fixture, binary NBT-oriented fixture, executable `mcfunction`, a reversible `clear-fixture.mcfunction`, a local `fixture-commands.txt` guide that warns on unsupported targets, a `fixture-summary.json` safety snapshot with warnings for overly large runs, a packaged datapack fixture, and a ready-to-copy `datapack-fixture.zip`.
+Use it when you want the first map-planning artifact directly from `titanforge.toml` before hand-editing PNG masks. Regions now use simple deterministic shape hints instead of only full-height strips, neighboring regions expose a first neutral transition layer, anchors are connected into a first neutral route plan, key sites are promoted into a first neutral placement plan, those routes are promoted again into a first neutral road plan, placement hubs become a first neutral settlement blockout draft, and the primary 1.21.11 target now gets a first material profile, export request, chunk plan, block fixture, binary NBT-oriented fixture, vanilla `structure-template.nbt`, executable `mcfunction`, a reversible `clear-fixture.mcfunction`, a local `fixture-commands.txt` guide that warns on unsupported or oversized structure-template cases, a `fixture-summary.json` safety snapshot with warnings for overly large runs, a packaged datapack fixture, and a ready-to-copy `datapack-fixture.zip`. Very large worlds still emit the structure-template artifact, but it falls back to a safe placeholder and tells you to use the `mcfunction` or datapack path instead of `/place template`.
 
 The `project-location` command creates:
 

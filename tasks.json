@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-041",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first vanilla structure-template artifact for Minecraft 1.21.11",
+      "acceptance": [
+        "project-draft writes a gzipped structure-template.nbt in Minecraft structure-block format for target 1.21.11",
+        "datapack fixture packages a vanilla structure template under the TitanForge namespace",
+        "fixture command guides mention the /place template path alongside existing mcfunction flow",
+        "tests cover structure-template payload and packaged datapack contents"
+      ]
+    },
+    {
       "id": "TF-040",
       "status": "done",
       "priority": "P1",

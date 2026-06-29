@@ -10,6 +10,11 @@ from titanforge.core.settlement_plan import build_settlement_plan
 from titanforge.core.transition_plan import build_transition_plan
 from titanforge.core.world_plan import build_world_plan
 from titanforge.exporters.minecraft_12111_nbt_fixture import write_minecraft_nbt_fixture
+from titanforge.exporters.minecraft_12111_structure_template import (
+    STRUCTURE_TEMPLATE_DATA_VERSION,
+    read_minecraft_structure_template,
+    write_minecraft_structure_template,
+)
 from titanforge.exporters.nbt_codec import read_nbt
 
 
@@ -32,3 +37,24 @@ class MinecraftNbtFixtureTests(unittest.TestCase):
         self.assertEqual(payload["targetVersion"], "1.21.11")
         self.assertEqual(payload["supported"], True)
         self.assertGreater(len(payload["cuboids"]), 0)
+
+    def test_write_structure_template_creates_gzipped_vanilla_payload(self) -> None:
+        config = load_project_config(Path("examples/tiny_project/titanforge.toml"))
+        world_plan = build_world_plan(config)
+        transition_plan = build_transition_plan(world_plan)
+        route_plan = build_route_plan(world_plan)
+        placement_plan = build_placement_plan(world_plan, route_plan)
+        road_plan = build_road_plan(route_plan, placement_plan)
+        settlement_plan = build_settlement_plan(placement_plan, road_plan)
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_path = Path(directory) / "structure-template.nbt"
+            write_minecraft_structure_template("1.21.11", world_plan, transition_plan, road_plan, settlement_plan, output_path)
+            root_name, payload = read_minecraft_structure_template(output_path.read_bytes())
+
+        self.assertEqual(root_name, "")
+        self.assertEqual(payload["DataVersion"], STRUCTURE_TEMPLATE_DATA_VERSION)
+        self.assertEqual(payload["size"], [512, 7, 512])
+        self.assertGreater(len(payload["palette"]), 0)
+        self.assertGreater(len(payload["blocks"]), 0)
+        self.assertEqual(payload["entities"], [])

@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-041` `P1` Add first vanilla structure-template artifact for Minecraft 1.21.11.
 - `TF-001` `P0` Create first location pack pipeline.
 - `TF-003` `P0` Add location summary report for non-technical review.
 - `TF-006` `P0` Add resilient night-run command and new-PC handoff docs.

@@ -25,6 +25,8 @@ from titanforge.exporters.minecraft_12111_fixture_summary import write_minecraft
 from titanforge.exporters.minecraft_12111_mcfunction import write_minecraft_clear_mcfunction_fixture, write_minecraft_mcfunction_fixture
 from titanforge.exporters.minecraft_12111_nbt_fixture import write_minecraft_nbt_fixture
 from titanforge.exporters.minecraft_12111_request import write_minecraft_export_request
+from titanforge.exporters.minecraft_12111_structure_template import write_minecraft_structure_template
+from titanforge.exporters.minecraft_12111_structure_template import get_structure_template_export_issue
 from titanforge.masks.palette import DEFAULT_ZONE_PALETTE
 from titanforge.masks.png import write_rgba_png
 from titanforge.versions.material_profile import write_material_profile
@@ -74,6 +76,7 @@ class ProjectDraftResult:
     chunk_plan_path: Path
     block_fixture_path: Path
     nbt_fixture_path: Path
+    structure_template_path: Path
     mcfunction_fixture_path: Path
     clear_mcfunction_fixture_path: Path
     fixture_commands_path: Path
@@ -115,6 +118,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     chunk_plan_path = output_dir / "chunk-plan.json"
     block_fixture_path = output_dir / "block-fixture.json"
     nbt_fixture_path = output_dir / "block-fixture.nbt"
+    structure_template_path = output_dir / "structure-template.nbt"
     mcfunction_fixture_path = output_dir / "place-fixture.mcfunction"
     clear_mcfunction_fixture_path = output_dir / "clear-fixture.mcfunction"
     fixture_commands_path = output_dir / "fixture-commands.txt"
@@ -152,6 +156,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     write_minecraft_chunk_plan(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, chunk_plan_path)
     write_minecraft_block_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, block_fixture_path)
     write_minecraft_nbt_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, nbt_fixture_path)
+    write_minecraft_structure_template(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, structure_template_path)
     write_minecraft_mcfunction_fixture(config.target_version, world_plan, transition_plan, road_plan, settlement_plan, mcfunction_fixture_path)
     write_minecraft_clear_mcfunction_fixture(
         config.target_version,
@@ -185,6 +190,9 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         blocks_per_pixel=blocks_per_pixel,
         regions=world_plan.regions,
     )
+    structure_template_export_issue = get_structure_template_export_issue(fixture)
+    if structure_template_export_issue is not None:
+        warnings = (*warnings, structure_template_export_issue)
 
     draft_regions = _build_draft_regions(world_plan, blocks_per_pixel, raster_width, raster_length)
     pixels = _render_draft_mask(draft_regions, raster_width, raster_length)
@@ -252,6 +260,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
             "chunkPlan": chunk_plan_path.name,
             "blockFixture": block_fixture_path.name,
             "nbtFixture": nbt_fixture_path.name,
+            "structureTemplate": structure_template_path.name,
             "mcfunctionFixture": mcfunction_fixture_path.name,
             "clearMcfunctionFixture": clear_mcfunction_fixture_path.name,
             "fixtureCommands": fixture_commands_path.name,
@@ -304,6 +313,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
         chunk_plan_path=chunk_plan_path,
         block_fixture_path=block_fixture_path,
         nbt_fixture_path=nbt_fixture_path,
+        structure_template_path=structure_template_path,
         mcfunction_fixture_path=mcfunction_fixture_path,
         clear_mcfunction_fixture_path=clear_mcfunction_fixture_path,
         fixture_commands_path=fixture_commands_path,
@@ -342,6 +352,7 @@ def format_project_draft_result(result: ProjectDraftResult) -> str:
             f"- chunk plan: {result.chunk_plan_path.name}",
             f"- block fixture: {result.block_fixture_path.name}",
             f"- NBT fixture: {result.nbt_fixture_path.name}",
+            f"- structure template: {result.structure_template_path.name}",
             f"- mcfunction fixture: {result.mcfunction_fixture_path.name}",
             f"- clear mcfunction fixture: {result.clear_mcfunction_fixture_path.name}",
             f"- fixture commands: {result.fixture_commands_path.name}",
