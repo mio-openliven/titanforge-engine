@@ -49,6 +49,38 @@ This list should grow as real sources are selected. For now, TitanForge names do
 - Image-mask and heightmap workflows - visual planning direction.
 - Procedural terrain/toolchain projects - pipeline architecture inspiration.
 
+## Vetted Shortlist
+
+Checked on 2026-06-30. These are the first concrete donor candidates worth tracking.
+
+| Project | Link | License | Why It Is Useful | TitanForge Decision |
+| --- | --- | --- | --- | --- |
+| `nbtlib` | <https://github.com/vberlier/nbtlib> | MIT | Clean Python NBT read/write layer for fixture tests, SNBT work, and binary payload inspection. | Safe candidate for optional dependency or reference implementation. Best first donor for NBT fixtures. |
+| `anvil-parser2` | <https://github.com/0xTiger/anvil-parser2> | MIT | Python reader/parser for Anvil region data with 1.18+ support, which is much closer to the 1.21.11 target than the archived original fork. | Good candidate for an isolated exporter-adapter spike that validates chunk/region assumptions without touching core generation. |
+| `mcschematic` | <https://github.com/Sloimayyy/mcschematic> | Apache-2.0 | Python-side schematic creation and transform helpers. Useful if TitanForge adds a first schematic handoff before full world writing. | Safe for experiments in a separate schematic adapter. Do not leak schematic-specific classes into core planning types. |
+| `PrismarineJS/minecraft-data` | <https://github.com/PrismarineJS/minecraft-data> | Repo page says MIT, but provenance needs care | Huge versioned block/item/data snapshot set. Search results also show active 1.21.11 support discussion and releases in 2026. | Good as a version-data reference or pinned generated snapshot, but verify provenance before vendoring data directly into the repo. |
+| `Sponge Schematic Specification` | <https://github.com/SpongePowered/Schematic-Specification> | No clear root license file found during this pass | Canonical format reference for modern schematic storage, palette rules, entities, block entities, and `DataVersion`. | Use as a format/reference document only for now. Do not copy text or code into TitanForge without a clearer license trail. |
+| `EngineHub/WorldEdit` | <https://github.com/EngineHub/WorldEdit> | GPL-3.0 | Defines strong builder expectations around clipboard/schematic workflows and practical UX around structure placement. | Learn from workflow and format expectations, but do not transplant code or couple TitanForge architecture to WorldEdit internals. |
+| `Amulet-Core` | <https://github.com/Amulet-Team/Amulet-Core> | Paid/restricted license (`All rights reserved`, license purchase required) | Powerful world-format tooling and real exporter knowledge. | Useful as an external comparison target only. Do not vendor or depend on it inside TitanForge. |
+| `PyMCTranslate` | <https://github.com/Amulet-Team/PyMCTranslate> | Paid/restricted license (`All rights reserved`, license purchase required) | Rich cross-version translation ideas for blocks, block entities, entities, and items. | Architecture inspiration only. Do not bundle into the repo. |
+| `Amulet-NBT` | <https://github.com/Amulet-Team/Amulet-NBT> | Restrictive custom license with noncommercial/noncompete terms | Fast low-level NBT handling and serialization experience. | Local experiment only if needed; not suitable as a bundled core dependency for TitanForge. |
+
+## Recommended Use Order
+
+If the goal is to reach the first real 1.21.11 map creator faster without poisoning the architecture, use donors in this order:
+
+1. Start with `nbtlib` for safe fixture/NBT tests and binary validation.
+2. Add an isolated `anvil-parser2` spike to inspect chunk and region assumptions against `.mca` data.
+3. Add a separate schematic-adapter spike with `mcschematic` only if schematic handoff becomes the fastest usable export path.
+4. Use `minecraft-data` as a reference input for version-aware block/tag data after pinning exactly which generated snapshot TitanForge trusts.
+5. Keep `WorldEdit`, `Sponge`, and the `Amulet` stack as reference material, not embedded engine code.
+
+## Hard Boundaries
+
+- Permissive licenses such as MIT and Apache-2.0 are the safest path for optional adapters, research spikes, and tests.
+- GPL or restrictive/source-available donors are still useful for behavior study, file-format expectations, and manual experiments, but they should stay outside TitanForge core and outside copied source.
+- If TitanForge ever imports donor code, do it only in a narrow adapter module with explicit attribution, provenance notes, and a reason why a clean-room implementation would be slower or riskier.
+
 ## Why Combining These Ideas Is Useful
 
 Server owners, builders, and creators usually do not need a perfect academic terrain engine. They need a workflow that can move from idea to preview to usable world faster.
