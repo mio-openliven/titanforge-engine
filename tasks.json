@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-042",
+      "status": "todo",
+      "priority": "P1",
+      "title": "Add isolated donor-backed region export spike for Minecraft 1.21.11",
+      "acceptance": [
+        "the spike lives outside TitanForge core planning modules",
+        "the pass proves or disproves one tiny write/read path for a real world-save or region artifact",
+        "donor provenance and license notes are recorded next to the spike",
+        "no donor-specific data types leak into the core generation contracts"
+      ]
+    },
+    {
       "id": "TF-041",
       "status": "done",
       "priority": "P1",
