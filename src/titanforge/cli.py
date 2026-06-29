@@ -6,6 +6,7 @@ import sys
 import tomllib
 
 from titanforge import __version__
+from titanforge.core.project_first_map import format_project_first_map_result, write_project_first_map
 from titanforge.core.project_location import format_project_location_result, write_project_location
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
@@ -63,6 +64,37 @@ def build_parser() -> argparse.ArgumentParser:
         "--target-version",
         default=PRIMARY_TARGET.minecraft_version,
         help="Minecraft target version written into the starter config.",
+    )
+
+    first_map_parser = subparsers.add_parser(
+        "first-map",
+        help="Create a starter titanforge.toml and immediately build the first project-location pack.",
+    )
+    first_map_parser.add_argument("project_dir", type=Path, help="Folder that will receive the starter project and first map.")
+    first_map_parser.add_argument("--name", help="Project name shown in review pages and manifests.")
+    first_map_parser.add_argument("--width", type=int, default=2048, help="Logical world width in blocks.")
+    first_map_parser.add_argument("--length", type=int, default=2048, help="Logical world length in blocks.")
+    first_map_parser.add_argument(
+        "--preset",
+        choices=list_project_template_presets(),
+        default="coastal-valley",
+        help="Starter region/story preset.",
+    )
+    first_map_parser.add_argument(
+        "--target-version",
+        default=PRIMARY_TARGET.minecraft_version,
+        help="Minecraft target version written into the starter config.",
+    )
+    first_map_parser.add_argument(
+        "--max-draft-side",
+        type=int,
+        default=1024,
+        help="Maximum raster side for the generated draft mask.",
+    )
+    first_map_parser.add_argument(
+        "--no-cleanup-for-heightmap",
+        action="store_true",
+        help="Keep the first location heightmap on the raw draft mask instead of the cleanup preview.",
     )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
@@ -271,6 +303,20 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             target_version=args.target_version,
         )
         print(format_project_template_result(result))
+        return 0
+
+    if args.command == "first-map":
+        result = write_project_first_map(
+            args.project_dir,
+            args.name,
+            args.width,
+            args.length,
+            args.preset,
+            target_version=args.target_version,
+            max_draft_side=args.max_draft_side,
+            use_cleanup_for_heightmap=not args.no_cleanup_for_heightmap,
+        )
+        print(format_project_first_map_result(result))
         return 0
 
     if args.command == "plan":

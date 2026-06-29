@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-039",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add one-command first-map workflow for scenario writers",
+      "acceptance": [
+        "CLI can create a starter titanforge.toml and immediately build a first project-location pack in one command",
+        "wrapper output tells the user exactly which review.html to open first",
+        "wrapper writes a small root manifest that points at the config and first map artifacts",
+        "tests cover direct writer and CLI flow"
+      ]
+    },
+    {
       "id": "TF-038",
       "status": "done",
       "priority": "P1",

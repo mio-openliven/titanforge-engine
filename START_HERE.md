@@ -60,6 +60,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge project-location examples\tiny_project\titanforge.toml previews\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
 ```
 
+If you want the fastest scenario-writer flow instead of the example project, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map previews\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
+```
+
 If you need a fresh world brief instead of the example file, start here:
 
 ```powershell
