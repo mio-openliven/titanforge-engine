@@ -60,6 +60,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge project-location examples\tiny_project\titanforge.toml previews\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
 ```
 
+If you need a fresh world brief instead of the example file, start here:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge init-project previews\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
+```
+
 Then the current location-pack smoke:
 
 ```powershell

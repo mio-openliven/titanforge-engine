@@ -53,6 +53,7 @@ Canonical machine-readable backlog: `tasks.json`.
 - `TF-035` `P1` Link draft artifacts from the project-location review page.
 - `TF-036` `P1` Show draft fixture summary inside the project-location review page.
 - `TF-037` `P1` Show fixture commands inside the project-location review page.
+- `TF-038` `P1` Add starter project template command for scenario writers.
 
 ## Protocol
 

@@ -9,6 +9,12 @@ from titanforge import __version__
 from titanforge.core.project_location import format_project_location_result, write_project_location
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
+from titanforge.core.project_template import (
+    ProjectTemplateError,
+    format_project_template_result,
+    list_project_template_presets,
+    write_project_template,
+)
 from titanforge.core.project_review import write_project_review_page
 from titanforge.core.world_plan import build_world_plan, format_world_plan, write_world_plan
 from titanforge.inventory.scanner import format_inventory_report, scan_inventory
@@ -38,6 +44,26 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("info", help="Show current engine strategy and version targets.")
+
+    init_project_parser = subparsers.add_parser(
+        "init-project",
+        help="Write a starter titanforge.toml from a cinematic preset.",
+    )
+    init_project_parser.add_argument("project_dir", type=Path, help="Folder that will receive titanforge.toml.")
+    init_project_parser.add_argument("--name", help="Project name shown in review pages and manifests.")
+    init_project_parser.add_argument("--width", type=int, default=2048, help="Logical world width in blocks.")
+    init_project_parser.add_argument("--length", type=int, default=2048, help="Logical world length in blocks.")
+    init_project_parser.add_argument(
+        "--preset",
+        choices=list_project_template_presets(),
+        default="coastal-valley",
+        help="Starter region/story preset.",
+    )
+    init_project_parser.add_argument(
+        "--target-version",
+        default=PRIMARY_TARGET.minecraft_version,
+        help="Minecraft target version written into the starter config.",
+    )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -225,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return _dispatch(args, parser)
-    except (PngError, FileNotFoundError, NotADirectoryError, tomllib.TOMLDecodeError) as exc:
+    except (PngError, ProjectTemplateError, FileExistsError, FileNotFoundError, NotADirectoryError, tomllib.TOMLDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
@@ -233,6 +259,18 @@ def main(argv: list[str] | None = None) -> int:
 def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "info":
         print_info()
+        return 0
+
+    if args.command == "init-project":
+        result = write_project_template(
+            args.project_dir,
+            args.name,
+            args.width,
+            args.length,
+            args.preset,
+            target_version=args.target_version,
+        )
+        print(format_project_template_result(result))
         return 0
 
     if args.command == "plan":

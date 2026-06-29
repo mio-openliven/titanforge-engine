@@ -65,6 +65,7 @@ Use Python 3.11 or newer.
 ```powershell
 $env:PYTHONPATH = "src"
 python -m titanforge info
+python -m titanforge init-project out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
 python -m titanforge project-location examples\tiny_project\titanforge.toml out\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
 python -m titanforge plan examples\tiny_project\titanforge.toml --review-page out\project-review.html --world-plan out\world-plan.json
@@ -74,6 +75,8 @@ python -m titanforge coastline-smoothing-preview out\demo-location\mask.png out\
 python -m titanforge terrain-color-preview out\demo-location\layout.json out\demo-location\terrain-color-preview.png --mask out\demo-location\mask-cleanup-preview.png
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
+
+Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command now writes a preset-backed config for a safe `64 .. 32000` block range and prints the exact next `project-location` command to run.
 
 Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
 The review page now also explains which draft artifacts to open next, including `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.

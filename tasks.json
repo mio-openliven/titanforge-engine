@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-038",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add starter project template command for scenario writers",
+      "acceptance": [
+        "CLI can write a starter titanforge.toml from a named preset",
+        "starter command enforces a first safe world-size range for new projects",
+        "starter output tells the user the exact next project-location command to run",
+        "tests cover preset config output and CLI guidance"
+      ]
+    },
+    {
       "id": "TF-001",
       "status": "done",
       "priority": "P0",
