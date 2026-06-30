@@ -35,7 +35,13 @@ from titanforge.spikes.anvil_region import (
     write_anvil_region_spike,
 )
 from titanforge.spikes.anvil_save_shell import format_anvil_save_shell_result, write_anvil_save_shell
-from titanforge.spikes.anvil_test_world import format_anvil_test_world_result, write_anvil_test_world
+from titanforge.spikes.anvil_test_world import (
+    AnvilTestWorldVerificationError,
+    format_anvil_test_world_result,
+    format_test_world_verification_update_result,
+    update_test_world_verification_report,
+    write_anvil_test_world,
+)
 from titanforge.terrain.color_preview import format_terrain_color_preview_result, render_terrain_color_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.terrain.model import format_terrain_grid_result, write_terrain_grid
@@ -188,6 +194,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
     )
 
+    anvil_test_world_verify_parser = subparsers.add_parser(
+        "anvil-test-world-verify",
+        help="Update a test-world verification-report.json without hand-editing JSON.",
+    )
+    anvil_test_world_verify_parser.add_argument("report", type=Path, help="Path to verification-report.json.")
+    anvil_test_world_verify_parser.add_argument(
+        "--status",
+        choices=("pending", "in_progress", "failed", "passed"),
+        help="Top-level verification status.",
+    )
+    anvil_test_world_verify_parser.add_argument("--check", help="Check id inside verification-report.json.")
+    anvil_test_world_verify_parser.add_argument(
+        "--check-status",
+        choices=("pending", "in_progress", "failed", "passed"),
+        help="New status for the selected check.",
+    )
+    anvil_test_world_verify_parser.add_argument("--check-note", help="Note to append to the selected check.")
+    anvil_test_world_verify_parser.add_argument("--report-note", help="Note to append to the report note list.")
+
     inventory_parser = subparsers.add_parser(
         "inventory",
         help="Scan a source or donor folder before importing it.",
@@ -332,6 +357,7 @@ def main(argv: list[str] | None = None) -> int:
         return _dispatch(args, parser)
     except (
         AnvilRegionSpikeError,
+        AnvilTestWorldVerificationError,
         PngError,
         ProjectTemplateError,
         FileExistsError,
@@ -437,6 +463,18 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         config = load_project_config(args.config)
         result = write_anvil_test_world(config, args.output_dir, max_side=args.max_side)
         print(format_anvil_test_world_result(result))
+        return 0
+
+    if args.command == "anvil-test-world-verify":
+        result = update_test_world_verification_report(
+            args.report,
+            status=args.status,
+            check_id=args.check,
+            check_status=args.check_status,
+            check_note=args.check_note,
+            report_note=args.report_note,
+        )
+        print(format_test_world_verification_update_result(result))
         return 0
 
     if args.command == "inventory":

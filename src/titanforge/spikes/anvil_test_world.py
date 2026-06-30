@@ -26,8 +26,14 @@ TEST_WORLD_LEVEL_DAT = "level.dat"
 TEST_WORLD_SESSION_LOCK = "session.lock"
 TEST_WORLD_CHECKLIST = "verification-checklist.txt"
 TEST_WORLD_REPORT = "verification-report.json"
+TEST_WORLD_MANIFEST = "anvil-test-world-manifest.json"
 SESSION_LOCK_TEXT = "\u2603"
 TEST_WORLD_NBT_ROOT_NAME = ""
+VALID_VERIFICATION_STATUSES = ("pending", "in_progress", "failed", "passed")
+
+
+class AnvilTestWorldVerificationError(RuntimeError):
+    """Raised when a verification report update is invalid."""
 
 
 @dataclass(frozen=True)
@@ -47,6 +53,15 @@ class AnvilTestWorldResult:
     warnings: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class AnvilTestWorldVerificationUpdateResult:
+    report_path: Path
+    manifest_path: Path | None
+    status: str
+    updated_check_id: str | None
+    updated_check_status: str | None
+
+
 def write_anvil_test_world(
     config: ProjectConfig,
     output_dir: Path,
@@ -56,7 +71,7 @@ def write_anvil_test_world(
 ) -> AnvilTestWorldResult:
     output_dir.mkdir(parents=True, exist_ok=True)
     world_dir = output_dir / TEST_WORLD_DIR_NAME
-    manifest_path = output_dir / "anvil-test-world-manifest.json"
+    manifest_path = output_dir / TEST_WORLD_MANIFEST
     readme_path = output_dir / "README.txt"
     level_dat_path = world_dir / TEST_WORLD_LEVEL_DAT
     session_lock_path = world_dir / TEST_WORLD_SESSION_LOCK
@@ -165,6 +180,108 @@ def read_test_world_level_dat(data: bytes) -> tuple[str, dict[str, Any]]:
     return read_nbt(gzip.decompress(data))
 
 
+def read_test_world_verification_report(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def update_test_world_verification_report(
+    report_path: Path,
+    *,
+    status: str | None = None,
+    check_id: str | None = None,
+    check_status: str | None = None,
+    check_note: str | None = None,
+    report_note: str | None = None,
+) -> AnvilTestWorldVerificationUpdateResult:
+    if status is None and check_status is None and check_note is None and report_note is None:
+        raise AnvilTestWorldVerificationError("No verification update was requested.")
+    if check_status is not None and check_id is None:
+        raise AnvilTestWorldVerificationError("--check-status requires --check.")
+    if check_note is not None and check_id is None:
+        raise AnvilTestWorldVerificationError("--check-note requires --check.")
+    if status is not None and status not in VALID_VERIFICATION_STATUSES:
+        raise AnvilTestWorldVerificationError(
+            f"status must be one of {', '.join(VALID_VERIFICATION_STATUSES)}, got {status}."
+        )
+    if check_status is not None and check_status not in VALID_VERIFICATION_STATUSES:
+        raise AnvilTestWorldVerificationError(
+            f"check-status must be one of {', '.join(VALID_VERIFICATION_STATUSES)}, got {check_status}."
+        )
+
+    report = read_test_world_verification_report(report_path)
+
+    target_check: dict[str, Any] | None = None
+    if check_id is not None:
+        for check in report.get("checks", []):
+            if check.get("id") == check_id:
+                target_check = check
+                break
+        if target_check is None:
+            raise AnvilTestWorldVerificationError(f"Unknown check id: {check_id}.")
+
+    check_status_changed = False
+    if target_check is not None and check_status is not None:
+        target_check["status"] = check_status
+        check_status_changed = True
+    if target_check is not None and check_note:
+        existing = str(target_check.get("notes", ""))
+        target_check["notes"] = _append_note(existing, check_note)
+
+    if report_note:
+        notes = list(report.get("notes", []))
+        notes.append(report_note)
+        report["notes"] = notes
+
+    derived_status = _derive_verification_status(report)
+    if check_status_changed:
+        if status is not None and status != derived_status:
+            raise AnvilTestWorldVerificationError(
+                f"status {status} conflicts with derived verification status {derived_status}."
+            )
+        report["status"] = derived_status
+    elif status is not None:
+        if status == "passed" and _derive_verification_status(report) != "passed":
+            raise AnvilTestWorldVerificationError(
+                "status passed requires every verification check to be passed first."
+            )
+        report["status"] = status
+
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    manifest_path = report_path.with_name(TEST_WORLD_MANIFEST)
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        shell = dict(manifest.get("worldShell", {}))
+        shell["verificationStatus"] = str(report.get("status", "pending"))
+        shell["verifiedByMinecraftOpen"] = shell["verificationStatus"] == "passed"
+        manifest["worldShell"] = shell
+        manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    else:
+        manifest_path = None
+
+    return AnvilTestWorldVerificationUpdateResult(
+        report_path=report_path,
+        manifest_path=manifest_path,
+        status=str(report.get("status", "pending")),
+        updated_check_id=check_id,
+        updated_check_status=check_status,
+    )
+
+
+def format_test_world_verification_update_result(result: AnvilTestWorldVerificationUpdateResult) -> str:
+    lines = [
+        f"Test-world verification report: {result.report_path}",
+        f"- status: {result.status}",
+    ]
+    if result.updated_check_id is not None:
+        lines.append(f"- updated check: {result.updated_check_id}")
+    if result.updated_check_status is not None:
+        lines.append(f"- check status: {result.updated_check_status}")
+    if result.manifest_path is not None:
+        lines.append(f"- manifest synced: {result.manifest_path.name}")
+    return "\n".join(lines)
+
+
 def _build_level_dat_bytes(world_name: str) -> bytes:
     payload = {
         "Data": {
@@ -236,6 +353,23 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
 def _sanitize_world_name(name: str) -> str:
     compact = " ".join(part for part in name.split() if part)
     return compact[:64] if compact else "TitanForge Test World"
+
+
+def _append_note(existing: str, new_note: str) -> str:
+    return f"{existing}\n{new_note}".strip() if existing else new_note
+
+
+def _derive_verification_status(report: dict[str, Any]) -> str:
+    statuses = [str(check.get("status", "pending")) for check in report.get("checks", [])]
+    if statuses and all(status == "passed" for status in statuses):
+        return "passed"
+    if any(status == "failed" for status in statuses):
+        return "failed"
+    if any(status == "in_progress" for status in statuses):
+        return "in_progress"
+    if any(status == "passed" for status in statuses):
+        return "in_progress"
+    return "pending"
 
 
 def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, ...]:

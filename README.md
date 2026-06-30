@@ -176,6 +176,11 @@ The `anvil-save-shell` wrapper goes one step further: it creates a save-like fol
 `anvil-test-world` is the next honest candidate: it writes `test-world\level.dat`, `test-world\session.lock`, and `test-world\region\r.0.0.mca`, but it still labels the result as an experimental throwaway manual-open shell rather than claiming verified world export.
 That same `anvil-test-world` output now also writes `verification-checklist.txt` and `verification-report.json` at the root so the manual open test can be recorded instead of guessed later.
 The intended handoff order is explicit: open `verification-checklist.txt` first, then record the outcome in `verification-report.json`.
+When the manual test starts or finishes, update the report through CLI instead of hand-editing JSON, for example:
+
+```powershell
+python -m titanforge anvil-test-world-verify out\tiny-test-world\verification-report.json --check minecraft-world-list --check-status in_progress --check-note "World copied into a throwaway saves folder."
+```
 
 ## Tests
 

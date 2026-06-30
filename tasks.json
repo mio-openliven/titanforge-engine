@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-047",
+      "id": "TF-048",
       "status": "todo",
+      "priority": "P1",
+      "title": "Surface current verification status from verification-report.json in test-world summaries",
+      "acceptance": [
+        "anvil-test-world summary can show the last recorded verification-report status when the report already exists",
+        "the surfaced status stays honest when verification is still pending or has failed",
+        "the update path does not require rebuilding the whole test-world folder just to see status",
+        "tests cover the surfaced status behavior"
+      ]
+    },
+    {
+      "id": "TF-047",
+      "status": "done",
       "priority": "P1",
       "title": "Add first test-world verification status updater command",
       "acceptance": [

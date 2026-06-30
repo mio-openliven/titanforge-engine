@@ -96,7 +96,7 @@ py -3.11 -m titanforge anvil-save-shell examples\tiny_project\titanforge.toml pr
 py -3.11 -m titanforge anvil-test-world examples\tiny_project\titanforge.toml previews\tiny-test-world --max-side 128
 ```
 
-These are narrow donor-backed experiments, not a full world export. `anvil-save-shell` is the safer inspection handoff, while `anvil-test-world` is the first manual-open candidate because it also writes `level.dat` and `session.lock`. That test-world output now also includes `verification-checklist.txt` and `verification-report.json`; open the checklist first, then record the result in the report.
+These are narrow donor-backed experiments, not a full world export. `anvil-save-shell` is the safer inspection handoff, while `anvil-test-world` is the first manual-open candidate because it also writes `level.dat` and `session.lock`. That test-world output now also includes `verification-checklist.txt` and `verification-report.json`; open the checklist first, then record the result in the report. Use `anvil-test-world-verify` to update the report instead of editing JSON by hand.
 
 ## Overnight Work
 

@@ -10,7 +10,12 @@ from unittest import mock
 
 from titanforge.cli import main
 from titanforge.core.project import load_project_config
-from titanforge.spikes.anvil_test_world import read_test_world_level_dat, write_anvil_test_world
+from titanforge.spikes.anvil_test_world import (
+    read_test_world_level_dat,
+    read_test_world_verification_report,
+    update_test_world_verification_report,
+    write_anvil_test_world,
+)
 from tests.test_anvil_region_spike import _FakeAnvilModule
 
 
@@ -96,3 +101,86 @@ class AnvilTestWorldTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
         self.assertIn("--max-side must be divisible by 16", stderr.getvalue())
+
+    def test_update_test_world_verification_report_updates_check_and_manifest(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            report_path = output_dir / "verification-report.json"
+            result = update_test_world_verification_report(
+                report_path,
+                check_id="mca-selector-open",
+                check_status="failed",
+                check_note="Parser opened the file but chunks looked offset.",
+                report_note="First manual review found a likely origin mismatch.",
+            )
+            report = read_test_world_verification_report(report_path)
+            manifest = json.loads((output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(result.updated_check_id, "mca-selector-open")
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["checks"][0]["status"], "failed")
+        self.assertIn("chunks looked offset", report["checks"][0]["notes"])
+        self.assertIn("origin mismatch", report["notes"][-1])
+        self.assertEqual(manifest["worldShell"]["verificationStatus"], "failed")
+        self.assertEqual(manifest["worldShell"]["verifiedByMinecraftOpen"], False)
+
+    def test_anvil_test_world_verify_cli_command(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "anvil-test-world-verify",
+                        str(output_dir / "verification-report.json"),
+                        "--check",
+                        "minecraft-world-list",
+                        "--check-status",
+                        "in_progress",
+                        "--check-note",
+                        "World folder copied for a throwaway manual boot.",
+                    ]
+                )
+
+            report = read_test_world_verification_report(output_dir / "verification-report.json")
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["status"], "in_progress")
+        self.assertEqual(report["checks"][1]["status"], "in_progress")
+        self.assertIn("throwaway manual boot", report["checks"][1]["notes"])
+        self.assertIn("Test-world verification report:", stdout.getvalue())
+        self.assertIn("- status: in_progress", stdout.getvalue())
+        self.assertIn("- updated check: minecraft-world-list", stdout.getvalue())
+
+    def test_anvil_test_world_verify_cli_rejects_conflicting_status(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            stderr = io.StringIO()
+
+            with contextlib.redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "anvil-test-world-verify",
+                        str(output_dir / "verification-report.json"),
+                        "--status",
+                        "passed",
+                        "--check",
+                        "mca-selector-open",
+                        "--check-status",
+                        "failed",
+                    ]
+                )
+
+        self.assertEqual(exit_code, 2)
+        self.assertIn("conflicts with derived verification status failed", stderr.getvalue())
