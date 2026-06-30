@@ -14,6 +14,11 @@ authors = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+donor-spikes = [
+    "anvil-parser2>=0.10.6,<0.11",
+]
+
 [project.scripts]
 titanforge = "titanforge.cli:main"
 

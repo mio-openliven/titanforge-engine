@@ -4,7 +4,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## To Do
 
-- `TF-042` `P1` Add isolated donor-backed region export spike for Minecraft 1.21.11.
+- `TF-043` `P1` Add first sampled save-shell handoff for Minecraft 1.21.11.
 
 ## In Progress
 
@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-042` `P1` Add isolated donor-backed region export spike for Minecraft 1.21.11.
 - `TF-041` `P1` Add first vanilla structure-template artifact for Minecraft 1.21.11.
 - `TF-001` `P0` Create first location pack pipeline.
 - `TF-003` `P0` Add location summary report for non-technical review.

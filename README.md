@@ -160,6 +160,17 @@ first-map\
 
 Use it when you want the quickest scenario-writer flow. Open the root `review.html` first, then jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files only when the overview still matches the story you want.
 
+## Optional Donor Spike
+
+If you want one narrow experiment toward real world-region output, install the optional donor spike dependency:
+
+```powershell
+py -3.11 -m pip install -e .[donor-spikes]
+python -m titanforge anvil-region-spike examples\tiny_project\titanforge.toml out\tiny-anvil-spike --max-side 128
+```
+
+This writes one sampled `region\r.0.0.mca`, a manifest, and a short README. It is intentionally clipped to one chunk-aligned window inside one safe region file. It proves a donor-backed `.mca` write/read path without claiming that TitanForge already exports full playable worlds.
+
 ## Tests
 
 ```powershell

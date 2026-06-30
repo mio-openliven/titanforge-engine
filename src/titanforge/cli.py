@@ -28,6 +28,12 @@ from titanforge.masks.png import PngError
 from titanforge.masks.demo import format_demo_mask_result, generate_demo_mask
 from titanforge.operations.night_run import format_night_run_result, run_night_run
 from titanforge.preview.mask_preview import format_mask_preview_result, render_mask_preview
+from titanforge.spikes.anvil_region import (
+    AnvilRegionSpikeError,
+    DEFAULT_SPIKE_MAX_SIDE,
+    format_anvil_region_spike_result,
+    write_anvil_region_spike,
+)
 from titanforge.terrain.color_preview import format_terrain_color_preview_result, render_terrain_color_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.terrain.model import format_terrain_grid_result, write_terrain_grid
@@ -139,6 +145,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-cleanup-for-heightmap",
         action="store_true",
         help="Render location heightmap-preview.png from mask-cleanup-preview.png.",
+    )
+
+    anvil_region_spike_parser = subparsers.add_parser(
+        "anvil-region-spike",
+        help="Write one experimental donor-backed .mca region from a TitanForge project config.",
+    )
+    anvil_region_spike_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
+    anvil_region_spike_parser.add_argument("output_dir", type=Path, help="Output folder for the donor-backed region spike.")
+    anvil_region_spike_parser.add_argument(
+        "--max-side",
+        type=int,
+        default=DEFAULT_SPIKE_MAX_SIDE,
+        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
     )
 
     inventory_parser = subparsers.add_parser(
@@ -283,7 +302,15 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return _dispatch(args, parser)
-    except (PngError, ProjectTemplateError, FileExistsError, FileNotFoundError, NotADirectoryError, tomllib.TOMLDecodeError) as exc:
+    except (
+        AnvilRegionSpikeError,
+        PngError,
+        ProjectTemplateError,
+        FileExistsError,
+        FileNotFoundError,
+        NotADirectoryError,
+        tomllib.TOMLDecodeError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
@@ -347,6 +374,18 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         )
         print(format_project_location_result(result))
         return 1 if result.location_result.errors else 0
+
+    if args.command == "anvil-region-spike":
+        if not 16 <= args.max_side <= 512:
+            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+            return 2
+        if args.max_side % 16 != 0:
+            print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
+            return 2
+        config = load_project_config(args.config)
+        result = write_anvil_region_spike(config, args.output_dir, max_side=args.max_side)
+        print(format_anvil_region_spike_result(result))
+        return 0
 
     if args.command == "inventory":
         report = scan_inventory(args.path)

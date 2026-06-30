@@ -87,6 +87,15 @@ $env:PYTHONPATH='src'
 python -m titanforge build-location previews\demo-location --width 128 --height 128 --use-cleanup-for-heightmap
 ```
 
+If you explicitly need the current donor-backed `.mca` lab spike, install the optional extra first:
+
+```powershell
+py -3.11 -m pip install -e .[donor-spikes]
+py -3.11 -m titanforge anvil-region-spike examples\tiny_project\titanforge.toml previews\tiny-anvil-spike --max-side 128
+```
+
+This is a narrow region-file experiment, not a full world export.
+
 ## Overnight Work
 
 Use this when the PC should work without supervision:

@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-042",
+      "id": "TF-043",
       "status": "todo",
+      "priority": "P1",
+      "title": "Add first sampled save-shell handoff for Minecraft 1.21.11",
+      "acceptance": [
+        "the experimental exporter writes a minimal save-like folder around sampled region output",
+        "the handoff makes the next manual test step obvious for MCA Selector or Minecraft saves inspection",
+        "save-shell-specific data stays outside TitanForge core planning modules",
+        "tests cover the shell structure and manifest guidance"
+      ]
+    },
+    {
+      "id": "TF-042",
+      "status": "done",
       "priority": "P1",
       "title": "Add isolated donor-backed region export spike for Minecraft 1.21.11",
       "acceptance": [
