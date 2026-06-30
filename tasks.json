@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-052",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add human-readable world scale guidance to first-map workflow",
+      "acceptance": [
+        "first-map surfaces a simple world-scale label for non-technical users",
+        "the guidance tells the user what that size is good for in plain language",
+        "larger sizes warn that the planning preview will stay more abstract",
+        "tests cover the new size guidance text"
+      ]
+    },
+    {
       "id": "TF-051",
       "status": "done",
       "priority": "P1",

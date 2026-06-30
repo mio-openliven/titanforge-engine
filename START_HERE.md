@@ -73,7 +73,7 @@ Then open:
 previews\my-first-world\review.html
 ```
 
-That root page explains one important thing up front: `width` and `length` are the intended Minecraft world size in blocks, while the draft preview can stay smaller and reports its `blocksPerPixel` scale.
+That root page explains one important thing up front: `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale.
 
 If you need a fresh world brief instead of the example file, start here:
 

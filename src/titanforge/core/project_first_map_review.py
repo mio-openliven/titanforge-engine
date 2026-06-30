@@ -4,6 +4,8 @@ from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from titanforge.core.project_template import describe_world_scale
+
 if TYPE_CHECKING:
     from titanforge.core.project_first_map import ProjectFirstMapResult
 
@@ -15,6 +17,7 @@ def write_project_first_map_review_page(result: "ProjectFirstMapResult", output_
 
 
 def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> str:
+    scale = describe_world_scale(result.template_result.config.width, result.template_result.config.length)
     project_dir = result.project_dir
     config_path = result.template_result.config_path.relative_to(project_dir)
     location_review = result.location_result.location_result.review_page_path.relative_to(project_dir)
@@ -200,6 +203,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <h3>Scale bridge</h3>
           <p><code>1 px = {result.location_result.draft_result.blocks_per_pixel} blocks</code>. Use this value when you compare the preview against the intended in-game size.</p>
+        </article>
+        <article class="card">
+          <h3>World scale</h3>
+          <p><strong>{escape(scale.label)}</strong>. {escape(scale.summary)} {escape(scale.planning_note)}</p>
         </article>
       </div>
     </section>

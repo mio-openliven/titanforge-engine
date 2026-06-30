@@ -7,7 +7,7 @@ from pathlib import Path
 from titanforge.core.project_draft import DEFAULT_MAX_DRAFT_SIDE
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
 from titanforge.core.project_first_map_review import write_project_first_map_review_page
-from titanforge.core.project_template import ProjectTemplateResult, write_project_template
+from titanforge.core.project_template import ProjectTemplateResult, describe_world_scale, write_project_template
 
 
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
@@ -119,6 +119,7 @@ def write_project_first_map(
 
 
 def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
+    scale = describe_world_scale(result.template_result.config.width, result.template_result.config.length)
     return "\n".join(
         (
             f"First map: {result.project_dir}",
@@ -128,9 +129,12 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"- root manifest: {result.manifest_path.name}",
             f"- root review: {result.review_page_path.name}",
             f"Logical world size: {result.template_result.config.width} x {result.template_result.config.length}",
+            f"World scale: {scale.label}",
+            f"Scale use: {scale.summary}",
             f"Draft raster: {result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}",
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             "Change world size later: edit width and length in titanforge.toml, then rerun generation.",
+            scale.planning_note,
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
             f"Open first: {result.review_page_path.name}",

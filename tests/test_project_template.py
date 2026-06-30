@@ -46,6 +46,8 @@ class ProjectTemplateTests(unittest.TestCase):
         self.assertIn("Project template:", summary)
         self.assertIn("Preset: coastal-valley", summary)
         self.assertIn("Allowed size: 64 .. 32000 blocks", summary)
+        self.assertIn("World scale: Local district", summary)
+        self.assertIn("Scale use: Good for one town plus nearby coast, forest, ridge, or harbor.", summary)
         self.assertIn("edit width and length in titanforge.toml", summary)
         self.assertIn("py -3.11 -m titanforge project-location", summary)
         self.assertIn("--use-cleanup-for-heightmap", summary)
@@ -97,6 +99,7 @@ class ProjectTemplateTests(unittest.TestCase):
         self.assertIn("Project template:", stdout.getvalue())
         self.assertIn("Preset: frontier-basin", stdout.getvalue())
         self.assertIn("Allowed size: 64 .. 32000 blocks", stdout.getvalue())
+        self.assertIn("World scale: Local district", stdout.getvalue())
         self.assertIn("first-map", stdout.getvalue())
 
     def test_init_project_cli_reports_invalid_size(self) -> None:

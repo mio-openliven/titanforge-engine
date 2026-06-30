@@ -37,6 +37,13 @@ class ProjectTemplateResult:
     config: ProjectConfig
 
 
+@dataclass(frozen=True)
+class WorldScaleGuidance:
+    label: str
+    summary: str
+    planning_note: str
+
+
 PROJECT_TEMPLATE_PRESETS: dict[str, ProjectTemplatePreset] = {
     "coastal-valley": ProjectTemplatePreset(
         premise="A cinematic coast-to-mountain story space where the player starts near human safety and moves toward older, stranger ground.",
@@ -183,6 +190,33 @@ def list_project_template_presets() -> tuple[str, ...]:
     return tuple(PROJECT_TEMPLATE_PRESETS.keys())
 
 
+def describe_world_scale(width: int, length: int) -> WorldScaleGuidance:
+    max_side = max(width, length)
+    if max_side <= 512:
+        return WorldScaleGuidance(
+            label="Pocket scene",
+            summary="Best for one strong set piece, one village pocket, or a tight prototype.",
+            planning_note="At this size the draft preview stays fairly close to the intended block footprint.",
+        )
+    if max_side <= 2048:
+        return WorldScaleGuidance(
+            label="Local district",
+            summary="Good for one town plus nearby coast, forest, ridge, or harbor.",
+            planning_note="This size is still comfortable for local travel beats and direct visual landmarks.",
+        )
+    if max_side <= 8192:
+        return WorldScaleGuidance(
+            label="Regional journey",
+            summary="Good for multiple story zones, visible travel, and a fuller sense of surrounding land.",
+            planning_note="The draft starts getting more abstract, so prefer broad composition decisions before tiny detail promises.",
+        )
+    return WorldScaleGuidance(
+        label="Long-travel world",
+        summary="Best for cinematic countries, huge coastlines, or long overland journeys between major anchors.",
+        planning_note="The draft preview stays intentionally abstract here, so judge composition first and save fine detail for later passes.",
+    )
+
+
 def build_project_template_config(
     project_name: str | None,
     width: int,
@@ -244,6 +278,7 @@ def write_project_template(
 
 
 def format_project_template_result(result: ProjectTemplateResult) -> str:
+    scale = describe_world_scale(result.config.width, result.config.length)
     next_command = (
         f'py -3.11 -m titanforge project-location "{result.config_path}" '
         f'"{result.suggested_output_dir}" --use-cleanup-for-heightmap'
@@ -255,7 +290,10 @@ def format_project_template_result(result: ProjectTemplateResult) -> str:
             f"Target: {result.config.target_version}",
             f"World size: {result.config.width} x {result.config.length}",
             f"Allowed size: {PROJECT_TEMPLATE_MIN_SIDE} .. {PROJECT_TEMPLATE_MAX_SIDE} blocks",
+            f"World scale: {scale.label}",
+            f"Scale use: {scale.summary}",
             "Change later: edit width and length in titanforge.toml, then run project-location again.",
+            scale.planning_note,
             "Large worlds still use a smaller draft raster during planning; later output shows the blocks-per-pixel scale.",
             "Next:",
             f"- review and adjust: {result.config_path.name}",
