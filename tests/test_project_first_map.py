@@ -63,6 +63,11 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["actionPlan"]["nextActions"][1]["path"],
             "first-map\\draft\\fixture-summary.json",
         )
+        self.assertEqual(manifest["commands"]["presetCatalog"], "py -3.11 -m titanforge preset-catalog")
+        self.assertEqual(manifest["commands"]["presetCatalogJson"], "py -3.11 -m titanforge preset-catalog --json")
+        self.assertIn("py -3.11 -m titanforge first-map", manifest["commands"]["rerunFirstMap"])
+        self.assertIn("--preset coastal-valley", manifest["commands"]["rerunFirstMap"])
+        self.assertIn("py -3.11 -m titanforge project-location", manifest["commands"]["rerunProjectLocation"])
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")

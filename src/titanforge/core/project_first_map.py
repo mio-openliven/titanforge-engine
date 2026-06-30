@@ -135,6 +135,20 @@ def write_project_first_map(
                 ],
             },
         },
+        "commands": {
+            "presetCatalog": "py -3.11 -m titanforge preset-catalog",
+            "presetCatalogJson": "py -3.11 -m titanforge preset-catalog --json",
+            "rerunFirstMap": (
+                f'py -3.11 -m titanforge first-map "{project_dir.name}" '
+                f'--name "{template_result.config.name}" --width {template_result.config.width} '
+                f'--length {template_result.config.length} --preset {template_result.preset_name} '
+                f'--max-draft-side {max_draft_side}'
+            ),
+            "rerunProjectLocation": (
+                f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
+                f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
+            ),
+        },
         "artifacts": {
             "rootReviewPage": review_page_path.name,
             "projectLocationDir": location_result.output_dir.name,

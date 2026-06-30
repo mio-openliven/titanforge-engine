@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-059",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map manifest commands block for future UI handoff",
+      "acceptance": [
+        "first-map-manifest.json records ready-to-surface command hints in a dedicated block",
+        "the commands block stays aligned with the existing action plan and current CLI workflow",
+        "future UI layers can find regenerate and preset-discovery commands without parsing prose",
+        "tests cover the commands block"
+      ]
+    },
+    {
       "id": "TF-058",
       "status": "done",
       "priority": "P1",
