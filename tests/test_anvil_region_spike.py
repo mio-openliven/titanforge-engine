@@ -27,12 +27,17 @@ class _FakeEmptyRegion:
         self.blocks: dict[tuple[int, int, int], _FakeBlock] = {}
 
     def set_block(self, block: _FakeBlock, x: int, y: int, z: int) -> None:
+        expected_region_x = x // 512
+        expected_region_z = z // 512
+        if expected_region_x != self.x or expected_region_z != self.z:
+            raise ValueError(f"Block ({x}, {y}, {z}) is outside fake region {self.x}, {self.z}")
         self.blocks[(x, y, z)] = _FakeBlock(block.namespace, block.id, block.properties)
 
     def save(self, path: str) -> None:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         payload = {
+            "region": {"x": self.x, "z": self.z},
             "blocks": [
                 {
                     "x": x,
@@ -49,12 +54,15 @@ class _FakeEmptyRegion:
 
 
 class _FakeRegion:
-    def __init__(self, blocks: dict[tuple[int, int, int], _FakeBlock]) -> None:
+    def __init__(self, x: int, z: int, blocks: dict[tuple[int, int, int], _FakeBlock]) -> None:
+        self.x = x
+        self.z = z
         self.blocks = blocks
 
     @classmethod
     def from_file(cls, path: str) -> "_FakeRegion":
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        region = payload["region"]
         blocks = {
             (entry["x"], entry["y"], entry["z"]): _FakeBlock(
                 entry["namespace"],
@@ -63,7 +71,7 @@ class _FakeRegion:
             )
             for entry in payload["blocks"]
         }
-        return cls(blocks)
+        return cls(region["x"], region["z"], blocks)
 
 
 class _FakeChunk:
@@ -77,8 +85,8 @@ class _FakeChunk:
         return cls(region, chunk_x, chunk_z)
 
     def get_block(self, x: int, y: int, z: int) -> _FakeBlock:
-        global_x = self._chunk_x * 16 + x
-        global_z = self._chunk_z * 16 + z
+        global_x = self._region.x * 512 + self._chunk_x * 16 + x
+        global_z = self._region.z * 512 + self._chunk_z * 16 + z
         return self._region.blocks.get((global_x, y, global_z), _FakeBlock("minecraft", "air"))
 
 
@@ -104,11 +112,55 @@ class AnvilRegionSpikeTests(unittest.TestCase):
         self.assertTrue(region_exists)
         self.assertEqual(manifest["schema"], "titanforge.spike.anvil-region")
         self.assertEqual(manifest["artifacts"]["regionFile"], "region\\r.0.0.mca")
+        self.assertEqual(manifest["artifacts"]["regionFiles"], ["region\\r.0.0.mca"])
+        self.assertEqual(manifest["artifacts"]["regionFileCount"], 1)
         self.assertEqual(manifest["sampleWindow"]["size"]["width"], 128)
         self.assertEqual(manifest["sampleWindow"]["cropped"], True)
         self.assertTrue(manifest["verification"]["allMatched"])
         self.assertIn("anvil-parser2", readme_text)
         self.assertIn("one narrow write/read path", readme_text)
+
+    def test_write_anvil_region_spike_can_span_multiple_region_files(self) -> None:
+        config = ProjectConfig(
+            name="Wide Harbor Province",
+            target_version="1.21.11",
+            width=1024,
+            length=1024,
+            premise="A broad starter province for multi-region export tests.",
+            player_experience="The player should feel the world widening beyond one local district.",
+            regions=(
+                ProjectRegion(
+                    title="South Bay",
+                    kind="sea",
+                    story_role="arrival",
+                    mood="open",
+                    coverage_hint="50%",
+                    notes="Wide coastal water.",
+                ),
+                ProjectRegion(
+                    title="North Reach",
+                    kind="settlement",
+                    story_role="destination",
+                    mood="busy",
+                    coverage_hint="50%",
+                    notes="Large inland buildable shelf.",
+                ),
+            ),
+            pipeline=("preview",),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "multi-region-spike"
+            result = write_anvil_region_spike(config, output_dir, max_side=1024, anvil_module=_FakeAnvilModule)
+            manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+            readme_text = result.readme_path.read_text(encoding="utf-8")
+
+        self.assertEqual(result.region_file_count, 4)
+        self.assertEqual(tuple(path.name for path in result.region_paths), ("r.0.0.mca", "r.0.1.mca", "r.1.0.mca", "r.1.1.mca"))
+        self.assertEqual(manifest["artifacts"]["regionFileCount"], 4)
+        self.assertEqual(manifest["artifacts"]["regionFiles"][0], "region\\r.0.0.mca")
+        self.assertIn("region\\r.1.1.mca", manifest["artifacts"]["regionFiles"])
+        self.assertIn("Region files: 4 under region\\", readme_text)
 
     def test_write_anvil_region_spike_keeps_small_world_uncropped(self) -> None:
         config = ProjectConfig(
@@ -207,7 +259,8 @@ class AnvilRegionSpikeTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue(manifest_exists)
         self.assertIn("Anvil region spike:", stdout.getvalue())
-        self.assertIn("- region file: r.0.0.mca", stdout.getvalue())
+        self.assertIn("- region files: 1", stdout.getvalue())
+        self.assertIn("- first region file: r.0.0.mca", stdout.getvalue())
 
     def test_anvil_region_spike_cli_rejects_unaligned_sample_size(self) -> None:
         stderr = io.StringIO()

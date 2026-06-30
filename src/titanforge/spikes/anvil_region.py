@@ -20,13 +20,16 @@ from titanforge.exporters.minecraft_12111_block_fixture import BlockFixtureCuboi
 ANVIL_REGION_SPIKE_SCHEMA = "titanforge.spike.anvil-region"
 ANVIL_REGION_SPIKE_VERSION = 1
 ANVIL_REGION_FILE_NAME = "r.0.0.mca"
+ANVIL_REGION_FILE_TEMPLATE = "r.{region_x}.{region_z}.mca"
 ANVIL_DONOR_MODULE = "anvil"
 ANVIL_DONOR_PACKAGE = "anvil-parser2"
 ANVIL_DONOR_URL = "https://github.com/0xTiger/anvil-parser2"
 ANVIL_DONOR_LICENSE = "MIT"
 DEFAULT_SPIKE_MAX_SIDE = 512
 MIN_SPIKE_SIDE = 16
-MAX_SPIKE_SIDE = 512
+MAX_SPIKE_SIDE = 2048
+REGION_SIDE_BLOCKS = 512
+REGION_SIDE_CHUNKS = 32
 
 
 class AnvilRegionSpikeError(RuntimeError):
@@ -60,6 +63,8 @@ class AnvilRegionSpikeResult:
     manifest_path: Path
     readme_path: Path
     region_path: Path
+    region_paths: tuple[Path, ...]
+    region_file_count: int
     origin_x: int
     origin_z: int
     sampled_block_count: int
@@ -91,7 +96,6 @@ def write_anvil_region_spike(
     region_dir = output_dir / "region"
     manifest_path = output_dir / "anvil-region-spike-manifest.json"
     readme_path = output_dir / "README.txt"
-    region_path = region_dir / ANVIL_REGION_FILE_NAME
 
     world_plan = build_world_plan(config)
     transition_plan = build_transition_plan(world_plan)
@@ -132,7 +136,7 @@ def write_anvil_region_spike(
     if sample_window.cropped:
         warnings.append(
             f"World {config.width} x {config.length} was clipped to a {sample_window.sampled_width} x {sample_window.sampled_length} sampled window "
-            "so this donor-backed spike stays inside one safe region file."
+            "so this donor-backed spike stays inside a bounded sampled export."
         )
     if sample_window.focus_region_title:
         warnings.append(
@@ -152,8 +156,9 @@ def write_anvil_region_spike(
     )
 
     module = anvil_module if anvil_module is not None else _load_anvil_module()
-    _write_region_file(module, sampled_cuboids, region_path)
-    verification_samples = _verify_region_file(module, region_path, sampled_cuboids)
+    region_paths = _write_region_files(module, sampled_cuboids, region_dir)
+    region_path = region_paths[0]
+    verification_samples = _verify_region_files(module, region_paths, sampled_cuboids)
 
     donor_version = _get_anvil_donor_version()
     manifest = {
@@ -174,6 +179,8 @@ def write_anvil_region_spike(
         },
         "artifacts": {
             "regionFile": str(region_path.relative_to(output_dir)),
+            "regionFiles": [str(path.relative_to(output_dir)) for path in region_paths],
+            "regionFileCount": len(region_paths),
             "readme": readme_path.name,
         },
         "sampleWindow": {
@@ -207,13 +214,18 @@ def write_anvil_region_spike(
 
     region_dir.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    readme_path.write_text("\n".join(_build_readme_lines(config, sample_window, donor_version)) + "\n", encoding="utf-8")
+    readme_path.write_text(
+        "\n".join(_build_readme_lines(config, sample_window, donor_version, len(region_paths))) + "\n",
+        encoding="utf-8",
+    )
 
     return AnvilRegionSpikeResult(
         output_dir=output_dir,
         manifest_path=manifest_path,
         readme_path=readme_path,
         region_path=region_path,
+        region_paths=region_paths,
+        region_file_count=len(region_paths),
         origin_x=sample_window.origin_x,
         origin_z=sample_window.origin_z,
         sampled_block_count=sampled_block_count,
@@ -231,7 +243,8 @@ def write_anvil_region_spike(
 def format_anvil_region_spike_result(result: AnvilRegionSpikeResult) -> str:
     lines = [
         f"Anvil region spike: {result.output_dir}",
-        f"- region file: {result.region_path.name}",
+        f"- region files: {result.region_file_count}",
+        f"- first region file: {result.region_path.name}",
         f"- manifest: {result.manifest_path.name}",
         f"- readme: {result.readme_path.name}",
         f"- sampled window: {result.sampled_width} x {result.sampled_length}",
@@ -253,6 +266,7 @@ def _build_readme_lines(
     config: ProjectConfig,
     sample_window: AnvilSampleWindow,
     donor_version: str,
+    region_file_count: int,
 ) -> tuple[str, ...]:
     crop_line = (
         f"The original {config.width} x {config.length} world was clipped to a sampled {sample_window.sampled_width} x {sample_window.sampled_length} window."
@@ -283,7 +297,8 @@ def _build_readme_lines(
         f"- URL: {ANVIL_DONOR_URL}",
         "",
         "Output:",
-        f"- Region file: region\\{ANVIL_REGION_FILE_NAME}",
+        f"- Region files: {region_file_count} under region\\",
+        f"- First region file: region\\{ANVIL_REGION_FILE_NAME}",
         f"- Sample window: {sample_window.sampled_width} x {sample_window.sampled_length} blocks",
         f"- Sample origin inside the logical world: x={sample_window.origin_x}, z={sample_window.origin_z}",
         focus_line,
@@ -292,7 +307,7 @@ def _build_readme_lines(
         "",
         "Limits:",
         "- This is not a complete world save.",
-        "- It intentionally stays chunk-aligned and within one safe region file.",
+        "- It intentionally stays chunk-aligned and inside a bounded sampled export window.",
         "- Use it to validate exporter direction before attempting full world writing.",
     )
 
@@ -331,28 +346,57 @@ def _clip_fixture_to_window(
     return tuple(clipped)
 
 
-def _write_region_file(anvil_module: Any, cuboids: tuple[BlockFixtureCuboid, ...], output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    region = anvil_module.EmptyRegion(0, 0)
-    for cuboid in cuboids:
-        block = _block_from_name(anvil_module, cuboid.primary_block)
-        for y in range(cuboid.y, cuboid.y + cuboid.height):
-            for z in range(cuboid.z, cuboid.z + cuboid.length):
-                for x in range(cuboid.x, cuboid.x + cuboid.width):
-                    region.set_block(block, x, y, z)
-    region.save(str(output_path))
-
-
-def _verify_region_file(
+def _write_region_files(
     anvil_module: Any,
-    region_path: Path,
+    cuboids: tuple[BlockFixtureCuboid, ...],
+    region_dir: Path,
+) -> tuple[Path, ...]:
+    region_dir.mkdir(parents=True, exist_ok=True)
+    region_cuboids: dict[tuple[int, int], list[BlockFixtureCuboid]] = {}
+    for cuboid in cuboids:
+        for region_x, region_z, clipped_cuboid in _split_cuboid_by_region(cuboid):
+            region_cuboids.setdefault((region_x, region_z), []).append(clipped_cuboid)
+
+    paths: list[Path] = []
+    for region_x, region_z in sorted(region_cuboids):
+        output_path = region_dir / _region_file_name(region_x, region_z)
+        region = anvil_module.EmptyRegion(region_x, region_z)
+        for cuboid in region_cuboids[(region_x, region_z)]:
+            block = _block_from_name(anvil_module, cuboid.primary_block)
+            for y in range(cuboid.y, cuboid.y + cuboid.height):
+                for z in range(cuboid.z, cuboid.z + cuboid.length):
+                    for x in range(cuboid.x, cuboid.x + cuboid.width):
+                        region.set_block(
+                            block,
+                            region_x * REGION_SIDE_BLOCKS + x,
+                            y,
+                            region_z * REGION_SIDE_BLOCKS + z,
+                        )
+        region.save(str(output_path))
+        paths.append(output_path)
+    return tuple(paths)
+
+
+def _verify_region_files(
+    anvil_module: Any,
+    region_paths: tuple[Path, ...],
     cuboids: tuple[BlockFixtureCuboid, ...],
 ) -> tuple[AnvilBlockSample, ...]:
-    region = anvil_module.Region.from_file(str(region_path))
+    regions = {
+        _parse_region_file_name(path.name): anvil_module.Region.from_file(str(path))
+        for path in region_paths
+    }
     samples: list[AnvilBlockSample] = []
     for cuboid in cuboids[:12]:
         for x, y, z in _cuboid_probe_points(cuboid):
-            chunk = anvil_module.Chunk.from_region(region, x // 16, z // 16)
+            region_x = x // REGION_SIDE_BLOCKS
+            region_z = z // REGION_SIDE_BLOCKS
+            region = regions[(region_x, region_z)]
+            chunk = anvil_module.Chunk.from_region(
+                region,
+                (x // 16) - (region_x * REGION_SIDE_CHUNKS),
+                (z // 16) - (region_z * REGION_SIDE_CHUNKS),
+            )
             actual = chunk.get_block(x % 16, y, z % 16)
             actual_name = _format_block_state(actual.namespace, actual.id, actual.properties)
             expected_name = _normalize_block_name(cuboid.primary_block)
@@ -387,6 +431,55 @@ def _cuboid_probe_points(cuboid: BlockFixtureCuboid) -> tuple[tuple[int, int, in
             seen.add(point)
             unique_points.append(point)
     return tuple(unique_points)
+
+
+def _split_cuboid_by_region(
+    cuboid: BlockFixtureCuboid,
+) -> tuple[tuple[int, int, BlockFixtureCuboid], ...]:
+    segments: list[tuple[int, int, BlockFixtureCuboid]] = []
+    end_x = cuboid.x + cuboid.width
+    end_z = cuboid.z + cuboid.length
+    for region_x in range(cuboid.x // REGION_SIDE_BLOCKS, (end_x - 1) // REGION_SIDE_BLOCKS + 1):
+        region_start_x = region_x * REGION_SIDE_BLOCKS
+        region_end_x = region_start_x + REGION_SIDE_BLOCKS
+        split_start_x = max(cuboid.x, region_start_x)
+        split_end_x = min(end_x, region_end_x)
+        for region_z in range(cuboid.z // REGION_SIDE_BLOCKS, (end_z - 1) // REGION_SIDE_BLOCKS + 1):
+            region_start_z = region_z * REGION_SIDE_BLOCKS
+            region_end_z = region_start_z + REGION_SIDE_BLOCKS
+            split_start_z = max(cuboid.z, region_start_z)
+            split_end_z = min(end_z, region_end_z)
+            segments.append(
+                (
+                    region_x,
+                    region_z,
+                    BlockFixtureCuboid(
+                        id=cuboid.id,
+                        source_type=cuboid.source_type,
+                        operation=cuboid.operation,
+                        x=split_start_x - region_start_x,
+                        y=cuboid.y,
+                        z=split_start_z - region_start_z,
+                        width=split_end_x - split_start_x,
+                        height=cuboid.height,
+                        length=split_end_z - split_start_z,
+                        primary_block=cuboid.primary_block,
+                        accent_blocks=cuboid.accent_blocks,
+                    ),
+                )
+            )
+    return tuple(segments)
+
+
+def _region_file_name(region_x: int, region_z: int) -> str:
+    return ANVIL_REGION_FILE_TEMPLATE.format(region_x=region_x, region_z=region_z)
+
+
+def _parse_region_file_name(file_name: str) -> tuple[int, int]:
+    stem_parts = Path(file_name).stem.split(".")
+    if len(stem_parts) != 3 or stem_parts[0] != "r":
+        raise ValueError(f"Unexpected region file name: {file_name}")
+    return int(stem_parts[1]), int(stem_parts[2])
 
 
 def _block_from_name(anvil_module: Any, block_name: str) -> Any:

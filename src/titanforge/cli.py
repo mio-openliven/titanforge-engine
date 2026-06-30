@@ -41,6 +41,7 @@ from titanforge.preview.mask_preview import format_mask_preview_result, render_m
 from titanforge.spikes.anvil_region import (
     AnvilRegionSpikeError,
     DEFAULT_SPIKE_MAX_SIDE,
+    MAX_SPIKE_SIDE,
     format_anvil_region_spike_result,
     write_anvil_region_spike,
 )
@@ -215,7 +216,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-side",
         type=int,
         default=DEFAULT_SPIKE_MAX_SIDE,
-        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+        help="Chunk-aligned sampled side in blocks. May span several sampled region files inside the donor-backed limit.",
     )
     anvil_region_spike_parser.add_argument(
         "--focus-region",
@@ -236,7 +237,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-side",
         type=int,
         default=DEFAULT_SPIKE_MAX_SIDE,
-        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+        help="Chunk-aligned sampled side in blocks. May span several sampled region files inside the donor-backed limit.",
     )
 
     anvil_test_world_parser = subparsers.add_parser(
@@ -249,7 +250,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-side",
         type=int,
         default=DEFAULT_SPIKE_MAX_SIDE,
-        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+        help="Chunk-aligned sampled side in blocks. May span several sampled region files inside the donor-backed limit.",
     )
     anvil_test_world_parser.add_argument(
         "--focus-region",
@@ -485,8 +486,8 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "first-map-test-world":
-        if args.max_side is not None and not 16 <= args.max_side <= 512:
-            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+        if args.max_side is not None and not 16 <= args.max_side <= MAX_SPIKE_SIDE:
+            print(f"error: --max-side must be between 16 and {MAX_SPIKE_SIDE}, got {args.max_side}", file=sys.stderr)
             return 2
         if args.max_side is not None and args.max_side % 16 != 0:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
@@ -531,8 +532,8 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 1 if result.location_result.errors else 0
 
     if args.command == "anvil-region-spike":
-        if not 16 <= args.max_side <= 512:
-            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+        if not 16 <= args.max_side <= MAX_SPIKE_SIDE:
+            print(f"error: --max-side must be between 16 and {MAX_SPIKE_SIDE}, got {args.max_side}", file=sys.stderr)
             return 2
         if args.max_side % 16 != 0:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
@@ -549,8 +550,8 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "anvil-save-shell":
-        if not 16 <= args.max_side <= 512:
-            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+        if not 16 <= args.max_side <= MAX_SPIKE_SIDE:
+            print(f"error: --max-side must be between 16 and {MAX_SPIKE_SIDE}, got {args.max_side}", file=sys.stderr)
             return 2
         if args.max_side % 16 != 0:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
@@ -561,8 +562,8 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "anvil-test-world":
-        if not 16 <= args.max_side <= 512:
-            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+        if not 16 <= args.max_side <= MAX_SPIKE_SIDE:
+            print(f"error: --max-side must be between 16 and {MAX_SPIKE_SIDE}, got {args.max_side}", file=sys.stderr)
             return 2
         if args.max_side % 16 != 0:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)

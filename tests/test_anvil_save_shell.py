@@ -31,9 +31,12 @@ class AnvilSaveShellTests(unittest.TestCase):
         self.assertEqual(manifest["schema"], "titanforge.spike.anvil-save-shell")
         self.assertEqual(manifest["artifacts"]["shellDir"], "save-shell")
         self.assertEqual(manifest["artifacts"]["shellRegionFile"], "save-shell\\region\\r.0.0.mca")
+        self.assertEqual(manifest["artifacts"]["shellRegionFiles"], ["save-shell\\region\\r.0.0.mca"])
+        self.assertEqual(manifest["artifacts"]["shellRegionFileCount"], 1)
         self.assertEqual(manifest["shell"]["hasLevelDat"], False)
         self.assertEqual(manifest["shell"]["safeForDirectMinecraftOpen"], False)
         self.assertEqual(manifest["shell"]["copyRegionIntoExistingWorld"]["targetSubfolder"], "region")
+        self.assertEqual(manifest["shell"]["copyRegionIntoExistingWorld"]["relativeSourcePath"], "save-shell\\region")
         self.assertIn("MCA Selector", readme_text)
         self.assertIn("No level.dat is written yet", readme_text)
         self.assertTrue(any("omits level.dat" in warning for warning in result.warnings))
@@ -61,6 +64,7 @@ class AnvilSaveShellTests(unittest.TestCase):
         self.assertTrue(manifest_exists)
         self.assertIn("Anvil save shell:", stdout.getvalue())
         self.assertIn("- shell dir: save-shell", stdout.getvalue())
+        self.assertIn("- region files: 1", stdout.getvalue())
 
     def test_anvil_save_shell_cli_rejects_unaligned_sample_size(self) -> None:
         stderr = io.StringIO()

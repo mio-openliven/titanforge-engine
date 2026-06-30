@@ -15,6 +15,7 @@ from titanforge.spikes.anvil_region import (
     ANVIL_DONOR_URL,
     ANVIL_REGION_FILE_NAME,
     DEFAULT_SPIKE_MAX_SIDE,
+    MAX_SPIKE_SIDE,
     write_anvil_region_spike,
 )
 
@@ -45,6 +46,8 @@ class AnvilTestWorldResult:
     level_dat_path: Path
     session_lock_path: Path
     region_path: Path
+    region_paths: tuple[Path, ...]
+    region_file_count: int
     checklist_path: Path
     report_path: Path
     origin_x: int
@@ -77,6 +80,7 @@ class AnvilTestWorldStatusResult:
     level_dat_path: Path
     session_lock_path: Path
     region_path: Path
+    region_file_count: int
     verification_status: str
     verified_by_minecraft_open: bool
     checks: tuple[tuple[str, str], ...]
@@ -160,6 +164,8 @@ def write_anvil_test_world(
             "levelDat": str(level_dat_path.relative_to(output_dir)),
             "sessionLock": str(session_lock_path.relative_to(output_dir)),
             "regionFile": str(region_path.relative_to(output_dir)),
+            "regionFiles": [str(path.relative_to(output_dir)) for path in spike_result.region_paths],
+            "regionFileCount": spike_result.region_file_count,
             "regionSpikeManifest": str((world_dir / "anvil-region-spike-manifest.json").relative_to(output_dir)),
             "verificationChecklist": checklist_path.name,
             "verificationReport": report_path.name,
@@ -204,6 +210,8 @@ def write_anvil_test_world(
         level_dat_path=level_dat_path,
         session_lock_path=session_lock_path,
         region_path=region_path,
+        region_paths=spike_result.region_paths,
+        region_file_count=spike_result.region_file_count,
         checklist_path=checklist_path,
         report_path=report_path,
         origin_x=spike_result.origin_x,
@@ -223,7 +231,8 @@ def format_anvil_test_world_result(result: AnvilTestWorldResult) -> str:
         f"- world dir: {result.world_dir.name}",
         f"- level.dat: {result.level_dat_path.name}",
         f"- session.lock: {result.session_lock_path.name}",
-        f"- region file: {result.region_path.name}",
+        f"- region files: {result.region_file_count}",
+        f"- first region file: {result.region_path.name}",
         f"- checklist: {result.checklist_path.name}",
         f"- report: {result.report_path.name}",
         f"- manifest: {result.manifest_path.name}",
@@ -285,6 +294,12 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
     level_dat_path = output_dir / str(artifacts.get("levelDat", Path(TEST_WORLD_DIR_NAME) / TEST_WORLD_LEVEL_DAT))
     session_lock_path = output_dir / str(artifacts.get("sessionLock", Path(TEST_WORLD_DIR_NAME) / TEST_WORLD_SESSION_LOCK))
     region_path = output_dir / str(artifacts.get("regionFile", Path(TEST_WORLD_DIR_NAME) / "region" / ANVIL_REGION_FILE_NAME))
+    region_file_count = int(
+        artifacts.get(
+            "regionFileCount",
+            len(tuple(artifacts.get("regionFiles", []))) if artifacts.get("regionFiles") is not None else 1,
+        )
+    )
 
     return AnvilTestWorldStatusResult(
         output_dir=output_dir,
@@ -296,6 +311,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         level_dat_path=level_dat_path,
         session_lock_path=session_lock_path,
         region_path=region_path,
+        region_file_count=region_file_count,
         verification_status=verification_status,
         verified_by_minecraft_open=verification_status == "passed",
         checks=checks,
@@ -426,7 +442,8 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         f"- world dir: {result.world_dir.name}",
         f"- level.dat: {result.level_dat_path.name}",
         f"- session.lock: {result.session_lock_path.name}",
-        f"- region file: {result.region_path.name}",
+        f"- region files: {result.region_file_count}",
+        f"- first region file: {result.region_path.name}",
         f"- checklist: {result.checklist_path.name}",
         f"- report: {result.report_path.name}",
         f"- manifest: {result.manifest_path.name}",
@@ -538,7 +555,7 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
         "What this writes:",
         "- test-world\\level.dat",
         "- test-world\\session.lock",
-        "- test-world\\region\\r.0.0.mca",
+        f"- {spike_result.region_file_count} sampled region file(s) under test-world\\region\\",
         "",
         "How to use it:",
         "1. Treat it as a throwaway manual open candidate only.",
@@ -607,7 +624,7 @@ def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[st
         "- [ ] The test was done on a throwaway copy, not on a real working world.",
         "",
         "Open path A: MCA Selector",
-        "- [ ] test-world\\region\\r.0.0.mca opened without a parse error.",
+        "- [ ] The sampled region files under test-world\\region\\ opened without a parse error.",
         "- [ ] The sampled chunks appeared at the expected origin area.",
         "- [ ] Obvious sampled blocks looked plausible instead of all-air corruption.",
         "",
@@ -646,6 +663,11 @@ def _build_verification_report(
             "report": report_path.name,
             "worldDir": TEST_WORLD_DIR_NAME,
             "regionFile": str(Path(TEST_WORLD_DIR_NAME) / "region" / ANVIL_REGION_FILE_NAME),
+            "regionFiles": [
+                str(Path(TEST_WORLD_DIR_NAME) / "region" / path.name)
+                for path in spike_result.region_paths
+            ],
+            "regionFileCount": spike_result.region_file_count,
         },
         "sampleWindow": {
             "origin": {
@@ -661,7 +683,7 @@ def _build_verification_report(
         "checks": [
             {
                 "id": "mca-selector-open",
-                "label": "MCA Selector opens sampled region",
+                "label": "MCA Selector opens sampled region files",
                 "status": "pending",
                 "notes": "",
             },
@@ -700,12 +722,12 @@ def _build_sample_growth_guidance(
     rerun_command_template: str | None,
 ) -> dict[str, Any]:
     current_max_side = max(sampled_width, sampled_length)
-    logical_limit = min(DEFAULT_SPIKE_MAX_SIDE, max(world_width, world_length))
+    logical_limit = min(MAX_SPIKE_SIDE, max(world_width, world_length))
     logical_limit -= logical_limit % 16
     if logical_limit <= 0:
         logical_limit = 16
 
-    next_max_side = min(DEFAULT_SPIKE_MAX_SIDE, current_max_side * 2, logical_limit)
+    next_max_side = min(MAX_SPIKE_SIDE, current_max_side * 2, logical_limit)
     next_max_side -= next_max_side % 16
     if next_max_side <= current_max_side:
         next_max_side = None

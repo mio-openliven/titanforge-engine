@@ -28,6 +28,8 @@ class AnvilSaveShellResult:
     readme_path: Path
     shell_dir: Path
     shell_region_path: Path
+    shell_region_paths: tuple[Path, ...]
+    shell_region_file_count: int
     shell_spike_manifest_path: Path
     shell_spike_readme_path: Path
     sampled_width: int
@@ -55,7 +57,7 @@ def write_anvil_save_shell(
 
     warnings = spike_result.warnings + (
         "This sampled save shell intentionally omits level.dat and other full-save metadata. Do not open it as a normal Minecraft world yet.",
-        "Use MCA Selector for inspection, or copy only save-shell\\region\\r.0.0.mca into a backed-up test world's region folder.",
+        "Use MCA Selector for inspection, or copy the sampled save-shell\\region\\ files into a backed-up test world's region folder.",
     )
 
     manifest = {
@@ -75,6 +77,8 @@ def write_anvil_save_shell(
         "artifacts": {
             "shellDir": shell_dir.name,
             "shellRegionFile": str(shell_region_path.relative_to(output_dir)),
+            "shellRegionFiles": [str(path.relative_to(output_dir)) for path in spike_result.region_paths],
+            "shellRegionFileCount": spike_result.region_file_count,
             "shellReadme": str(shell_spike_readme_path.relative_to(output_dir)),
             "shellSpikeManifest": str(shell_spike_manifest_path.relative_to(output_dir)),
             "wrapperReadme": readme_path.name,
@@ -88,7 +92,8 @@ def write_anvil_save_shell(
             "safeForDirectMinecraftOpen": False,
             "suggestedInspectionFlow": "mca-selector-or-region-copy",
             "copyRegionIntoExistingWorld": {
-                "relativeSourcePath": str(shell_region_path.relative_to(output_dir)),
+                "relativeSourcePath": str(shell_dir.relative_to(output_dir) / "region"),
+                "relativeSourcePaths": [str(path.relative_to(output_dir)) for path in spike_result.region_paths],
                 "targetSubfolder": "region",
                 "backupRequired": True,
             },
@@ -104,6 +109,8 @@ def write_anvil_save_shell(
         readme_path=readme_path,
         shell_dir=shell_dir,
         shell_region_path=shell_region_path,
+        shell_region_paths=spike_result.region_paths,
+        shell_region_file_count=spike_result.region_file_count,
         shell_spike_manifest_path=shell_spike_manifest_path,
         shell_spike_readme_path=shell_spike_readme_path,
         sampled_width=spike_result.sampled_width,
@@ -117,7 +124,8 @@ def format_anvil_save_shell_result(result: AnvilSaveShellResult) -> str:
     lines = [
         f"Anvil save shell: {result.output_dir}",
         f"- shell dir: {result.shell_dir.name}",
-        f"- region file: {result.shell_region_path.name}",
+        f"- region files: {result.shell_region_file_count}",
+        f"- first region file: {result.shell_region_path.name}",
         f"- manifest: {result.manifest_path.name}",
         f"- readme: {result.readme_path.name}",
         f"- sampled window: {result.sampled_width} x {result.sampled_length}",
@@ -138,7 +146,7 @@ def _build_readme_lines(config: ProjectConfig, spike_result: AnvilRegionSpikeRes
         "TitanForge sampled save-shell handoff",
         "",
         "What this is:",
-        "- A save-like folder that carries one sampled r.0.0.mca under save-shell\\region\\.",
+        f"- A save-like folder that carries {spike_result.region_file_count} sampled .mca file(s) under save-shell\\region\\.",
         "- A manual bridge from TitanForge planning artifacts toward real Minecraft save inspection.",
         "",
         "What this is not:",
@@ -146,8 +154,8 @@ def _build_readme_lines(config: ProjectConfig, spike_result: AnvilRegionSpikeRes
         "- No level.dat is written yet, so Minecraft should not open this folder directly as a normal world.",
         "",
         "Use it like this:",
-        "1. Inspect save-shell\\region\\r.0.0.mca in MCA Selector if you want to verify chunk contents safely.",
-        "2. Or back up a throwaway test world and copy only save-shell\\region\\r.0.0.mca into that world's region\\ folder.",
+        "1. Inspect the sampled files under save-shell\\region\\ in MCA Selector if you want to verify chunk contents safely.",
+        "2. Or back up a throwaway test world and copy the sampled save-shell\\region\\ files into that world's region\\ folder.",
         "3. Read save-shell\\anvil-region-spike-manifest.json for sampled block verification details.",
         "",
         "Sample window:",

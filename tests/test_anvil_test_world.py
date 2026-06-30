@@ -9,7 +9,7 @@ import unittest
 from unittest import mock
 
 from titanforge.cli import main
-from titanforge.core.project import load_project_config
+from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 from titanforge.spikes.anvil_test_world import (
     format_test_world_status_result,
     read_test_world_level_dat,
@@ -47,6 +47,8 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(manifest["artifacts"]["worldDir"], "test-world")
         self.assertEqual(manifest["artifacts"]["verificationChecklist"], "verification-checklist.txt")
         self.assertEqual(manifest["artifacts"]["verificationReport"], "verification-report.json")
+        self.assertEqual(manifest["artifacts"]["regionFiles"], ["test-world\\region\\r.0.0.mca"])
+        self.assertEqual(manifest["artifacts"]["regionFileCount"], 1)
         self.assertEqual(manifest["worldShell"]["manualOpenCandidate"], True)
         self.assertEqual(manifest["worldShell"]["verifiedByMinecraftOpen"], False)
         self.assertEqual(manifest["worldShell"]["verificationStatus"], "pending-manual-check")
@@ -85,10 +87,60 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertTrue(manifest_exists)
         self.assertIn("Anvil test world:", stdout.getvalue())
         self.assertIn("- level.dat: level.dat", stdout.getvalue())
+        self.assertIn("- region files: 1", stdout.getvalue())
         self.assertIn("- checklist: verification-checklist.txt", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())
         self.assertIn("Record after manual test: verification-report.json", stdout.getvalue())
         self.assertIn("Verification status: pending manual check", stdout.getvalue())
+
+    def test_write_anvil_test_world_can_span_multiple_region_files(self) -> None:
+        config = ProjectConfig(
+            name="Wide Harbor Province",
+            target_version="1.21.11",
+            width=2048,
+            length=2048,
+            premise="A broad starter province for multi-region test-world export checks.",
+            player_experience="The player should feel the map expanding beyond one district.",
+            regions=(
+                ProjectRegion(
+                    title="South Bay",
+                    kind="sea",
+                    story_role="arrival",
+                    mood="open",
+                    coverage_hint="50%",
+                    notes="Wide coastal water.",
+                ),
+                ProjectRegion(
+                    title="North Reach",
+                    kind="settlement",
+                    story_role="destination",
+                    mood="busy",
+                    coverage_hint="50%",
+                    notes="Large inland buildable shelf.",
+                ),
+            ),
+            pipeline=("preview",),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "multi-region-test-world"
+            result = write_anvil_test_world(config, output_dir, max_side=1024, anvil_module=_FakeAnvilModule)
+            manifest = json.loads((output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+            readme_text = (output_dir / "README.txt").read_text(encoding="utf-8")
+            checklist_text = (output_dir / "verification-checklist.txt").read_text(encoding="utf-8")
+            verification_report = json.loads((output_dir / "verification-report.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(result.region_file_count, 4)
+        self.assertEqual(tuple(path.name for path in result.region_paths), ("r.0.0.mca", "r.0.1.mca", "r.1.0.mca", "r.1.1.mca"))
+        self.assertEqual(manifest["artifacts"]["regionFileCount"], 4)
+        self.assertIn("test-world\\region\\r.1.1.mca", manifest["artifacts"]["regionFiles"])
+        self.assertEqual(manifest["sampleGrowth"]["currentMaxSide"], 1024)
+        self.assertEqual(manifest["sampleGrowth"]["nextMaxSide"], 2048)
+        self.assertIn("grow next to 2048 x 2048", manifest["sampleGrowth"]["summary"])
+        self.assertIn("4 sampled region file(s) under test-world\\region\\", readme_text)
+        self.assertIn("The sampled region files under test-world\\region\\ opened without a parse error.", checklist_text)
+        self.assertEqual(verification_report["artifacts"]["regionFileCount"], 4)
+        self.assertIn("test-world\\region\\r.1.1.mca", verification_report["artifacts"]["regionFiles"])
 
     def test_anvil_test_world_cli_rejects_unaligned_sample_size(self) -> None:
         stderr = io.StringIO()
@@ -280,6 +332,7 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(create_exit_code, 0)
         self.assertEqual(exit_code, 0)
         self.assertIn("Anvil test-world status:", stdout.getvalue())
+        self.assertIn("- region files: 1", stdout.getvalue())
         self.assertIn("- verification status: pending", stdout.getvalue())
         self.assertIn("- sampled origin: x=0 z=0", stdout.getvalue())
         self.assertIn("- mca-selector-open: pending", stdout.getvalue())

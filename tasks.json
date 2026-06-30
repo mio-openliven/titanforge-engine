@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-076",
+      "status": "done",
+      "priority": "P1",
+      "title": "Expand donor-backed sampled test worlds beyond one region file",
+      "acceptance": [
+        "anvil-region-spike can write a chunk-aligned sampled window that spans multiple .mca region files when needed",
+        "anvil-save-shell and anvil-test-world surface the sampled region-file count and stop pretending the sampled export is always only r.0.0.mca",
+        "CLI range checks and sample-growth guidance align with the larger sampled window support",
+        "tests cover multi-region sampled export and the surfaced handoff text"
+      ]
+    },
+    {
       "id": "TF-075",
       "status": "done",
       "priority": "P1",
