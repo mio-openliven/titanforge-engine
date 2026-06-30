@@ -11,12 +11,24 @@ from titanforge.core.project import load_project_config
 from titanforge.core.project_template import (
     ProjectTemplateError,
     build_project_template_config,
+    format_project_template_preset_catalog,
     format_project_template_result,
     write_project_template,
 )
 
 
 class ProjectTemplateTests(unittest.TestCase):
+    def test_format_project_template_preset_catalog(self) -> None:
+        summary = format_project_template_preset_catalog()
+
+        self.assertIn("TitanForge starter presets:", summary)
+        self.assertIn("- coastal-valley", summary)
+        self.assertIn("story: A cinematic coast-to-mountain story space", summary)
+        self.assertIn("regions: Harbor Town, Salt Coast, Old Pine Forest, +2 more", summary)
+        self.assertIn("- frontier-basin", summary)
+        self.assertIn("- island-kingdom", summary)
+        self.assertIn("init-project <folder> --preset <preset-name>", summary)
+
     def test_write_project_template_creates_starter_config(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project_dir = Path(directory) / "fog-coast"
@@ -115,3 +127,14 @@ class ProjectTemplateTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
         self.assertIn("width must stay between 64 and 32000 blocks", stderr.getvalue())
+
+    def test_preset_catalog_cli_command(self) -> None:
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main(["preset-catalog"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("TitanForge starter presets:", stdout.getvalue())
+        self.assertIn("- coastal-valley", stdout.getvalue())
+        self.assertIn("- island-kingdom", stdout.getvalue())

@@ -67,6 +67,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map previews\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
 ```
 
+If you are unsure which starter world to pick, inspect them first:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge preset-catalog
+```
+
 Then open:
 
 ```text

@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-054",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add preset catalog command for scenario writers",
+      "acceptance": [
+        "scenario writers can list starter presets without reading source or argparse choices",
+        "the catalog shows story intent, player feeling, and key regions for each preset",
+        "the command stays short and points at init-project as the next step",
+        "tests cover the catalog formatter and CLI entry point"
+      ]
+    },
+    {
       "id": "TF-053",
       "status": "done",
       "priority": "P1",

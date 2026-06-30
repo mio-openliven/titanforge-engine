@@ -190,6 +190,23 @@ def list_project_template_presets() -> tuple[str, ...]:
     return tuple(PROJECT_TEMPLATE_PRESETS.keys())
 
 
+def format_project_template_preset_catalog() -> str:
+    lines = ["TitanForge starter presets:"]
+    for preset_name in list_project_template_presets():
+        preset = PROJECT_TEMPLATE_PRESETS[preset_name]
+        region_lineup = _format_region_lineup(tuple(region.title for region in preset.regions))
+        lines.extend(
+            (
+                f"- {preset_name}",
+                f"  story: {preset.premise}",
+                f"  feeling: {preset.player_experience}",
+                f"  regions: {region_lineup}",
+            )
+        )
+    lines.append("Use one with: py -3.11 -m titanforge init-project <folder> --preset <preset-name>")
+    return "\n".join(lines)
+
+
 def describe_world_scale(width: int, length: int) -> WorldScaleGuidance:
     max_side = max(width, length)
     if max_side <= 512:

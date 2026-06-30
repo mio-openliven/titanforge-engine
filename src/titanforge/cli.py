@@ -12,6 +12,7 @@ from titanforge.core.project_draft import format_project_draft_result, write_pro
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_template import (
     ProjectTemplateError,
+    format_project_template_preset_catalog,
     format_project_template_result,
     list_project_template_presets,
     write_project_template,
@@ -61,6 +62,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("info", help="Show current engine strategy and version targets.")
+    subparsers.add_parser(
+        "preset-catalog",
+        help="Show plain-language starter preset guidance for scenario writers.",
+    )
 
     init_project_parser = subparsers.add_parser(
         "init-project",
@@ -380,6 +385,10 @@ def main(argv: list[str] | None = None) -> int:
 def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "info":
         print_info()
+        return 0
+
+    if args.command == "preset-catalog":
+        print(format_project_template_preset_catalog())
         return 0
 
     if args.command == "init-project":
