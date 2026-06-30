@@ -149,6 +149,30 @@ def write_project_first_map(
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
             ),
         },
+        "minecraftHandoff": {
+            "artifacts": {
+                "fixtureSummary": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
+                "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
+                "datapackFixtureZip": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
+            },
+            "reviewOrder": [
+                {
+                    "id": "fixture-summary",
+                    "path": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
+                    "summary": "Check footprint, fill-command count, and warnings before any world-side test.",
+                },
+                {
+                    "id": "fixture-commands",
+                    "path": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
+                    "summary": "Use this when you need exact reload, place, and clear commands.",
+                },
+                {
+                    "id": "datapack-fixture-zip",
+                    "path": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
+                    "summary": "Copy this only after the summary looks safe and the draft still matches the story.",
+                },
+            ],
+        },
         "artifacts": {
             "rootReviewPage": review_page_path.name,
             "projectLocationDir": location_result.output_dir.name,

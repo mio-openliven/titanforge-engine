@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-060",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map manifest Minecraft handoff block",
+      "acceptance": [
+        "first-map-manifest.json records the key Minecraft handoff artifacts in a dedicated block",
+        "the block captures a safe inspection order before Minecraft-side testing",
+        "future UI layers can surface datapack and fixture checks without HTML parsing",
+        "tests cover the handoff block"
+      ]
+    },
+    {
       "id": "TF-059",
       "status": "done",
       "priority": "P1",

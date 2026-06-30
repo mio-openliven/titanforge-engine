@@ -68,6 +68,22 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("py -3.11 -m titanforge first-map", manifest["commands"]["rerunFirstMap"])
         self.assertIn("--preset coastal-valley", manifest["commands"]["rerunFirstMap"])
         self.assertIn("py -3.11 -m titanforge project-location", manifest["commands"]["rerunProjectLocation"])
+        self.assertEqual(
+            manifest["minecraftHandoff"]["artifacts"]["fixtureSummary"],
+            "first-map\\draft\\fixture-summary.json",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["reviewOrder"][0]["id"],
+            "fixture-summary",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["reviewOrder"][1]["path"],
+            "first-map\\draft\\fixture-commands.txt",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["reviewOrder"][2]["path"],
+            "first-map\\draft\\datapack-fixture.zip",
+        )
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")
