@@ -152,6 +152,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Optional chunk-aligned sampled side in blocks. If omitted, TitanForge picks a safer starter sample from the first-map project.",
     )
+    first_map_test_world_parser.add_argument(
+        "--focus-region",
+        help="Optional story-region title from the first-map project. Recenters the sampled test-world window around that region.",
+    )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -209,6 +213,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_SPIKE_MAX_SIDE,
         help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
     )
+    anvil_region_spike_parser.add_argument(
+        "--focus-region",
+        help="Optional region title from titanforge.toml. Recenters the sampled window around that story region.",
+    )
 
     anvil_save_shell_parser = subparsers.add_parser(
         "anvil-save-shell",
@@ -234,6 +242,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=DEFAULT_SPIKE_MAX_SIDE,
         help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+    )
+    anvil_test_world_parser.add_argument(
+        "--focus-region",
+        help="Optional region title from titanforge.toml. Recenters the sampled window around that story region.",
     )
 
     anvil_test_world_verify_parser = subparsers.add_parser(
@@ -471,6 +483,7 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             args.project_dir,
             output_dir=args.output_dir,
             max_side=args.max_side,
+            focus_region_title=args.focus_region,
         )
         print(format_anvil_test_world_result(result))
         return 0
@@ -512,7 +525,12 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
             return 2
         config = load_project_config(args.config)
-        result = write_anvil_region_spike(config, args.output_dir, max_side=args.max_side)
+        result = write_anvil_region_spike(
+            config,
+            args.output_dir,
+            max_side=args.max_side,
+            focus_region_title=args.focus_region,
+        )
         print(format_anvil_region_spike_result(result))
         return 0
 
@@ -536,13 +554,14 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
             return 2
         config = load_project_config(args.config)
-        rerun_template = (
-            f'py -3.11 -m titanforge anvil-test-world "{args.config}" "{args.output_dir}" --max-side {{max_side}}'
-        )
+        rerun_template = f'py -3.11 -m titanforge anvil-test-world "{args.config}" "{args.output_dir}" --max-side {{max_side}}'
+        if args.focus_region:
+            rerun_template += f' --focus-region "{args.focus_region}"'
         result = write_anvil_test_world(
             config,
             args.output_dir,
             max_side=args.max_side,
+            focus_region_title=args.focus_region,
             rerun_command_template=rerun_template,
         )
         print(format_anvil_test_world_result(result))

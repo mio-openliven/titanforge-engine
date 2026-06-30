@@ -46,6 +46,7 @@ class ProjectFirstMapStatusResult:
     test_world_recommended_max_side: int
     test_world_strategy_summary: str
     test_world_strategy_reason: str
+    test_world_focus_commands: tuple[tuple[str, str], ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -68,6 +69,23 @@ class ProjectFirstMapStatusResult:
 
 def build_first_map_test_world_output_dir(project_dir: Path) -> Path:
     return project_dir / DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
+
+
+def build_first_map_focus_region_commands(
+    project_dir: Path,
+    region_titles: tuple[str, ...],
+    recommended_max_side: int,
+) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        (
+            region_title,
+            (
+                f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+                f'--max-side {recommended_max_side} --focus-region "{region_title}"'
+            ),
+        )
+        for region_title in region_titles
+    )
 
 
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
@@ -151,6 +169,11 @@ def write_project_first_map(
     scale = describe_world_scale(template_result.config.width, template_result.config.length)
     test_world_strategy = build_first_map_test_world_strategy(template_result.config.width, template_result.config.length)
     key_regions = tuple(region.title for region in template_result.config.regions)
+    focus_region_commands = build_first_map_focus_region_commands(
+        project_dir,
+        key_regions,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
 
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
@@ -252,6 +275,13 @@ def write_project_first_map(
                 "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
                 "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
                 "strategy": test_world_strategy,
+                "focusRegionCommands": [
+                    {
+                        "regionTitle": region_title,
+                        "command": command,
+                    }
+                    for region_title, command in focus_region_commands
+                ],
             },
             "reviewOrder": [
                 {
@@ -354,6 +384,7 @@ def write_project_first_map_test_world(
     *,
     output_dir: Path | None = None,
     max_side: int | None = None,
+    focus_region_title: str | None = None,
     anvil_module: Any | None = None,
 ) -> AnvilTestWorldResult:
     config = load_project_first_map_config(project_dir)
@@ -363,10 +394,13 @@ def write_project_first_map_test_world(
     if output_dir is not None:
         command += f' --output-dir "{output_dir}"'
     command += " --max-side {max_side}"
+    if focus_region_title is not None:
+        command += f' --focus-region "{focus_region_title}"'
     return write_anvil_test_world(
         config,
         resolved_output_dir,
         max_side=resolved_max_side,
+        focus_region_title=focus_region_title,
         anvil_module=anvil_module,
         rerun_command_template=command,
         project_status_command=f'py -3.11 -m titanforge first-map-status "{project_dir}"',
@@ -391,6 +425,13 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
     test_world = dict(minecraft_handoff.get("testWorld", {}))
     test_world_strategy = dict(test_world.get("strategy", {}))
+    test_world_focus_commands = tuple(
+        (
+            str(item.get("regionTitle", "")),
+            str(item.get("command", "")),
+        )
+        for item in test_world.get("focusRegionCommands", [])
+    )
 
     open_sequence = tuple(
         (str(item.get("id", "unknown")), str(item.get("path", "")))
@@ -439,6 +480,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_recommended_max_side=int(test_world_strategy.get("recommendedMaxSide", DEFAULT_SPIKE_MAX_SIDE)),
         test_world_strategy_summary=str(test_world_strategy.get("summary", "")),
         test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
+        test_world_focus_commands=test_world_focus_commands,
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -522,6 +564,10 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             )
         if result.test_world_strategy_reason:
             lines.append(f"- strategy reason: {result.test_world_strategy_reason}")
+        if result.test_world_focus_commands:
+            lines.append("- focus samples:")
+            for region_title, command in result.test_world_focus_commands:
+                lines.append(f"- {region_title}: {command}")
         for item_id, item_path, summary in result.minecraft_review_order:
             if summary:
                 lines.append(f"- {item_id}: {summary} ({item_path})")

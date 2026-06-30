@@ -107,6 +107,29 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(exit_code, 2)
         self.assertIn("--max-side must be divisible by 16", stderr.getvalue())
 
+    def test_write_anvil_test_world_records_focused_region(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "focused-world"
+            result = write_anvil_test_world(
+                config,
+                output_dir,
+                max_side=128,
+                focus_region_title="Old Pine Forest",
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads((output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+            checklist_text = (output_dir / "verification-checklist.txt").read_text(encoding="utf-8")
+
+        self.assertEqual(result.origin_x, 208)
+        self.assertEqual(result.origin_z, 192)
+        self.assertEqual(result.focus_region_title, "Old Pine Forest")
+        self.assertEqual(manifest["sampleWindow"]["origin"]["x"], 208)
+        self.assertEqual(manifest["sampleWindow"]["origin"]["z"], 192)
+        self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Old Pine Forest")
+        self.assertIn('Intended story focus: "Old Pine Forest"', checklist_text)
+
     def test_update_test_world_verification_report_updates_check_and_manifest(self) -> None:
         config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
 
@@ -237,6 +260,7 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Anvil test-world status:", stdout.getvalue())
         self.assertIn("- verification status: pending", stdout.getvalue())
+        self.assertIn("- sampled origin: x=0 z=0", stdout.getvalue())
         self.assertIn("- mca-selector-open: pending", stdout.getvalue())
         self.assertIn("- next sample:", stdout.getvalue())
         self.assertIn("- next sample command:", stdout.getvalue())

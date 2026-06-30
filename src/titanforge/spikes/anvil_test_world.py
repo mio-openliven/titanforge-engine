@@ -47,9 +47,12 @@ class AnvilTestWorldResult:
     region_path: Path
     checklist_path: Path
     report_path: Path
+    origin_x: int
+    origin_z: int
     sampled_width: int
     sampled_length: int
     cropped: bool
+    focus_region_title: str | None
     warnings: tuple[str, ...]
 
 
@@ -76,9 +79,12 @@ class AnvilTestWorldStatusResult:
     verification_status: str
     verified_by_minecraft_open: bool
     checks: tuple[tuple[str, str], ...]
+    origin_x: int
+    origin_z: int
     sampled_width: int
     sampled_length: int
     cropped: bool
+    focus_region_title: str | None
     current_sample_command: str
     next_sample_max_side: int | None
     next_sample_summary: str
@@ -92,6 +98,7 @@ def write_anvil_test_world(
     output_dir: Path,
     *,
     max_side: int = DEFAULT_SPIKE_MAX_SIDE,
+    focus_region_title: str | None = None,
     anvil_module: Any | None = None,
     rerun_command_template: str | None = None,
     project_status_command: str | None = None,
@@ -106,7 +113,13 @@ def write_anvil_test_world(
     checklist_path = output_dir / TEST_WORLD_CHECKLIST
     report_path = output_dir / TEST_WORLD_REPORT
 
-    spike_result = write_anvil_region_spike(config, world_dir, max_side=max_side, anvil_module=anvil_module)
+    spike_result = write_anvil_region_spike(
+        config,
+        world_dir,
+        max_side=max_side,
+        focus_region_title=focus_region_title,
+        anvil_module=anvil_module,
+    )
     world_name = _sanitize_world_name(config.name)
     level_dat_path.write_bytes(_build_level_dat_bytes(world_name))
     session_lock_path.write_bytes(SESSION_LOCK_TEXT.encode("utf-8"))
@@ -149,8 +162,10 @@ def write_anvil_test_world(
             "wrapperReadme": readme_path.name,
         },
         "sampleWindow": {
+            "origin": {"x": spike_result.origin_x, "z": spike_result.origin_z},
             "size": {"width": spike_result.sampled_width, "length": spike_result.sampled_length},
             "cropped": spike_result.cropped,
+            "focusRegion": spike_result.focus_region_title,
         },
         "sampleGrowth": sample_growth,
         "originHandoff": {
@@ -186,9 +201,12 @@ def write_anvil_test_world(
         region_path=region_path,
         checklist_path=checklist_path,
         report_path=report_path,
+        origin_x=spike_result.origin_x,
+        origin_z=spike_result.origin_z,
         sampled_width=spike_result.sampled_width,
         sampled_length=spike_result.sampled_length,
         cropped=spike_result.cropped,
+        focus_region_title=spike_result.focus_region_title,
         warnings=warnings,
     )
 
@@ -205,10 +223,13 @@ def format_anvil_test_world_result(result: AnvilTestWorldResult) -> str:
         f"- manifest: {result.manifest_path.name}",
         f"- readme: {result.readme_path.name}",
         f"- sampled window: {result.sampled_width} x {result.sampled_length}",
+        f"- sampled origin: x={result.origin_x} z={result.origin_z}",
         "Open next: verification-checklist.txt",
         "Record after manual test: verification-report.json",
         "Verification status: pending manual check",
     ]
+    if result.focus_region_title:
+        lines.append(f"- focus region: {result.focus_region_title}")
     for warning in result.warnings:
         lines.append(f"Warning: {warning}")
     return "\n".join(lines)
@@ -237,6 +258,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
     sample_window = manifest.get("sampleWindow", {})
     sample_growth = dict(manifest.get("sampleGrowth", {}))
     origin_handoff = dict(manifest.get("originHandoff", {}))
+    origin = dict(sample_window.get("origin", {}))
     size = sample_window.get("size", {})
 
     report_path = output_dir / str(artifacts.get("verificationReport", TEST_WORLD_REPORT))
@@ -269,9 +291,14 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         verification_status=verification_status,
         verified_by_minecraft_open=verification_status == "passed",
         checks=checks,
+        origin_x=int(origin.get("x", 0)),
+        origin_z=int(origin.get("z", 0)),
         sampled_width=int(size.get("width", 0)),
         sampled_length=int(size.get("length", 0)),
         cropped=bool(sample_window.get("cropped", False)),
+        focus_region_title=(
+            str(sample_window.get("focusRegion")) if sample_window.get("focusRegion") is not None else None
+        ),
         current_sample_command=str(sample_growth.get("rerunCurrentCommand", "")),
         next_sample_max_side=(
             int(sample_growth["nextMaxSide"]) if sample_growth.get("nextMaxSide") is not None else None
@@ -394,9 +421,12 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         f"- manifest: {result.manifest_path.name}",
         f"- readme: {result.readme_path.name}",
         f"- sampled window: {result.sampled_width} x {result.sampled_length}",
+        f"- sampled origin: x={result.origin_x} z={result.origin_z}",
         f"- verification status: {result.verification_status}",
         f"- verified by Minecraft open: {'yes' if result.verified_by_minecraft_open else 'no'}",
     ]
+    if result.focus_region_title:
+        lines.append(f"- focus region: {result.focus_region_title}")
     if result.current_sample_command:
         lines.append(f"- rerun current sample: {result.current_sample_command}")
     if result.next_sample_summary:
@@ -474,10 +504,15 @@ def _build_level_dat_bytes(world_name: str) -> bytes:
 
 def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, ...]:
     crop_line = (
-        f"The logical world {config.width} x {config.length} was clipped to the first "
-        f"{spike_result.sampled_width} x {spike_result.sampled_length} blocks."
+        f"The logical world {config.width} x {config.length} was clipped to a sampled "
+        f"{spike_result.sampled_width} x {spike_result.sampled_length} window."
         if spike_result.cropped
         else "The sampled window matches the logical world size."
+    )
+    focus_line = (
+        f'- Focus region: "{spike_result.focus_region_title}"'
+        if spike_result.focus_region_title
+        else "- Focus region: world origin sample"
     )
     return (
         "TitanForge minimal test-world candidate",
@@ -497,6 +532,8 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
         "Current honesty line:",
         "- This is the smallest test-world shell TitanForge can currently write without pretending that full save export is solved.",
         "- The world is still sampled, donor-backed, and unverified by an automated in-game open.",
+        f"- Sample origin inside the logical world: x={spike_result.origin_x}, z={spike_result.origin_z}",
+        focus_line,
         f"- {crop_line}",
     )
 
@@ -525,10 +562,16 @@ def _derive_verification_status(report: dict[str, Any]) -> str:
 
 def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, ...]:
     crop_line = (
-        f"Sampled window only: first {spike_result.sampled_width} x {spike_result.sampled_length} blocks from the logical "
+        f"Sampled window only: {spike_result.sampled_width} x {spike_result.sampled_length} blocks from logical origin "
+        f"x={spike_result.origin_x}, z={spike_result.origin_z} inside the "
         f"{config.width} x {config.length} world."
         if spike_result.cropped
         else "Sampled window matches the logical world size."
+    )
+    focus_line = (
+        f'- Intended story focus: "{spike_result.focus_region_title}"'
+        if spike_result.focus_region_title
+        else "- Intended story focus: world origin sample"
     )
     return (
         "TitanForge manual-open verification checklist",
@@ -554,6 +597,7 @@ def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[st
         "",
         "Scope reminder:",
         f"- {crop_line}",
+        focus_line,
         "- This checklist does not mean verification already happened.",
     )
 
@@ -579,9 +623,14 @@ def _build_verification_report(
             "regionFile": str(Path(TEST_WORLD_DIR_NAME) / "region" / ANVIL_REGION_FILE_NAME),
         },
         "sampleWindow": {
+            "origin": {
+                "x": spike_result.origin_x,
+                "z": spike_result.origin_z,
+            },
             "width": spike_result.sampled_width,
             "length": spike_result.sampled_length,
             "cropped": spike_result.cropped,
+            "focusRegion": spike_result.focus_region_title,
         },
         "checks": [
             {

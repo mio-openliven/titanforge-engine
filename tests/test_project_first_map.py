@@ -93,6 +93,14 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["minecraftHandoff"]["testWorld"]["buildCommand"],
             'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128',
         )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["regionTitle"],
+            "Harbor Town",
+        )
+        self.assertIn(
+            '--focus-region "Harbor Town"',
+            manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["command"],
+        )
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["outputDir"], "minecraft-test-world")
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedMaxSide"], 128)
         self.assertEqual(
@@ -176,6 +184,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
         self.assertEqual(result.test_world_recommended_max_side, 128)
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
+        self.assertEqual(result.test_world_focus_commands[0][0], "Harbor Town")
+        self.assertIn('--focus-region "Harbor Town"', result.test_world_focus_commands[0][1])
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
@@ -186,6 +196,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
         self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
+        self.assertIn("- focus samples:", summary)
+        self.assertIn('--focus-region "Harbor Town"', summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
         self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
@@ -291,6 +303,34 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["project"]["name"], "Manual Open")
         self.assertEqual(manifest["sampleWindow"]["size"]["width"], 128)
         self.assertTrue(checklist_exists)
+
+    def test_write_project_first_map_test_world_can_focus_named_region(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "focused-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Focused Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Broken Ridge",
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads((result.output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(manifest["sampleWindow"]["origin"]["x"], 1728)
+        self.assertEqual(manifest["sampleWindow"]["origin"]["z"], 208)
+        self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Broken Ridge")
+        self.assertIn(
+            '--focus-region "Broken Ridge"',
+            manifest["sampleGrowth"]["rerunCurrentCommand"],
+        )
 
     def test_write_project_first_map_test_world_uses_recommended_sample_when_omitted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

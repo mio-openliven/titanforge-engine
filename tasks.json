@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-068",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add region-focused sampled test-world handoff",
+      "acceptance": [
+        "first-map-test-world can target a named story region instead of only sampling from the world origin",
+        "anvil-test-world artifacts record the sampled source origin and focused region when a targeted sample is used",
+        "first-map handoff surfaces exact region-focused build commands for repeat use",
+        "tests cover focused sample origin selection and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-067",
       "status": "done",
       "priority": "P1",
