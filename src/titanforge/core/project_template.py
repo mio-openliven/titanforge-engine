@@ -8,6 +8,8 @@ from titanforge.core.project import ProjectConfig, ProjectRegion
 
 PROJECT_TEMPLATE_MIN_SIDE = 64
 PROJECT_TEMPLATE_MAX_SIDE = 32000
+PROJECT_TEMPLATE_PRESET_CATALOG_SCHEMA = "titanforge.project-template-preset-catalog"
+PROJECT_TEMPLATE_PRESET_CATALOG_VERSION = 1
 DEFAULT_TEMPLATE_PIPELINE = (
     "load_masks",
     "resolve_layout",
@@ -203,6 +205,21 @@ def build_project_template_preset_catalog_data() -> list[dict[str, object]]:
             }
         )
     return items
+
+
+def build_project_template_preset_catalog_payload() -> dict[str, object]:
+    return {
+        "schema": PROJECT_TEMPLATE_PRESET_CATALOG_SCHEMA,
+        "version": PROJECT_TEMPLATE_PRESET_CATALOG_VERSION,
+        "presets": build_project_template_preset_catalog_data(),
+        "usage": {
+            "nextCommand": "py -3.11 -m titanforge init-project <folder> --preset <preset-name>",
+            "safeWorldSize": {
+                "minBlocks": PROJECT_TEMPLATE_MIN_SIDE,
+                "maxBlocks": PROJECT_TEMPLATE_MAX_SIDE,
+            },
+        },
+    }
 
 
 def format_project_template_preset_catalog() -> str:

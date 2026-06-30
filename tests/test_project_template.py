@@ -11,6 +11,7 @@ from titanforge.cli import main
 from titanforge.core.project import load_project_config
 from titanforge.core.project_template import (
     build_project_template_preset_catalog_data,
+    build_project_template_preset_catalog_payload,
     ProjectTemplateError,
     build_project_template_config,
     format_project_template_preset_catalog,
@@ -27,6 +28,15 @@ class ProjectTemplateTests(unittest.TestCase):
         self.assertIn("A cinematic coast-to-mountain story space", items[0]["story"])
         self.assertEqual(items[0]["keyRegions"][:3], ["Harbor Town", "Salt Coast", "Old Pine Forest"])
         self.assertEqual(items[-1]["id"], "island-kingdom")
+
+    def test_build_project_template_preset_catalog_payload(self) -> None:
+        payload = build_project_template_preset_catalog_payload()
+
+        self.assertEqual(payload["schema"], "titanforge.project-template-preset-catalog")
+        self.assertEqual(payload["version"], 1)
+        self.assertEqual(payload["presets"][0]["id"], "coastal-valley")
+        self.assertEqual(payload["usage"]["safeWorldSize"]["minBlocks"], 64)
+        self.assertIn("init-project <folder> --preset <preset-name>", payload["usage"]["nextCommand"])
 
     def test_format_project_template_preset_catalog(self) -> None:
         summary = format_project_template_preset_catalog()
@@ -157,6 +167,8 @@ class ProjectTemplateTests(unittest.TestCase):
 
         payload = json.loads(stdout.getvalue())
         self.assertEqual(exit_code, 0)
-        self.assertEqual(payload[0]["id"], "coastal-valley")
-        self.assertEqual(payload[1]["id"], "frontier-basin")
-        self.assertEqual(payload[2]["keyRegions"][0], "Crown Harbor")
+        self.assertEqual(payload["schema"], "titanforge.project-template-preset-catalog")
+        self.assertEqual(payload["version"], 1)
+        self.assertEqual(payload["presets"][0]["id"], "coastal-valley")
+        self.assertEqual(payload["presets"][1]["id"], "frontier-basin")
+        self.assertEqual(payload["presets"][2]["keyRegions"][0], "Crown Harbor")

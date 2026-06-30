@@ -13,6 +13,7 @@ from titanforge.core.project_draft import format_project_draft_result, write_pro
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_template import (
     build_project_template_preset_catalog_data,
+    build_project_template_preset_catalog_payload,
     ProjectTemplateError,
     format_project_template_preset_catalog,
     format_project_template_result,
@@ -397,7 +398,7 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
 
     if args.command == "preset-catalog":
         if args.json:
-            print(json.dumps(build_project_template_preset_catalog_data(), indent=2))
+            print(json.dumps(build_project_template_preset_catalog_payload(), indent=2))
         else:
             print(format_project_template_preset_catalog())
         return 0

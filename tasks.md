@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-058` `P1` Add schema wrapper to preset-catalog JSON output.
 - `TF-057` `P1` Add JSON output to preset-catalog for future UI handoff.
 - `TF-056` `P1` Add first-map manifest action plan for future UI handoff.
 - `TF-055` `P1` Add first-map manifest guidance block for future UI handoff.

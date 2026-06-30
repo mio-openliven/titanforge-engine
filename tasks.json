@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-058",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add schema wrapper to preset-catalog JSON output",
+      "acceptance": [
+        "preset-catalog --json returns a stable top-level object instead of a bare list",
+        "the object records schema and version for future UI integrations",
+        "the object keeps the preset list plus next-step command hints",
+        "tests cover the wrapped JSON shape"
+      ]
+    },
+    {
       "id": "TF-057",
       "status": "done",
       "priority": "P1",
