@@ -68,6 +68,7 @@ python -m titanforge info
 python -m titanforge preset-catalog
 python -m titanforge preset-catalog --json
 python -m titanforge first-map out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
+python -m titanforge first-map-status out\my-first-world
 python -m titanforge init-project out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
 python -m titanforge project-location examples\tiny_project\titanforge.toml out\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
@@ -80,6 +81,8 @@ python -m titanforge terrain-grid out\demo-location\layout.json out\demo-locatio
 ```
 
 Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, labels the requested world scale in plain language, surfaces the preset story intent and key regions, and tells you to open that root page first.
+
+Use `first-map-status` when the pack already exists and you only need the current handoff summary again. It reads `first-map-manifest.json` and points back to the root review, location review, draft review, fixture summary, fixture commands, datapack zip, open order, and saved command hints without rebuilding anything.
 
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, gives a plain-language world-scale label for the chosen size, surfaces the preset story intent and starter regions, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 
@@ -162,7 +165,7 @@ titanforge.toml
 first-map\
 ```
 
-Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance plus a machine-readable open order, next-action plan, command hints, and Minecraft handoff artifact order for future UI layers.
+Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance plus a machine-readable open order, next-action plan, command hints, and Minecraft handoff artifact order for future UI layers. If you revisit the folder later, `python -m titanforge first-map-status out\my-first-world` prints that handoff summary again without rerunning generation.
 
 ## Optional Donor Spike
 

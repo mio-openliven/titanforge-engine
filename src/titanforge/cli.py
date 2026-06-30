@@ -7,7 +7,12 @@ import sys
 import tomllib
 
 from titanforge import __version__
-from titanforge.core.project_first_map import format_project_first_map_result, write_project_first_map
+from titanforge.core.project_first_map import (
+    format_project_first_map_result,
+    format_project_first_map_status_result,
+    summarize_project_first_map_status,
+    write_project_first_map,
+)
 from titanforge.core.project_location import format_project_location_result, write_project_location
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
@@ -126,6 +131,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Keep the first location heightmap on the raw draft mask instead of the cleanup preview.",
     )
+    first_map_status_parser = subparsers.add_parser(
+        "first-map-status",
+        help="Read the current handoff status of an existing first-map project without rebuilding it.",
+    )
+    first_map_status_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -427,6 +437,11 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             use_cleanup_for_heightmap=not args.no_cleanup_for_heightmap,
         )
         print(format_project_first_map_result(result))
+        return 0
+
+    if args.command == "first-map-status":
+        result = summarize_project_first_map_status(args.project_dir)
+        print(format_project_first_map_status_result(result))
         return 0
 
     if args.command == "plan":

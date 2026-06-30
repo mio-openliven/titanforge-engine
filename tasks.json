@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-061",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map status command for repeat handoff",
+      "acceptance": [
+        "CLI can summarize an existing first-map project without rebuilding it",
+        "the status summary points the user back to the key review files and Minecraft handoff artifacts",
+        "the command reads current manifest state instead of reconstructing guidance indirectly",
+        "tests cover the status reader and CLI entry point"
+      ]
+    },
+    {
       "id": "TF-060",
       "status": "done",
       "priority": "P1",

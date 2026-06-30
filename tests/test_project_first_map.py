@@ -9,7 +9,12 @@ import unittest
 
 from titanforge.cli import main
 from titanforge.core.project import load_project_config
-from titanforge.core.project_first_map import format_project_first_map_result, write_project_first_map
+from titanforge.core.project_first_map import (
+    format_project_first_map_result,
+    format_project_first_map_status_result,
+    summarize_project_first_map_status,
+    write_project_first_map,
+)
 
 
 class ProjectFirstMapTests(unittest.TestCase):
@@ -113,6 +118,30 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Scale bridge: 1 px = 8 blocks", summary)
         self.assertIn("Open first: review.html", summary)
 
+    def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "status-world"
+            write_project_first_map(
+                project_dir,
+                "Status World",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            result = summarize_project_first_map_status(project_dir)
+            summary = format_project_first_map_status_result(result)
+
+        self.assertEqual(result.preset_name, "coastal-valley")
+        self.assertEqual(result.world_scale_label, "Local district")
+        self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
+        self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
+        self.assertIn("- location review: first-map\\location\\review.html", summary)
+        self.assertIn("Open order:", summary)
+        self.assertIn("Command hints:", summary)
+        self.assertIn("Open first: review.html", summary)
+
     def test_write_project_first_map_refuses_to_overwrite_existing_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project_dir = Path(directory) / "occupied"
@@ -160,3 +189,26 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Scale bridge: 1 px =", stdout.getvalue())
         self.assertIn("Open first: review.html", stdout.getvalue())
         self.assertIn("Validation: 0 errors, 0 warnings", stdout.getvalue())
+
+    def test_first_map_status_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "status-cli"
+            write_project_first_map(
+                project_dir,
+                "Status CLI",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["first-map-status", str(project_dir)])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("First-map status:", stdout.getvalue())
+        self.assertIn("- preset: frontier-basin", stdout.getvalue())
+        self.assertIn("- root review: review.html", stdout.getvalue())
+        self.assertIn("Command hints:", stdout.getvalue())

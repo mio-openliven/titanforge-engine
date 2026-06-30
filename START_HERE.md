@@ -89,6 +89,13 @@ previews\my-first-world\review.html
 
 That root page explains one important thing up front: it shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
 
+If you come back to that folder later and only need the current handoff again, do not rebuild it. Run:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-status previews\my-first-world
+```
+
 If you need a fresh world brief instead of the example file, start here:
 
 ```powershell

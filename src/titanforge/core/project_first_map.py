@@ -23,6 +23,25 @@ class ProjectFirstMapResult:
     location_result: ProjectLocationResult
 
 
+@dataclass(frozen=True)
+class ProjectFirstMapStatusResult:
+    project_dir: Path
+    manifest_path: Path
+    config_path: Path
+    review_page_path: Path
+    location_review_path: Path
+    draft_review_path: Path
+    fixture_summary_path: Path
+    fixture_commands_path: Path
+    datapack_fixture_zip_path: Path
+    preset_name: str
+    world_width: int
+    world_length: int
+    world_scale_label: str
+    open_sequence: tuple[tuple[str, str], ...]
+    commands: tuple[tuple[str, str], ...]
+
+
 def write_project_first_map(
     project_dir: Path,
     project_name: str | None,
@@ -237,3 +256,74 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Open first: {result.review_page_path.name}",
         )
     )
+
+
+def read_project_first_map_manifest(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:
+    manifest_path = project_dir / "first-map-manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Missing first-map manifest: {manifest_path}")
+
+    manifest = read_project_first_map_manifest(manifest_path)
+    project = manifest.get("project", {})
+    world = manifest.get("world", {})
+    guidance = manifest.get("guidance", {})
+    action_plan = dict(guidance.get("actionPlan", {}))
+    commands = dict(manifest.get("commands", {}))
+    artifacts = dict(manifest.get("artifacts", {}))
+    minecraft_handoff = dict(manifest.get("minecraftHandoff", {}))
+    handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
+
+    open_sequence = tuple(
+        (str(item.get("id", "unknown")), str(item.get("path", "")))
+        for item in action_plan.get("openSequence", [])
+    )
+    command_items = tuple((str(key), str(value)) for key, value in commands.items())
+
+    return ProjectFirstMapStatusResult(
+        project_dir=project_dir,
+        manifest_path=manifest_path,
+        config_path=project_dir / str(project.get("configPath", "titanforge.toml")),
+        review_page_path=project_dir / str(artifacts.get("rootReviewPage", "review.html")),
+        location_review_path=project_dir / str(artifacts.get("locationReviewPage", Path("first-map") / "location" / "review.html")),
+        draft_review_path=project_dir / str(next((path for item_id, path in open_sequence if item_id == "draft-review"), Path("first-map") / "draft" / "review.html")),
+        fixture_summary_path=project_dir / str(handoff_artifacts.get("fixtureSummary", Path("first-map") / "draft" / "fixture-summary.json")),
+        fixture_commands_path=project_dir / str(handoff_artifacts.get("fixtureCommands", Path("first-map") / "draft" / "fixture-commands.txt")),
+        datapack_fixture_zip_path=project_dir / str(handoff_artifacts.get("datapackFixtureZip", Path("first-map") / "draft" / "datapack-fixture.zip")),
+        preset_name=str(project.get("preset", "unknown")),
+        world_width=int(world.get("width", 0)),
+        world_length=int(world.get("length", 0)),
+        world_scale_label=str(dict(guidance.get("worldScale", {})).get("label", "unknown")),
+        open_sequence=open_sequence,
+        commands=command_items,
+    )
+
+
+def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) -> str:
+    lines = [
+        f"First-map status: {result.project_dir}",
+        f"- manifest: {result.manifest_path.name}",
+        f"- config: {result.config_path.name}",
+        f"- preset: {result.preset_name}",
+        f"- logical world size: {result.world_width} x {result.world_length}",
+        f"- world scale: {result.world_scale_label}",
+        f"- root review: {result.review_page_path.relative_to(result.project_dir)}",
+        f"- location review: {result.location_review_path.relative_to(result.project_dir)}",
+        f"- draft review: {result.draft_review_path.relative_to(result.project_dir)}",
+        f"- fixture summary: {result.fixture_summary_path.relative_to(result.project_dir)}",
+        f"- fixture commands: {result.fixture_commands_path.relative_to(result.project_dir)}",
+        f"- datapack zip: {result.datapack_fixture_zip_path.relative_to(result.project_dir)}",
+    ]
+    if result.open_sequence:
+        lines.append("Open order:")
+        for item_id, item_path in result.open_sequence:
+            lines.append(f"- {item_id}: {item_path}")
+    if result.commands:
+        lines.append("Command hints:")
+        for command_id, command_value in result.commands:
+            lines.append(f"- {command_id}: {command_value}")
+    lines.append(f"Open first: {result.review_page_path.name}")
+    return "\n".join(lines)

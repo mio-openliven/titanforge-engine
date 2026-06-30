@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-061` `P1` Add first-map status command for repeat handoff.
 - `TF-060` `P1` Add first-map manifest Minecraft handoff block.
 - `TF-059` `P1` Add first-map manifest commands block for future UI handoff.
 - `TF-058` `P1` Add schema wrapper to preset-catalog JSON output.
