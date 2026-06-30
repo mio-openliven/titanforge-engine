@@ -187,6 +187,24 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     </section>
 
     <section class="panel">
+      <h2>How Size Works</h2>
+      <div class="links">
+        <article class="card">
+          <h3>Logical world size</h3>
+          <p><code>{result.template_result.config.width} x {result.template_result.config.length}</code> is the intended Minecraft footprint in blocks. Change <code>width</code> or <code>length</code> in <code>titanforge.toml</code> when the story needs a bigger or smaller world.</p>
+        </article>
+        <article class="card">
+          <h3>Draft raster</h3>
+          <p><code>{result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}</code> is the lighter planning preview, not the final block export. TitanForge keeps this smaller on purpose so very large worlds stay reviewable.</p>
+        </article>
+        <article class="card">
+          <h3>Scale bridge</h3>
+          <p><code>1 px = {result.location_result.draft_result.blocks_per_pixel} blocks</code>. Use this value when you compare the preview against the intended in-game size.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Open These In Order</h2>
       <div class="links">
         <article class="card">

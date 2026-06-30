@@ -79,7 +79,7 @@ python -m titanforge terrain-grid out\demo-location\layout.json out\demo-locatio
 
 Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, and tells you to open that root page first.
 
-Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range and prints the exact next `project-location` command to run.
+Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 
 Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
 The review page now also explains which draft artifacts to open next, including `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.
@@ -158,7 +158,7 @@ titanforge.toml
 first-map\
 ```
 
-Use it when you want the quickest scenario-writer flow. Open the root `review.html` first, then jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files only when the overview still matches the story you want.
+Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the logical world size, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files.
 
 ## Optional Donor Spike
 

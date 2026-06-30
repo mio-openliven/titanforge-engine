@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-051",
+      "status": "done",
+      "priority": "P1",
+      "title": "Clarify logical world size versus draft raster in first-map workflow",
+      "acceptance": [
+        "first-map root review explains that world size is the logical Minecraft target in blocks",
+        "the review explains that draft raster can be smaller and points to blocksPerPixel as the scale bridge",
+        "init-project or first-map CLI output reminds the user how to change world size safely",
+        "tests cover the new guidance text"
+      ]
+    },
+    {
       "id": "TF-050",
       "status": "done",
       "priority": "P1",
