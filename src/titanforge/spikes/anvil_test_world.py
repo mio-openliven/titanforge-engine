@@ -355,6 +355,7 @@ def format_test_world_verification_update_result(result: AnvilTestWorldVerificat
 
 
 def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
+    failed_checks = tuple(check_id for check_id, check_status in result.checks if check_status == "failed")
     lines = [
         f"Anvil test-world status: {result.output_dir}",
         f"- world dir: {result.world_dir.name}",
@@ -369,6 +370,8 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         f"- verification status: {result.verification_status}",
         f"- verified by Minecraft open: {'yes' if result.verified_by_minecraft_open else 'no'}",
     ]
+    if failed_checks:
+        lines.append(f"- failed checks: {', '.join(failed_checks)}")
     if result.checks:
         lines.append("Checks:")
         for check_id, check_status in result.checks:

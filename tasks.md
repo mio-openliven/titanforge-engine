@@ -4,7 +4,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## To Do
 
-- `TF-050` `P1` Add compact failed-check spotlight to test-world status output.
+- None.
 
 ## In Progress
 
@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-050` `P1` Add compact failed-check spotlight to test-world status output.
 - `TF-049` `P1` Surface per-check verification states in test-world status output.
 - `TF-048` `P1` Surface current verification status from verification-report.json in test-world summaries.
 - `TF-047` `P1` Add first test-world verification status updater command.

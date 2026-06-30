@@ -206,6 +206,7 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertFalse(result.verified_by_minecraft_open)
         self.assertIn(("mca-selector-open", "failed"), result.checks)
         self.assertIn("- verification status: failed", summary)
+        self.assertIn("- failed checks: mca-selector-open", summary)
         self.assertIn("Checks:", summary)
         self.assertIn("- mca-selector-open: failed", summary)
         self.assertIn("Open next: verification-report.json", summary)

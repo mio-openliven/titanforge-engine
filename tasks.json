@@ -4,7 +4,7 @@
   "tasks": [
     {
       "id": "TF-050",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "title": "Add compact failed-check spotlight to test-world status output",
       "acceptance": [
