@@ -174,6 +174,7 @@ python -m titanforge anvil-test-world examples\tiny_project\titanforge.toml out\
 This writes one sampled `region\r.0.0.mca`, a manifest, and a short README. It is intentionally clipped to one chunk-aligned window inside one safe region file. It proves a donor-backed `.mca` write/read path without claiming that TitanForge already exports full playable worlds.
 The `anvil-save-shell` wrapper goes one step further: it creates a save-like folder under `save-shell\`, keeps the sampled region inside `save-shell\region\`, and tells you the next manual test step for MCA Selector or for copying that one region into a backed-up throwaway world.
 `anvil-test-world` is the next honest candidate: it writes `test-world\level.dat`, `test-world\session.lock`, and `test-world\region\r.0.0.mca`, but it still labels the result as an experimental throwaway manual-open shell rather than claiming verified world export.
+That same `anvil-test-world` output now also writes `verification-checklist.txt` and `verification-report.json` at the root so the manual open test can be recorded instead of guessed later.
 
 ## Tests
 

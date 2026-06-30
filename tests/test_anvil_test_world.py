@@ -23,6 +23,8 @@ class AnvilTestWorldTests(unittest.TestCase):
             result = write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
             manifest = json.loads((output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
             readme_text = (output_dir / "README.txt").read_text(encoding="utf-8")
+            checklist_text = (output_dir / "verification-checklist.txt").read_text(encoding="utf-8")
+            verification_report = json.loads((output_dir / "verification-report.json").read_text(encoding="utf-8"))
             root_name, level_dat = read_test_world_level_dat((output_dir / "test-world" / "level.dat").read_bytes())
             session_lock_text = (output_dir / "test-world" / "session.lock").read_text(encoding="utf-8")
             region_exists = result.region_path.exists()
@@ -36,9 +38,16 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(session_lock_text, "\u2603")
         self.assertEqual(manifest["schema"], "titanforge.spike.anvil-test-world")
         self.assertEqual(manifest["artifacts"]["worldDir"], "test-world")
+        self.assertEqual(manifest["artifacts"]["verificationChecklist"], "verification-checklist.txt")
+        self.assertEqual(manifest["artifacts"]["verificationReport"], "verification-report.json")
         self.assertEqual(manifest["worldShell"]["manualOpenCandidate"], True)
         self.assertEqual(manifest["worldShell"]["verifiedByMinecraftOpen"], False)
         self.assertIn("smallest test-world shell", readme_text)
+        self.assertIn("Status: pending manual verification", checklist_text)
+        self.assertIn("verification-report.json", checklist_text)
+        self.assertEqual(verification_report["status"], "pending")
+        self.assertEqual(verification_report["checks"][0]["id"], "mca-selector-open")
+        self.assertEqual(verification_report["checks"][0]["status"], "pending")
         self.assertTrue(any("throwaway manual open tests" in warning for warning in result.warnings))
 
     def test_anvil_test_world_cli_command(self) -> None:
@@ -64,6 +73,7 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertTrue(manifest_exists)
         self.assertIn("Anvil test world:", stdout.getvalue())
         self.assertIn("- level.dat: level.dat", stdout.getvalue())
+        self.assertIn("- checklist: verification-checklist.txt", stdout.getvalue())
 
     def test_anvil_test_world_cli_rejects_unaligned_sample_size(self) -> None:
         stderr = io.StringIO()

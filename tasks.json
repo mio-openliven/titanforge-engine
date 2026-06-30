@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-045",
+      "id": "TF-046",
       "status": "todo",
+      "priority": "P1",
+      "title": "Surface test-world verification artifacts in the donor-spike handoff summary",
+      "acceptance": [
+        "anvil-test-world output calls out the checklist and report as the next files to open",
+        "the summary keeps verification status explicit instead of implying success",
+        "the guidance remains safe for throwaway manual testing only",
+        "tests cover the surfaced guidance"
+      ]
+    },
+    {
+      "id": "TF-045",
+      "status": "done",
       "priority": "P1",
       "title": "Add first manual-open verification checklist and artifact report for test-world candidates",
       "acceptance": [
