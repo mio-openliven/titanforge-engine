@@ -35,6 +35,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     from titanforge.core.project_first_map import build_first_map_route_handoffs
     from titanforge.core.project_first_map import build_first_map_story_walkthrough
     from titanforge.core.project_first_map import build_first_map_size_options
+    from titanforge.core.project_first_map import build_first_map_recommended_manual_start
     test_world_strategy = build_first_map_test_world_strategy(
         result.template_result.config.width,
         result.template_result.config.length,
@@ -61,6 +62,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         result.template_result.config.width,
         result.template_result.config.length,
         max_draft_side=result.max_draft_side,
+    )
+    recommended_manual_start = build_first_map_recommended_manual_start(
+        result.project_dir,
+        recommended_max_side=int(test_world_strategy["recommendedMaxSide"]),
     )
     build_test_world_command = (
         f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
@@ -368,9 +373,13 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <p>Use this only after the summary looks safe and the draft still matches the story you wanted.</p>
         </article>
         <article class="card">
-          <h3>Optional test-world shell</h3>
-          <p>This is still an experimental manual-open candidate, not full world export. Install the donor extra with <code>py -3.11 -m pip install -e .[donor-spikes]</code>, then run <code>{escape(build_test_world_command)}</code>. TitanForge recommends <code>--max-side {escape(str(test_world_strategy["recommendedMaxSide"]))}</code> here because {escape(str(test_world_strategy["reason"]))}</p>
-          <p>After it finishes, inspect <code>verification-checklist.txt</code> first and later reread status with <code>{escape(test_world_status_command)}</code>.</p>
+          <h3>Recommended first manual-open path</h3>
+          <p>{escape(recommended_manual_start.summary)} Install the donor extra with <code>{escape(recommended_manual_start.install_extra_command)}</code>, then run <code>{escape(recommended_manual_start.build_command)}</code>.</p>
+          <p>After it finishes, open <code>{escape(recommended_manual_start.checklist_path)}</code> first and later reread status with <code>{escape(recommended_manual_start.status_command)}</code>.</p>
+        </article>
+        <article class="card">
+          <h3>Why this sample size</h3>
+          <p>TitanForge recommends <code>--max-side {escape(str(test_world_strategy["recommendedMaxSide"]))}</code> here because {escape(str(test_world_strategy["reason"]))}</p>
         </article>
         <article class="card">
           <h3>Anchor-focused shell starts</h3>

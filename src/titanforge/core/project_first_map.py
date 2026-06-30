@@ -73,6 +73,16 @@ class ProjectFirstMapSizeOption:
 
 
 @dataclass(frozen=True)
+class ProjectFirstMapRecommendedManualStart:
+    summary: str
+    install_extra_command: str
+    build_command: str
+    output_dir: str
+    checklist_path: str
+    status_command: str
+
+
+@dataclass(frozen=True)
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
@@ -91,6 +101,7 @@ class ProjectFirstMapStatusResult:
     test_world_recommended_max_side: int
     test_world_strategy_summary: str
     test_world_strategy_reason: str
+    recommended_manual_start: ProjectFirstMapRecommendedManualStart
     test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
     route_handoffs: tuple[ProjectFirstMapRouteHandoff, ...]
@@ -373,6 +384,27 @@ def build_first_map_size_options(
     return tuple(options)
 
 
+def build_first_map_recommended_manual_start(
+    project_dir: Path,
+    *,
+    recommended_max_side: int,
+) -> ProjectFirstMapRecommendedManualStart:
+    output_dir = DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
+    return ProjectFirstMapRecommendedManualStart(
+        summary=(
+            "Start with one disposable centered sample before trying focused regions or larger manual-open passes."
+        ),
+        install_extra_command="py -3.11 -m pip install -e .[donor-spikes]",
+        build_command=(
+            f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+            f'--max-side {recommended_max_side}'
+        ),
+        output_dir=output_dir,
+        checklist_path=f"{output_dir}\\verification-checklist.txt",
+        status_command=f'py -3.11 -m titanforge anvil-test-world-status "{output_dir}"',
+    )
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -474,6 +506,10 @@ def write_project_first_map(
         project_dir,
         template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
+    )
+    recommended_manual_start = build_first_map_recommended_manual_start(
+        project_dir,
+        recommended_max_side=int(test_world_strategy["recommendedMaxSide"]),
     )
     size_options = build_first_map_size_options(
         project_dir,
@@ -632,6 +668,14 @@ def write_project_first_map(
                 ),
                 "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
                 "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
+                "recommendedStart": {
+                    "summary": recommended_manual_start.summary,
+                    "installExtraCommand": recommended_manual_start.install_extra_command,
+                    "buildCommand": recommended_manual_start.build_command,
+                    "outputDir": recommended_manual_start.output_dir,
+                    "checklistPath": recommended_manual_start.checklist_path,
+                    "statusCommand": recommended_manual_start.status_command,
+                },
                 "strategy": test_world_strategy,
                 "focusRegionCommands": [
                     {
@@ -811,6 +855,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
     test_world = dict(minecraft_handoff.get("testWorld", {}))
     test_world_strategy = dict(test_world.get("strategy", {}))
+    recommended_manual_start_data = dict(test_world.get("recommendedStart", {}))
     test_world_focus_commands = tuple(
         (
             str(item.get("regionTitle", "")),
@@ -916,6 +961,14 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_recommended_max_side=int(test_world_strategy.get("recommendedMaxSide", DEFAULT_SPIKE_MAX_SIDE)),
         test_world_strategy_summary=str(test_world_strategy.get("summary", "")),
         test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
+        recommended_manual_start=ProjectFirstMapRecommendedManualStart(
+            summary=str(recommended_manual_start_data.get("summary", "")),
+            install_extra_command=str(recommended_manual_start_data.get("installExtraCommand", "")),
+            build_command=str(recommended_manual_start_data.get("buildCommand", "")),
+            output_dir=str(recommended_manual_start_data.get("outputDir", "")),
+            checklist_path=str(recommended_manual_start_data.get("checklistPath", "")),
+            status_command=str(recommended_manual_start_data.get("statusCommand", "")),
+        ),
         test_world_focus_commands=test_world_focus_commands,
         test_world_focus_anchor_commands=test_world_focus_anchor_commands,
         route_handoffs=route_handoffs,
@@ -1025,6 +1078,19 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             )
             if result.starter_test_world_advice:
                 lines.append(f"- world advice: {result.starter_test_world_advice}")
+        if result.recommended_manual_start.summary:
+            lines.append("- recommended first manual-open:")
+            lines.append(f"- summary: {result.recommended_manual_start.summary}")
+            if result.recommended_manual_start.install_extra_command:
+                lines.append(f"- install extra first: {result.recommended_manual_start.install_extra_command}")
+            if result.recommended_manual_start.build_command:
+                lines.append(f"- build shell: {result.recommended_manual_start.build_command}")
+            if result.recommended_manual_start.output_dir:
+                lines.append(f"- shell folder: {result.recommended_manual_start.output_dir}")
+            if result.recommended_manual_start.checklist_path:
+                lines.append(f"- open next: {result.recommended_manual_start.checklist_path}")
+            if result.recommended_manual_start.status_command:
+                lines.append(f"- reread shell status: {result.recommended_manual_start.status_command}")
         if result.test_world_strategy_summary:
             lines.append(
                 f"- sampled-test-strategy: start with --max-side {result.test_world_recommended_max_side} ({result.test_world_strategy_summary})"
@@ -1051,16 +1117,7 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             else:
                 lines.append(f"- {item_id}: {item_path}")
         if result.test_world_build_command:
-            lines.append(
-                "- optional-test-world: Experimental manual-open shell only, not full world export."
-            )
-            if result.test_world_requires_optional_extra:
-                lines.append(f"- install extra first: {result.test_world_requires_optional_extra}")
-            lines.append(f"- build shell: {result.test_world_build_command}")
-            if result.test_world_output_dir:
-                lines.append(f"- shell folder: {result.test_world_output_dir}")
-            if result.test_world_status_command:
-                lines.append(f"- reread shell status: {result.test_world_status_command}")
+            lines.append("- optional-test-world: Experimental manual-open shell only, not full world export.")
     if result.commands:
         lines.append("Command hints:")
         for command_id, command_value in result.commands:

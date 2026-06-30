@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-074",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add recommended first manual-open handoff",
+      "acceptance": [
+        "first-map-manifest.json records one recommended first manual-open path inside the Minecraft handoff block",
+        "first-map-status surfaces that recommended path before the longer focus sample lists",
+        "root first-map review page shows the same first manual-open path in plain language",
+        "tests cover the new recommended first manual-open guidance"
+      ]
+    },
+    {
       "id": "TF-073",
       "status": "done",
       "priority": "P1",

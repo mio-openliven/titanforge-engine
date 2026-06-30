@@ -189,6 +189,26 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["minecraftHandoff"]["testWorld"]["buildCommand"],
             'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128',
         )
+        self.assertIn(
+            "disposable centered sample",
+            manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["summary"],
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["installExtraCommand"],
+            "py -3.11 -m pip install -e .[donor-spikes]",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["buildCommand"],
+            'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128',
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["outputDir"],
+            "minecraft-test-world",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["checklistPath"],
+            "minecraft-test-world\\verification-checklist.txt",
+        )
         self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["regionTitle"],
             "Harbor Town",
@@ -261,7 +281,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("step-01: Start here", root_review_html)
         self.assertIn("region-00", root_review_html)
         self.assertIn("minecraft-test-world-harbor-town-center", root_review_html)
-        self.assertIn("Optional test-world shell", root_review_html)
+        self.assertIn("Recommended first manual-open path", root_review_html)
+        self.assertIn("Why this sample size", root_review_html)
+        self.assertIn("minecraft-test-world\\verification-checklist.txt", root_review_html)
         self.assertIn("Anchor-focused shell starts", root_review_html)
         self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
         self.assertIn("minecraft-test-world-harbor-town-arrival", root_review_html)
@@ -335,6 +357,12 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
         self.assertEqual(result.test_world_recommended_max_side, 128)
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
+        self.assertIn("disposable centered sample", result.recommended_manual_start.summary)
+        self.assertEqual(result.recommended_manual_start.install_extra_command, "py -3.11 -m pip install -e .[donor-spikes]")
+        self.assertEqual(result.recommended_manual_start.build_command, 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128')
+        self.assertEqual(result.recommended_manual_start.output_dir, "minecraft-test-world")
+        self.assertEqual(result.recommended_manual_start.checklist_path, "minecraft-test-world\\verification-checklist.txt")
+        self.assertEqual(result.recommended_manual_start.status_command, 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
         self.assertEqual(result.test_world_focus_commands[0][0], "Harbor Town")
         self.assertIn('--focus-region "Harbor Town"', result.test_world_focus_commands[0][1])
         self.assertEqual(result.test_world_focus_commands[0][2], "minecraft-test-world-harbor-town")
@@ -365,6 +393,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("If you need changes:", summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
+        self.assertIn("- recommended first manual-open:", summary)
+        self.assertIn("- summary: Start with one disposable centered sample before trying focused regions or larger manual-open passes.", summary)
+        self.assertIn("- open next: minecraft-test-world\\verification-checklist.txt", summary)
         self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
         self.assertIn("- focus samples:", summary)
         self.assertIn('--focus-region "Harbor Town"', summary)
@@ -373,7 +404,6 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('--focus-anchor "arrival"', summary)
         self.assertIn("folder: minecraft-test-world-harbor-town-arrival", summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
-        self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
         self.assertIn("Open first: review.html", summary)
 
