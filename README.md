@@ -175,6 +175,7 @@ This writes one sampled `region\r.0.0.mca`, a manifest, and a short README. It i
 The `anvil-save-shell` wrapper goes one step further: it creates a save-like folder under `save-shell\`, keeps the sampled region inside `save-shell\region\`, and tells you the next manual test step for MCA Selector or for copying that one region into a backed-up throwaway world.
 `anvil-test-world` is the next honest candidate: it writes `test-world\level.dat`, `test-world\session.lock`, and `test-world\region\r.0.0.mca`, but it still labels the result as an experimental throwaway manual-open shell rather than claiming verified world export.
 That same `anvil-test-world` output now also writes `verification-checklist.txt` and `verification-report.json` at the root so the manual open test can be recorded instead of guessed later.
+The intended handoff order is explicit: open `verification-checklist.txt` first, then record the outcome in `verification-report.json`.
 
 ## Tests
 

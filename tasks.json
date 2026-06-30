@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-046",
+      "id": "TF-047",
       "status": "todo",
+      "priority": "P1",
+      "title": "Add first test-world verification status updater command",
+      "acceptance": [
+        "a small CLI pass can update verification-report.json without hand-editing JSON",
+        "the command keeps status explicit and append-only enough for failed manual tests",
+        "the command does not claim a Minecraft-open success that did not happen",
+        "tests cover status updates and invalid input handling"
+      ]
+    },
+    {
+      "id": "TF-046",
+      "status": "done",
       "priority": "P1",
       "title": "Surface test-world verification artifacts in the donor-spike handoff summary",
       "acceptance": [

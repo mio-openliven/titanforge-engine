@@ -42,7 +42,9 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(manifest["artifacts"]["verificationReport"], "verification-report.json")
         self.assertEqual(manifest["worldShell"]["manualOpenCandidate"], True)
         self.assertEqual(manifest["worldShell"]["verifiedByMinecraftOpen"], False)
+        self.assertEqual(manifest["worldShell"]["verificationStatus"], "pending-manual-check")
         self.assertIn("smallest test-world shell", readme_text)
+        self.assertIn("Open verification-checklist.txt first", readme_text)
         self.assertIn("Status: pending manual verification", checklist_text)
         self.assertIn("verification-report.json", checklist_text)
         self.assertEqual(verification_report["status"], "pending")
@@ -74,6 +76,9 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertIn("Anvil test world:", stdout.getvalue())
         self.assertIn("- level.dat: level.dat", stdout.getvalue())
         self.assertIn("- checklist: verification-checklist.txt", stdout.getvalue())
+        self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())
+        self.assertIn("Record after manual test: verification-report.json", stdout.getvalue())
+        self.assertIn("Verification status: pending manual check", stdout.getvalue())
 
     def test_anvil_test_world_cli_rejects_unaligned_sample_size(self) -> None:
         stderr = io.StringIO()

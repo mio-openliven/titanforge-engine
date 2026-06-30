@@ -4,7 +4,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## To Do
 
-- `TF-046` `P1` Surface test-world verification artifacts in the donor-spike handoff summary.
+- `TF-047` `P1` Add first test-world verification status updater command.
 
 ## In Progress
 
@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-046` `P1` Surface test-world verification artifacts in the donor-spike handoff summary.
 - `TF-045` `P1` Add first manual-open verification checklist and artifact report for test-world candidates.
 - `TF-044` `P1` Add first minimal loadable test-world shell for Minecraft 1.21.11.
 - `TF-043` `P1` Add first sampled save-shell handoff for Minecraft 1.21.11.

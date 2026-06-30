@@ -109,6 +109,7 @@ def write_anvil_test_world(
             "hasRegionFolder": True,
             "manualOpenCandidate": True,
             "verifiedByMinecraftOpen": False,
+            "verificationStatus": "pending-manual-check",
             "sampledExport": True,
             "throwawayOnly": True,
         },
@@ -151,6 +152,9 @@ def format_anvil_test_world_result(result: AnvilTestWorldResult) -> str:
         f"- manifest: {result.manifest_path.name}",
         f"- readme: {result.readme_path.name}",
         f"- sampled window: {result.sampled_width} x {result.sampled_length}",
+        "Open next: verification-checklist.txt",
+        "Record after manual test: verification-report.json",
+        "Verification status: pending manual check",
     ]
     for warning in result.warnings:
         lines.append(f"Warning: {warning}")
@@ -220,6 +224,7 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
         "2. Make sure Minecraft is closed before touching session.lock or copying this folder.",
         "3. If you test it in Minecraft, do so only after backing up the folder and only as a sampled experiment.",
         "4. Fill in verification-checklist.txt and verification-report.json after the manual test instead of trusting memory.",
+        "5. Open verification-checklist.txt first, then record the result in verification-report.json.",
         "",
         "Current honesty line:",
         "- This is the smallest test-world shell TitanForge can currently write without pretending that full save export is solved.",
