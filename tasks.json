@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-049",
+      "id": "TF-050",
       "status": "todo",
+      "priority": "P1",
+      "title": "Add compact failed-check spotlight to test-world status output",
+      "acceptance": [
+        "status output highlights failed checks in one compact block",
+        "the spotlight stays readable for a non-technical tester",
+        "pending and passed checks still remain available below",
+        "tests cover the failed-check spotlight text"
+      ]
+    },
+    {
+      "id": "TF-049",
+      "status": "done",
       "priority": "P1",
       "title": "Surface per-check verification states in test-world status output",
       "acceptance": [

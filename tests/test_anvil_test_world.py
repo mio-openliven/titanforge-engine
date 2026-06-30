@@ -204,7 +204,10 @@ class AnvilTestWorldTests(unittest.TestCase):
 
         self.assertEqual(result.verification_status, "failed")
         self.assertFalse(result.verified_by_minecraft_open)
+        self.assertIn(("mca-selector-open", "failed"), result.checks)
         self.assertIn("- verification status: failed", summary)
+        self.assertIn("Checks:", summary)
+        self.assertIn("- mca-selector-open: failed", summary)
         self.assertIn("Open next: verification-report.json", summary)
 
     def test_anvil_test_world_status_cli_command(self) -> None:
@@ -221,4 +224,5 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Anvil test-world status:", stdout.getvalue())
         self.assertIn("- verification status: pending", stdout.getvalue())
+        self.assertIn("- mca-selector-open: pending", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())

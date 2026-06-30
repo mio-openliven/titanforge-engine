@@ -75,6 +75,7 @@ class AnvilTestWorldStatusResult:
     region_path: Path
     verification_status: str
     verified_by_minecraft_open: bool
+    checks: tuple[tuple[str, str], ...]
     sampled_width: int
     sampled_length: int
     cropped: bool
@@ -223,6 +224,10 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         raise FileNotFoundError(f"Missing verification report: {report_path}")
     report = read_test_world_verification_report(report_path)
     verification_status = str(report.get("status", world_shell.get("verificationStatus", "pending")))
+    checks = tuple(
+        (str(check.get("id", "unknown")), str(check.get("status", "pending")))
+        for check in report.get("checks", [])
+    )
 
     checklist_path = output_dir / str(artifacts.get("verificationChecklist", TEST_WORLD_CHECKLIST))
     readme_path = output_dir / str(artifacts.get("wrapperReadme", "README.txt"))
@@ -243,6 +248,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         region_path=region_path,
         verification_status=verification_status,
         verified_by_minecraft_open=verification_status == "passed",
+        checks=checks,
         sampled_width=int(size.get("width", 0)),
         sampled_length=int(size.get("length", 0)),
         cropped=bool(sample_window.get("cropped", False)),
@@ -363,6 +369,10 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         f"- verification status: {result.verification_status}",
         f"- verified by Minecraft open: {'yes' if result.verified_by_minecraft_open else 'no'}",
     ]
+    if result.checks:
+        lines.append("Checks:")
+        for check_id, check_status in result.checks:
+            lines.append(f"- {check_id}: {check_status}")
     if result.verification_status == "pending":
         lines.append("Open next: verification-checklist.txt")
         lines.append("Record after manual test: verification-report.json")

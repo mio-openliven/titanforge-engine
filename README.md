@@ -183,6 +183,8 @@ python -m titanforge anvil-test-world-verify out\tiny-test-world\verification-re
 python -m titanforge anvil-test-world-status out\tiny-test-world
 ```
 
+The status command now shows both the top-level verification state and each per-check state from `verification-report.json`, so a failed MCA Selector open does not get hidden behind one broad summary word.
+
 ## Tests
 
 ```powershell
