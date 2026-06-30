@@ -12,6 +12,7 @@ from titanforge.core.project_first_map import (
     format_project_first_map_status_result,
     summarize_project_first_map_status,
     write_project_first_map,
+    write_project_first_map_test_world,
 )
 from titanforge.core.project_location import format_project_location_result, write_project_location
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
@@ -136,6 +137,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Read the current handoff status of an existing first-map project without rebuilding it.",
     )
     first_map_status_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_test_world_parser = subparsers.add_parser(
+        "first-map-test-world",
+        help="Write one experimental minimal test-world candidate directly from an existing first-map project.",
+    )
+    first_map_test_world_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_test_world_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Optional output folder for the test-world candidate. Defaults to project_dir\\minecraft-test-world.",
+    )
+    first_map_test_world_parser.add_argument(
+        "--max-side",
+        type=int,
+        default=DEFAULT_SPIKE_MAX_SIDE,
+        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+    )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -442,6 +459,15 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "first-map-status":
         result = summarize_project_first_map_status(args.project_dir)
         print(format_project_first_map_status_result(result))
+        return 0
+
+    if args.command == "first-map-test-world":
+        result = write_project_first_map_test_world(
+            args.project_dir,
+            output_dir=args.output_dir,
+            max_side=args.max_side,
+        )
+        print(format_anvil_test_world_result(result))
         return 0
 
     if args.command == "plan":

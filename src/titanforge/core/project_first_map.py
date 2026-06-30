@@ -3,15 +3,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+from typing import Any
 
 from titanforge.core.project_draft import DEFAULT_MAX_DRAFT_SIDE
+from titanforge.core.project import load_project_config
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
 from titanforge.core.project_first_map_review import write_project_first_map_review_page
 from titanforge.core.project_template import ProjectTemplateResult, describe_world_scale, write_project_template
+from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE
+from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil_test_world
 
 
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
 PROJECT_FIRST_MAP_VERSION = 1
+DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME = "minecraft-test-world"
 
 
 @dataclass(frozen=True)
@@ -40,6 +45,10 @@ class ProjectFirstMapStatusResult:
     world_scale_label: str
     open_sequence: tuple[tuple[str, str], ...]
     commands: tuple[tuple[str, str], ...]
+
+
+def build_first_map_test_world_output_dir(project_dir: Path) -> Path:
+    return project_dir / DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
 
 
 def write_project_first_map(
@@ -167,12 +176,24 @@ def write_project_first_map(
                 f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
             ),
+            "buildTestWorld": (
+                f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}"'
+            ),
+            "testWorldStatus": (
+                f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"'
+            ),
         },
         "minecraftHandoff": {
             "artifacts": {
                 "fixtureSummary": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
                 "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
                 "datapackFixtureZip": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
+            },
+            "testWorld": {
+                "requiresOptionalExtra": "py -3.11 -m pip install -e .[donor-spikes]",
+                "buildCommand": f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}"',
+                "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
+                "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
             },
             "reviewOrder": [
                 {
@@ -251,6 +272,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             "Change world size later: edit width and length in titanforge.toml, then rerun generation.",
             scale.planning_note,
+            "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
             f"Open first: {result.review_page_path.name}",
@@ -260,6 +282,25 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
 
 def read_project_first_map_manifest(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_project_first_map_config(project_dir: Path):
+    manifest = read_project_first_map_manifest(project_dir / "first-map-manifest.json")
+    project = manifest.get("project", {})
+    config_path = project_dir / str(project.get("configPath", "titanforge.toml"))
+    return load_project_config(config_path)
+
+
+def write_project_first_map_test_world(
+    project_dir: Path,
+    *,
+    output_dir: Path | None = None,
+    max_side: int = DEFAULT_SPIKE_MAX_SIDE,
+    anvil_module: Any | None = None,
+) -> AnvilTestWorldResult:
+    config = load_project_first_map_config(project_dir)
+    resolved_output_dir = output_dir if output_dir is not None else build_first_map_test_world_output_dir(project_dir)
+    return write_anvil_test_world(config, resolved_output_dir, max_side=max_side, anvil_module=anvil_module)
 
 
 def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:

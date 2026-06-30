@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-062",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map test-world wrapper command for Minecraft handoff",
+      "acceptance": [
+        "CLI can create a minimal anvil test-world candidate directly from an existing first-map project folder",
+        "the wrapper resolves titanforge.toml from first-map-manifest.json instead of requiring the user to find config paths manually",
+        "first-map handoff surfaces the exact wrapper command for later repeat use",
+        "tests cover the wrapper and CLI entry point"
+      ]
+    },
+    {
       "id": "TF-061",
       "status": "done",
       "priority": "P1",

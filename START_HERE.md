@@ -96,6 +96,16 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-status previews\my-first-world
 ```
 
+If you want the shortest current path from that `first-map` folder to one experimental Minecraft manual-open candidate, install the optional donor extra and run:
+
+```powershell
+py -3.11 -m pip install -e .[donor-spikes]
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-test-world previews\my-first-world --max-side 128
+```
+
+That writes `previews\my-first-world\minecraft-test-world`. Open `verification-checklist.txt` first, then use `py -3.11 -m titanforge anvil-test-world-status previews\my-first-world\minecraft-test-world` when you need the current manual-test status again.
+
 If you need a fresh world brief instead of the example file, start here:
 
 ```powershell

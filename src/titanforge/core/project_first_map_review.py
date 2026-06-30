@@ -26,6 +26,9 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     fixture_commands = result.location_result.draft_result.fixture_commands_path.relative_to(project_dir)
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
     manifest_path = result.manifest_path.relative_to(project_dir)
+    test_world_dir = Path("minecraft-test-world")
+    build_test_world_command = f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}"'
+    test_world_status_command = f'py -3.11 -m titanforge anvil-test-world-status "{test_world_dir.as_posix()}"'
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
     if len(result.template_result.config.regions) > 3:
@@ -267,6 +270,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <h3><a href="{escape(datapack_zip.as_posix())}">datapack-fixture.zip</a></h3>
           <p>Use this only after the summary looks safe and the draft still matches the story you wanted.</p>
+        </article>
+        <article class="card">
+          <h3>Optional test-world shell</h3>
+          <p>This is still an experimental manual-open candidate, not full world export. Install the donor extra with <code>py -3.11 -m pip install -e .[donor-spikes]</code>, then run <code>{escape(build_test_world_command)}</code>. After it finishes, inspect <code>verification-checklist.txt</code> first and later reread status with <code>{escape(test_world_status_command)}</code>.</p>
         </article>
       </div>
     </section>
