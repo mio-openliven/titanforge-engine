@@ -40,6 +40,15 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["schema"], "titanforge.first-map")
         self.assertEqual(manifest["project"]["preset"], "coastal-valley")
         self.assertEqual(manifest["project"]["configPath"], "titanforge.toml")
+        self.assertEqual(manifest["guidance"]["worldScale"]["label"], "Local district")
+        self.assertIn("Good for one town plus nearby coast", manifest["guidance"]["worldScale"]["summary"])
+        self.assertIn("comfortable for local travel beats", manifest["guidance"]["worldScale"]["planningNote"])
+        self.assertIn("A cinematic coast-to-mountain story space", manifest["guidance"]["preset"]["story"])
+        self.assertIn("The player should feel grounded at first", manifest["guidance"]["preset"]["playerFeeling"])
+        self.assertEqual(
+            manifest["guidance"]["preset"]["keyRegions"][:3],
+            ["Harbor Town", "Salt Coast", "Old Pine Forest"],
+        )
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")

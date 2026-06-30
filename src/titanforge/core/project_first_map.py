@@ -68,6 +68,8 @@ def write_project_first_map(
         location_result=location_result,
     )
     write_project_first_map_review_page(provisional_result, review_page_path)
+    scale = describe_world_scale(template_result.config.width, template_result.config.length)
+    key_regions = tuple(region.title for region in template_result.config.regions)
 
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
@@ -81,6 +83,18 @@ def write_project_first_map(
         "world": {
             "width": template_result.config.width,
             "length": template_result.config.length,
+        },
+        "guidance": {
+            "worldScale": {
+                "label": scale.label,
+                "summary": scale.summary,
+                "planningNote": scale.planning_note,
+            },
+            "preset": {
+                "story": template_result.config.premise,
+                "playerFeeling": template_result.config.player_experience,
+                "keyRegions": list(key_regions),
+            },
         },
         "artifacts": {
             "rootReviewPage": review_page_path.name,

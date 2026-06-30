@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-055` `P1` Add first-map manifest guidance block for future UI handoff.
 - `TF-054` `P1` Add preset catalog command for scenario writers.
 - `TF-053` `P1` Add plain-language preset guidance to first-map workflow.
 - `TF-052` `P1` Add human-readable world scale guidance to first-map workflow.

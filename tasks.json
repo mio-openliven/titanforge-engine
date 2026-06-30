@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-055",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map manifest guidance block for future UI handoff",
+      "acceptance": [
+        "first-map-manifest.json records world-scale guidance in machine-readable form",
+        "the manifest records preset story intent, player feeling, and starter regions",
+        "the new block stays aligned with the human-facing first-map CLI handoff",
+        "tests cover the guidance block"
+      ]
+    },
+    {
       "id": "TF-054",
       "status": "done",
       "priority": "P1",
