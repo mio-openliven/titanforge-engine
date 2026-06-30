@@ -87,6 +87,8 @@ Use `first-map-status` when the pack already exists and you only need the curren
 
 Use `first-map-test-world` when you already have a `first-map` project and want the shortest path to one experimental Minecraft manual-open candidate without hunting for `titanforge.toml` yourself. It resolves the config from `first-map-manifest.json`, writes a donor-backed `minecraft-test-world` folder, and prints the same checklist/report handoff used by `anvil-test-world`. Install the optional extra first with `py -3.11 -m pip install -e .[donor-spikes]`.
 
+`fixture-summary.json` now also carries a plain `starterTest` verdict: `safe`, `caution`, or `blocked`. The same verdict is surfaced in `location/review.html` and `first-map-status`, so a scenario writer does not need to infer first-test risk from raw warning strings alone.
+
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, gives a plain-language world-scale label for the chosen size, surfaces the preset story intent and starter regions, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 
 Use `preset-catalog` first when you do not yet know whether you want the coast, frontier, or island starter. It prints the story intent, player feeling, and key starter regions for every preset in one short CLI report. Use `preset-catalog --json` when a future UI or helper script needs the same data in a schema-tagged payload instead of text parsing.

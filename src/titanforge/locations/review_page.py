@@ -43,6 +43,7 @@ def write_location_review_page(
     if draft_fixture_summary is not None:
         counts = draft_fixture_summary["counts"]
         bounds = draft_fixture_summary["bounds"]
+        starter_test = draft_fixture_summary["starterTest"]
         warnings = draft_fixture_summary["warnings"]
         warning_items = ""
         if warnings:
@@ -72,6 +73,11 @@ def write_location_review_page(
           <p class="metric-label">Fixture footprint</p>
           <p class="metric-value">{escape(str(bounds["width"]))} x {escape(str(bounds["length"]))} x {escape(str(bounds["height"]))}</p>
         </div>
+      </div>
+      <div>
+        <h3>Starter Test Verdict</h3>
+        <p><strong>{escape(str(starter_test["verdict"]))}</strong> · {escape(str(starter_test["summary"]))}</p>
+        <p>{escape(str(starter_test["worldAdvice"]))}</p>
       </div>
 {warning_items}
     </section>

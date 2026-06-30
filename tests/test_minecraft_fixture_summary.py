@@ -37,6 +37,8 @@ class MinecraftFixtureSummaryTests(unittest.TestCase):
         self.assertEqual(summary["counts"]["placeFillCommands"], summary["counts"]["clearFillCommands"])
         self.assertGreater(summary["bounds"]["width"], 0)
         self.assertGreater(summary["bounds"]["length"], 0)
+        self.assertEqual(summary["starterTest"]["verdict"], "safe")
+        self.assertIn("first disposable Minecraft test", summary["starterTest"]["summary"])
         self.assertEqual(summary["warnings"], [])
 
     def test_write_fixture_summary_warns_for_large_fixture_scope(self) -> None:
@@ -81,3 +83,5 @@ class MinecraftFixtureSummaryTests(unittest.TestCase):
 
         self.assertTrue(any("command load is high" in warning for warning in summary["warnings"]))
         self.assertTrue(any("footprint is large" in warning for warning in summary["warnings"]))
+        self.assertEqual(summary["starterTest"]["verdict"], "caution")
+        self.assertIn("disposable first Minecraft test", summary["starterTest"]["summary"])

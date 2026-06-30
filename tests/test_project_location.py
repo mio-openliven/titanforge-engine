@@ -59,6 +59,8 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(location_manifest["terrain"]["cleanupApplied"], True)
         self.assertIn("Project-Draft Links", location_review_html)
         self.assertIn("Draft Fixture Summary", location_review_html)
+        self.assertIn("Starter Test Verdict", location_review_html)
+        self.assertIn("safe", location_review_html)
         self.assertIn("Next Minecraft Test", location_review_html)
         self.assertIn("Place fill commands", location_review_html)
         self.assertIn("Fixture footprint", location_review_html)

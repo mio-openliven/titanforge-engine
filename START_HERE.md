@@ -98,6 +98,8 @@ py -3.11 -m titanforge first-map-status previews\my-first-world
 
 That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths.
 
+The Minecraft handoff now also surfaces a plain starter-test verdict from `fixture-summary.json` such as `safe` or `caution`, so you can see quickly whether the first disposable Minecraft pass looks comfortable or needs extra care first.
+
 If you want the shortest current path from that `first-map` folder to one experimental Minecraft manual-open candidate, install the optional donor extra and run:
 
 ```powershell

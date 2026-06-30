@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-064",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add explicit starter-test safety verdict to fixture handoff",
+      "acceptance": [
+        "fixture-summary.json includes a plain safety verdict for the first manual Minecraft test",
+        "location review and first-map status surface that verdict without asking the user to infer it from raw warnings",
+        "the verdict is derived from the current fixture summary state instead of a separate duplicated rule set",
+        "tests cover safe and caution verdicts plus the surfaced handoff output"
+      ]
+    },
+    {
       "id": "TF-063",
       "status": "done",
       "priority": "P1",

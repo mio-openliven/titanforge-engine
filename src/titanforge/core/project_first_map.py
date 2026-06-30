@@ -39,6 +39,9 @@ class ProjectFirstMapStatusResult:
     fixture_summary_path: Path
     fixture_commands_path: Path
     datapack_fixture_zip_path: Path
+    starter_test_verdict: str
+    starter_test_summary: str
+    starter_test_world_advice: str
     preset_name: str
     world_width: int
     world_length: int
@@ -358,6 +361,11 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         for item in minecraft_handoff.get("reviewOrder", [])
     )
     command_items = tuple((str(key), str(value)) for key, value in commands.items())
+    fixture_summary_path = project_dir / str(handoff_artifacts.get("fixtureSummary", Path("first-map") / "draft" / "fixture-summary.json"))
+    starter_test: dict[str, object] = {}
+    if fixture_summary_path.exists():
+        fixture_summary = json.loads(fixture_summary_path.read_text(encoding="utf-8"))
+        starter_test = dict(fixture_summary.get("starterTest", {}))
 
     return ProjectFirstMapStatusResult(
         project_dir=project_dir,
@@ -366,9 +374,12 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         review_page_path=project_dir / str(artifacts.get("rootReviewPage", "review.html")),
         location_review_path=project_dir / str(artifacts.get("locationReviewPage", Path("first-map") / "location" / "review.html")),
         draft_review_path=project_dir / str(next((path for item_id, path in open_sequence if item_id == "draft-review"), Path("first-map") / "draft" / "review.html")),
-        fixture_summary_path=project_dir / str(handoff_artifacts.get("fixtureSummary", Path("first-map") / "draft" / "fixture-summary.json")),
+        fixture_summary_path=fixture_summary_path,
         fixture_commands_path=project_dir / str(handoff_artifacts.get("fixtureCommands", Path("first-map") / "draft" / "fixture-commands.txt")),
         datapack_fixture_zip_path=project_dir / str(handoff_artifacts.get("datapackFixtureZip", Path("first-map") / "draft" / "datapack-fixture.zip")),
+        starter_test_verdict=str(starter_test.get("verdict", "unknown")),
+        starter_test_summary=str(starter_test.get("summary", "")),
+        starter_test_world_advice=str(starter_test.get("worldAdvice", "")),
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -440,6 +451,12 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
                 lines.append(f"- {item_id}: {summary}")
     if result.minecraft_review_order or result.test_world_build_command:
         lines.append("Minecraft later:")
+        if result.starter_test_verdict != "unknown":
+            lines.append(
+                f"- starter-test-verdict: {result.starter_test_verdict} ({result.starter_test_summary})"
+            )
+            if result.starter_test_world_advice:
+                lines.append(f"- world advice: {result.starter_test_world_advice}")
         for item_id, item_path, summary in result.minecraft_review_order:
             if summary:
                 lines.append(f"- {item_id}: {summary} ({item_path})")

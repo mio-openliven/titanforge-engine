@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-064` `P1` Add explicit starter-test safety verdict to fixture handoff.
 - `TF-063` `P1` Make first-map-status a terminal-first scenario-writer handoff.
 - `TF-062` `P1` Add first-map test-world wrapper command for Minecraft handoff.
 - `TF-061` `P1` Add first-map status command for repeat handoff.

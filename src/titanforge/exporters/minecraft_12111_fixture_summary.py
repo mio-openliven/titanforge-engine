@@ -38,6 +38,7 @@ def build_minecraft_fixture_summary_dict(fixture: MinecraftBlockFixture) -> dict
     fill_command_count = count_mcfunction_fill_commands(fixture)
     bounds = _build_bounds(fixture)
     warnings = _build_warnings(fixture, bounds, fill_command_count)
+    starter_test = _build_starter_test_guidance(fixture, warnings)
     return {
         "schema": FIXTURE_SUMMARY_SCHEMA,
         "version": FIXTURE_SUMMARY_VERSION,
@@ -56,6 +57,7 @@ def build_minecraft_fixture_summary_dict(fixture: MinecraftBlockFixture) -> dict
             "clearFillCommands": fill_command_count,
         },
         "bounds": bounds,
+        "starterTest": starter_test,
         "warnings": warnings,
         "notes": list(fixture.notes),
     }
@@ -114,3 +116,28 @@ def _build_warnings(
         )
 
     return warnings
+
+
+def _build_starter_test_guidance(
+    fixture: MinecraftBlockFixture,
+    warnings: list[str],
+) -> dict[str, Any]:
+    if not fixture.supported:
+        return {
+            "verdict": "blocked",
+            "summary": "Do not start a Minecraft-side test from this fixture yet.",
+            "worldAdvice": "Wait for a supported 1.21.11 fixture export first.",
+        }
+
+    if warnings:
+        return {
+            "verdict": "caution",
+            "summary": "Possible only as a disposable first Minecraft test after reading the warnings.",
+            "worldAdvice": "Use a backed-up throwaway world and expect cleanup or reruns.",
+        }
+
+    return {
+        "verdict": "safe",
+        "summary": "Reasonable for a first disposable Minecraft test.",
+        "worldAdvice": "Still prefer a backed-up throwaway world for the first pass.",
+    }
