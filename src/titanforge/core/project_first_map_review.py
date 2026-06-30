@@ -45,8 +45,8 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     )
     test_world_status_command = f'py -3.11 -m titanforge anvil-test-world-status "{test_world_dir.as_posix()}"'
     focus_anchor_preview = "<br>".join(
-        escape(command)
-        for _, command in focus_anchor_commands[:4]
+        f'{escape(command)}<br><small>status: {escape(status_command)}</small>'
+        for _, command, _, status_command in focus_anchor_commands[:4]
     )
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])

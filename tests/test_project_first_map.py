@@ -102,12 +102,20 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["command"],
         )
         self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["outputDir"],
+            "minecraft-test-world-harbor-town",
+        )
+        self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["focusAnchorCommands"][0]["anchorLabel"],
             "Harbor Town / arrival",
         )
         self.assertIn(
             '--focus-anchor "arrival"',
             manifest["minecraftHandoff"]["testWorld"]["focusAnchorCommands"][0]["command"],
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["focusAnchorCommands"][0]["outputDir"],
+            "minecraft-test-world-harbor-town-arrival",
         )
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["outputDir"], "minecraft-test-world")
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedMaxSide"], 128)
@@ -146,6 +154,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Optional test-world shell", root_review_html)
         self.assertIn("Anchor-focused shell starts", root_review_html)
         self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
+        self.assertIn("minecraft-test-world-harbor-town-arrival", root_review_html)
         self.assertIn("first-map-test-world", root_review_html)
         self.assertIn("--max-side 128", root_review_html)
         self.assertIn("verification-checklist.txt", root_review_html)
@@ -196,8 +205,12 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
         self.assertEqual(result.test_world_focus_commands[0][0], "Harbor Town")
         self.assertIn('--focus-region "Harbor Town"', result.test_world_focus_commands[0][1])
+        self.assertEqual(result.test_world_focus_commands[0][2], "minecraft-test-world-harbor-town")
+        self.assertIn('anvil-test-world-status "minecraft-test-world-harbor-town"', result.test_world_focus_commands[0][3])
         self.assertEqual(result.test_world_focus_anchor_commands[0][0], "Harbor Town / arrival")
         self.assertIn('--focus-anchor "arrival"', result.test_world_focus_anchor_commands[0][1])
+        self.assertEqual(result.test_world_focus_anchor_commands[0][2], "minecraft-test-world-harbor-town-arrival")
+        self.assertIn('anvil-test-world-status "minecraft-test-world-harbor-town-arrival"', result.test_world_focus_anchor_commands[0][3])
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
@@ -210,8 +223,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
         self.assertIn("- focus samples:", summary)
         self.assertIn('--focus-region "Harbor Town"', summary)
+        self.assertIn("folder: minecraft-test-world-harbor-town", summary)
         self.assertIn("- focus anchors:", summary)
         self.assertIn('--focus-anchor "arrival"', summary)
+        self.assertIn("folder: minecraft-test-world-harbor-town-arrival", summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
         self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
@@ -341,6 +356,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["origin"]["x"], 1728)
         self.assertEqual(manifest["sampleWindow"]["origin"]["z"], 208)
         self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Broken Ridge")
+        self.assertEqual(result.output_dir.name, "minecraft-test-world-broken-ridge")
         self.assertIn(
             '--focus-region "Broken Ridge"',
             manifest["sampleGrowth"]["rerunCurrentCommand"],
@@ -368,10 +384,44 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest = json.loads((result.output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
 
         self.assertEqual(manifest["sampleWindow"]["focusAnchor"], "ridge-vista")
+        self.assertEqual(result.output_dir.name, "minecraft-test-world-broken-ridge-ridge-vista")
         self.assertIn(
             '--focus-anchor "ridge-vista"',
             manifest["sampleGrowth"]["rerunCurrentCommand"],
         )
+
+    def test_focused_test_world_runs_can_coexist_in_distinct_output_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "coexisting-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Coexisting Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            harbor_result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Harbor Town",
+                anvil_module=_FakeAnvilModule,
+            )
+            ridge_result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Broken Ridge",
+                focus_anchor_id="ridge-vista",
+                anvil_module=_FakeAnvilModule,
+            )
+            harbor_manifest_exists = harbor_result.manifest_path.exists()
+            ridge_manifest_exists = ridge_result.manifest_path.exists()
+
+        self.assertEqual(harbor_result.output_dir.name, "minecraft-test-world-harbor-town")
+        self.assertEqual(ridge_result.output_dir.name, "minecraft-test-world-broken-ridge-ridge-vista")
+        self.assertTrue(harbor_manifest_exists)
+        self.assertTrue(ridge_manifest_exists)
 
     def test_write_project_first_map_test_world_uses_recommended_sample_when_omitted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

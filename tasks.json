@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-070",
+      "status": "done",
+      "priority": "P1",
+      "title": "Prevent focused test-world handoff from overwriting sibling samples",
+      "acceptance": [
+        "focused first-map test-world runs choose stable distinct output folders when --output-dir is omitted",
+        "first-map handoff surfaces the focused shell folder or status command explicitly for repeat use",
+        "focused region and anchor samples can coexist without silently replacing the base minecraft-test-world folder",
+        "tests cover focused output-dir naming and surfaced status guidance"
+      ]
+    },
+    {
       "id": "TF-069",
       "status": "done",
       "priority": "P1",

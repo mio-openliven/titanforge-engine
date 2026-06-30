@@ -47,8 +47,8 @@ class ProjectFirstMapStatusResult:
     test_world_recommended_max_side: int
     test_world_strategy_summary: str
     test_world_strategy_reason: str
-    test_world_focus_commands: tuple[tuple[str, str], ...]
-    test_world_focus_anchor_commands: tuple[tuple[str, str], ...]
+    test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
+    test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -69,21 +69,38 @@ class ProjectFirstMapStatusResult:
     commands: tuple[tuple[str, str], ...]
 
 
-def build_first_map_test_world_output_dir(project_dir: Path) -> Path:
-    return project_dir / DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
+def build_first_map_test_world_output_dir(
+    project_dir: Path,
+    *,
+    focus_region_title: str | None = None,
+    focus_anchor_id: str | None = None,
+) -> Path:
+    if focus_region_title is None:
+        return project_dir / DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
+    suffix_parts = [_slugify_focus_part(focus_region_title)]
+    if focus_anchor_id is not None:
+        suffix_parts.append(_slugify_focus_part(focus_anchor_id))
+    suffix = "-".join(part for part in suffix_parts if part) or "focused"
+    return project_dir / f"{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}-{suffix}"
 
 
 def build_first_map_focus_region_commands(
     project_dir: Path,
     region_titles: tuple[str, ...],
     recommended_max_side: int,
-) -> tuple[tuple[str, str], ...]:
+) -> tuple[tuple[str, str, str, str], ...]:
     return tuple(
         (
             region_title,
             (
                 f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+                f'--output-dir "{build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name}" '
                 f'--max-side {recommended_max_side} --focus-region "{region_title}"'
+            ),
+            build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name,
+            (
+                f'py -3.11 -m titanforge anvil-test-world-status '
+                f'"{build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name}"'
             ),
         )
         for region_title in region_titles
@@ -94,18 +111,26 @@ def build_first_map_focus_anchor_commands(
     project_dir: Path,
     config,
     recommended_max_side: int,
-) -> tuple[tuple[str, str], ...]:
+) -> tuple[tuple[str, str, str, str], ...]:
     world_plan = build_world_plan(config)
-    commands: list[tuple[str, str]] = []
+    commands: list[tuple[str, str, str, str]] = []
     for region in world_plan.regions:
         for anchor in region.anchors:
+            output_dir = build_first_map_test_world_output_dir(
+                project_dir,
+                focus_region_title=region.title,
+                focus_anchor_id=anchor.id,
+            ).name
             commands.append(
                 (
                     f"{region.title} / {anchor.id}",
                     (
                         f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
-                        f'--max-side {recommended_max_side} --focus-region "{region.title}" --focus-anchor "{anchor.id}"'
+                        f'--output-dir "{output_dir}" --max-side {recommended_max_side} '
+                        f'--focus-region "{region.title}" --focus-anchor "{anchor.id}"'
                     ),
+                    output_dir,
+                    f'py -3.11 -m titanforge anvil-test-world-status "{output_dir}"',
                 )
             )
     return tuple(commands)
@@ -307,15 +332,19 @@ def write_project_first_map(
                     {
                         "regionTitle": region_title,
                         "command": command,
+                        "outputDir": output_dir,
+                        "statusCommand": status_command,
                     }
-                    for region_title, command in focus_region_commands
+                    for region_title, command, output_dir, status_command in focus_region_commands
                 ],
                 "focusAnchorCommands": [
                     {
                         "anchorLabel": anchor_label,
                         "command": command,
+                        "outputDir": output_dir,
+                        "statusCommand": status_command,
                     }
-                    for anchor_label, command in focus_anchor_commands
+                    for anchor_label, command, output_dir, status_command in focus_anchor_commands
                 ],
             },
             "reviewOrder": [
@@ -424,7 +453,15 @@ def write_project_first_map_test_world(
     anvil_module: Any | None = None,
 ) -> AnvilTestWorldResult:
     config = load_project_first_map_config(project_dir)
-    resolved_output_dir = output_dir if output_dir is not None else build_first_map_test_world_output_dir(project_dir)
+    resolved_output_dir = (
+        output_dir
+        if output_dir is not None
+        else build_first_map_test_world_output_dir(
+            project_dir,
+            focus_region_title=focus_region_title,
+            focus_anchor_id=focus_anchor_id,
+        )
+    )
     resolved_max_side = max_side if max_side is not None else suggest_first_map_test_world_max_side(config.width, config.length)
     command = f'py -3.11 -m titanforge first-map-test-world "{project_dir}"'
     if output_dir is not None:
@@ -468,6 +505,8 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         (
             str(item.get("regionTitle", "")),
             str(item.get("command", "")),
+            str(item.get("outputDir", "")),
+            str(item.get("statusCommand", "")),
         )
         for item in test_world.get("focusRegionCommands", [])
     )
@@ -475,6 +514,8 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         (
             str(item.get("anchorLabel", "")),
             str(item.get("command", "")),
+            str(item.get("outputDir", "")),
+            str(item.get("statusCommand", "")),
         )
         for item in test_world.get("focusAnchorCommands", [])
     )
@@ -613,12 +654,18 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             lines.append(f"- strategy reason: {result.test_world_strategy_reason}")
         if result.test_world_focus_commands:
             lines.append("- focus samples:")
-            for region_title, command in result.test_world_focus_commands:
-                lines.append(f"- {region_title}: {command}")
+            for region_title, command, output_dir, status_command in result.test_world_focus_commands:
+                if output_dir and status_command:
+                    lines.append(f"- {region_title}: {command} (folder: {output_dir}; status: {status_command})")
+                else:
+                    lines.append(f"- {region_title}: {command}")
         if result.test_world_focus_anchor_commands:
             lines.append("- focus anchors:")
-            for anchor_label, command in result.test_world_focus_anchor_commands:
-                lines.append(f"- {anchor_label}: {command}")
+            for anchor_label, command, output_dir, status_command in result.test_world_focus_anchor_commands:
+                if output_dir and status_command:
+                    lines.append(f"- {anchor_label}: {command} (folder: {output_dir}; status: {status_command})")
+                else:
+                    lines.append(f"- {anchor_label}: {command}")
         for item_id, item_path, summary in result.minecraft_review_order:
             if summary:
                 lines.append(f"- {item_id}: {summary} ({item_path})")
@@ -641,3 +688,10 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             lines.append(f"- {command_id}: {command_value}")
     lines.append(f"Open first: {result.review_page_path.name}")
     return "\n".join(lines)
+
+
+def _slugify_focus_part(value: str) -> str:
+    lowered = value.strip().lower()
+    cleaned = "".join(character if character.isalnum() else "-" for character in lowered)
+    parts = [part for part in cleaned.split("-") if part]
+    return "-".join(parts)
