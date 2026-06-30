@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -9,6 +10,7 @@ import unittest
 from titanforge.cli import main
 from titanforge.core.project import load_project_config
 from titanforge.core.project_template import (
+    build_project_template_preset_catalog_data,
     ProjectTemplateError,
     build_project_template_config,
     format_project_template_preset_catalog,
@@ -18,6 +20,14 @@ from titanforge.core.project_template import (
 
 
 class ProjectTemplateTests(unittest.TestCase):
+    def test_build_project_template_preset_catalog_data(self) -> None:
+        items = build_project_template_preset_catalog_data()
+
+        self.assertEqual(items[0]["id"], "coastal-valley")
+        self.assertIn("A cinematic coast-to-mountain story space", items[0]["story"])
+        self.assertEqual(items[0]["keyRegions"][:3], ["Harbor Town", "Salt Coast", "Old Pine Forest"])
+        self.assertEqual(items[-1]["id"], "island-kingdom")
+
     def test_format_project_template_preset_catalog(self) -> None:
         summary = format_project_template_preset_catalog()
 
@@ -138,3 +148,15 @@ class ProjectTemplateTests(unittest.TestCase):
         self.assertIn("TitanForge starter presets:", stdout.getvalue())
         self.assertIn("- coastal-valley", stdout.getvalue())
         self.assertIn("- island-kingdom", stdout.getvalue())
+
+    def test_preset_catalog_cli_json_command(self) -> None:
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main(["preset-catalog", "--json"])
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(payload[0]["id"], "coastal-valley")
+        self.assertEqual(payload[1]["id"], "frontier-basin")
+        self.assertEqual(payload[2]["keyRegions"][0], "Crown Harbor")

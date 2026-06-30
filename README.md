@@ -66,6 +66,7 @@ Use Python 3.11 or newer.
 $env:PYTHONPATH = "src"
 python -m titanforge info
 python -m titanforge preset-catalog
+python -m titanforge preset-catalog --json
 python -m titanforge first-map out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
 python -m titanforge init-project out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
@@ -82,7 +83,7 @@ Use `first-map` when you want the fastest path from idea to the first reviewable
 
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, gives a plain-language world-scale label for the chosen size, surfaces the preset story intent and starter regions, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 
-Use `preset-catalog` first when you do not yet know whether you want the coast, frontier, or island starter. It prints the story intent, player feeling, and key starter regions for every preset in one short CLI report.
+Use `preset-catalog` first when you do not yet know whether you want the coast, frontier, or island starter. It prints the story intent, player feeling, and key starter regions for every preset in one short CLI report. Use `preset-catalog --json` when a future UI or helper script needs the same data without text parsing.
 
 Open `out\tiny-project-draft\review.html` first. That folder now also contains `world-plan.json`, `draft-mask.png`, and `draft-manifest.json`.
 The review page now also explains which draft artifacts to open next, including `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.

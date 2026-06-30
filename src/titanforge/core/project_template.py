@@ -190,16 +190,31 @@ def list_project_template_presets() -> tuple[str, ...]:
     return tuple(PROJECT_TEMPLATE_PRESETS.keys())
 
 
-def format_project_template_preset_catalog() -> str:
-    lines = ["TitanForge starter presets:"]
+def build_project_template_preset_catalog_data() -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
     for preset_name in list_project_template_presets():
         preset = PROJECT_TEMPLATE_PRESETS[preset_name]
-        region_lineup = _format_region_lineup(tuple(region.title for region in preset.regions))
+        items.append(
+            {
+                "id": preset_name,
+                "story": preset.premise,
+                "playerFeeling": preset.player_experience,
+                "keyRegions": [region.title for region in preset.regions],
+            }
+        )
+    return items
+
+
+def format_project_template_preset_catalog() -> str:
+    lines = ["TitanForge starter presets:"]
+    for item in build_project_template_preset_catalog_data():
+        region_titles = tuple(str(title) for title in item["keyRegions"])
+        region_lineup = _format_region_lineup(region_titles)
         lines.extend(
             (
-                f"- {preset_name}",
-                f"  story: {preset.premise}",
-                f"  feeling: {preset.player_experience}",
+                f"- {item['id']}",
+                f"  story: {item['story']}",
+                f"  feeling: {item['playerFeeling']}",
                 f"  regions: {region_lineup}",
             )
         )

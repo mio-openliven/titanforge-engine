@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import sys
 import tomllib
@@ -11,6 +12,7 @@ from titanforge.core.project_location import format_project_location_result, wri
 from titanforge.core.project_draft import format_project_draft_result, write_project_draft
 from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.core.project_template import (
+    build_project_template_preset_catalog_data,
     ProjectTemplateError,
     format_project_template_preset_catalog,
     format_project_template_result,
@@ -65,6 +67,12 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "preset-catalog",
         help="Show plain-language starter preset guidance for scenario writers.",
+    )
+    preset_catalog_parser = subparsers.choices["preset-catalog"]
+    preset_catalog_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the starter preset catalog as JSON for tooling or future UI layers.",
     )
 
     init_project_parser = subparsers.add_parser(
@@ -388,7 +396,10 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "preset-catalog":
-        print(format_project_template_preset_catalog())
+        if args.json:
+            print(json.dumps(build_project_template_preset_catalog_data(), indent=2))
+        else:
+            print(format_project_template_preset_catalog())
         return 0
 
     if args.command == "init-project":

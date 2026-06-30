@@ -74,6 +74,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge preset-catalog
 ```
 
+If a future UI or helper script needs the same preset list as structured data:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge preset-catalog --json
+```
+
 Then open:
 
 ```text

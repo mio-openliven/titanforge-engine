@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-057",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add JSON output to preset-catalog for future UI handoff",
+      "acceptance": [
+        "preset-catalog can return structured preset data without text parsing",
+        "the JSON output carries story, player feeling, and starter regions for each preset",
+        "the text output remains unchanged for humans",
+        "tests cover both the data builder and the CLI JSON mode"
+      ]
+    },
+    {
       "id": "TF-056",
       "status": "done",
       "priority": "P1",
