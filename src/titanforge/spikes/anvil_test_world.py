@@ -62,6 +62,25 @@ class AnvilTestWorldVerificationUpdateResult:
     updated_check_status: str | None
 
 
+@dataclass(frozen=True)
+class AnvilTestWorldStatusResult:
+    output_dir: Path
+    manifest_path: Path
+    report_path: Path
+    checklist_path: Path
+    readme_path: Path
+    world_dir: Path
+    level_dat_path: Path
+    session_lock_path: Path
+    region_path: Path
+    verification_status: str
+    verified_by_minecraft_open: bool
+    sampled_width: int
+    sampled_length: int
+    cropped: bool
+    warnings: tuple[str, ...]
+
+
 def write_anvil_test_world(
     config: ProjectConfig,
     output_dir: Path,
@@ -184,6 +203,53 @@ def read_test_world_verification_report(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def read_test_world_manifest(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
+    manifest_path = output_dir / TEST_WORLD_MANIFEST
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Missing test-world manifest: {manifest_path}")
+
+    manifest = read_test_world_manifest(manifest_path)
+    artifacts = manifest.get("artifacts", {})
+    world_shell = manifest.get("worldShell", {})
+    sample_window = manifest.get("sampleWindow", {})
+    size = sample_window.get("size", {})
+
+    report_path = output_dir / str(artifacts.get("verificationReport", TEST_WORLD_REPORT))
+    if not report_path.exists():
+        raise FileNotFoundError(f"Missing verification report: {report_path}")
+    report = read_test_world_verification_report(report_path)
+    verification_status = str(report.get("status", world_shell.get("verificationStatus", "pending")))
+
+    checklist_path = output_dir / str(artifacts.get("verificationChecklist", TEST_WORLD_CHECKLIST))
+    readme_path = output_dir / str(artifacts.get("wrapperReadme", "README.txt"))
+    world_dir = output_dir / str(artifacts.get("worldDir", TEST_WORLD_DIR_NAME))
+    level_dat_path = output_dir / str(artifacts.get("levelDat", Path(TEST_WORLD_DIR_NAME) / TEST_WORLD_LEVEL_DAT))
+    session_lock_path = output_dir / str(artifacts.get("sessionLock", Path(TEST_WORLD_DIR_NAME) / TEST_WORLD_SESSION_LOCK))
+    region_path = output_dir / str(artifacts.get("regionFile", Path(TEST_WORLD_DIR_NAME) / "region" / ANVIL_REGION_FILE_NAME))
+
+    return AnvilTestWorldStatusResult(
+        output_dir=output_dir,
+        manifest_path=manifest_path,
+        report_path=report_path,
+        checklist_path=checklist_path,
+        readme_path=readme_path,
+        world_dir=world_dir,
+        level_dat_path=level_dat_path,
+        session_lock_path=session_lock_path,
+        region_path=region_path,
+        verification_status=verification_status,
+        verified_by_minecraft_open=verification_status == "passed",
+        sampled_width=int(size.get("width", 0)),
+        sampled_length=int(size.get("length", 0)),
+        cropped=bool(sample_window.get("cropped", False)),
+        warnings=tuple(str(item) for item in manifest.get("warnings", [])),
+    )
+
+
 def update_test_world_verification_report(
     report_path: Path,
     *,
@@ -279,6 +345,31 @@ def format_test_world_verification_update_result(result: AnvilTestWorldVerificat
         lines.append(f"- check status: {result.updated_check_status}")
     if result.manifest_path is not None:
         lines.append(f"- manifest synced: {result.manifest_path.name}")
+    return "\n".join(lines)
+
+
+def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
+    lines = [
+        f"Anvil test-world status: {result.output_dir}",
+        f"- world dir: {result.world_dir.name}",
+        f"- level.dat: {result.level_dat_path.name}",
+        f"- session.lock: {result.session_lock_path.name}",
+        f"- region file: {result.region_path.name}",
+        f"- checklist: {result.checklist_path.name}",
+        f"- report: {result.report_path.name}",
+        f"- manifest: {result.manifest_path.name}",
+        f"- readme: {result.readme_path.name}",
+        f"- sampled window: {result.sampled_width} x {result.sampled_length}",
+        f"- verification status: {result.verification_status}",
+        f"- verified by Minecraft open: {'yes' if result.verified_by_minecraft_open else 'no'}",
+    ]
+    if result.verification_status == "pending":
+        lines.append("Open next: verification-checklist.txt")
+        lines.append("Record after manual test: verification-report.json")
+    else:
+        lines.append("Open next: verification-report.json")
+    for warning in result.warnings:
+        lines.append(f"Warning: {warning}")
     return "\n".join(lines)
 
 

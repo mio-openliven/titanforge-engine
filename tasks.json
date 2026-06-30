@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-048",
+      "id": "TF-049",
       "status": "todo",
+      "priority": "P1",
+      "title": "Surface per-check verification states in test-world status output",
+      "acceptance": [
+        "status output can show each verification check id and current state from verification-report.json",
+        "the output stays short and readable for a non-developer tester",
+        "failed checks remain visible instead of collapsing into only one top-level status",
+        "tests cover the per-check status summary"
+      ]
+    },
+    {
+      "id": "TF-048",
+      "status": "done",
       "priority": "P1",
       "title": "Surface current verification status from verification-report.json in test-world summaries",
       "acceptance": [

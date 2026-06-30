@@ -11,8 +11,10 @@ from unittest import mock
 from titanforge.cli import main
 from titanforge.core.project import load_project_config
 from titanforge.spikes.anvil_test_world import (
+    format_test_world_status_result,
     read_test_world_level_dat,
     read_test_world_verification_report,
+    summarize_test_world_status,
     update_test_world_verification_report,
     write_anvil_test_world,
 )
@@ -184,3 +186,39 @@ class AnvilTestWorldTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
         self.assertIn("conflicts with derived verification status failed", stderr.getvalue())
+
+    def test_summarize_test_world_status_reads_current_report_state(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            update_test_world_verification_report(
+                output_dir / "verification-report.json",
+                check_id="mca-selector-open",
+                check_status="failed",
+                check_note="The sample opened but block placement looked shifted.",
+            )
+            result = summarize_test_world_status(output_dir)
+            summary = format_test_world_status_result(result)
+
+        self.assertEqual(result.verification_status, "failed")
+        self.assertFalse(result.verified_by_minecraft_open)
+        self.assertIn("- verification status: failed", summary)
+        self.assertIn("Open next: verification-report.json", summary)
+
+    def test_anvil_test_world_status_cli_command(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["anvil-test-world-status", str(output_dir)])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Anvil test-world status:", stdout.getvalue())
+        self.assertIn("- verification status: pending", stdout.getvalue())
+        self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())

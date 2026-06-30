@@ -180,6 +180,7 @@ When the manual test starts or finishes, update the report through CLI instead o
 
 ```powershell
 python -m titanforge anvil-test-world-verify out\tiny-test-world\verification-report.json --check minecraft-world-list --check-status in_progress --check-note "World copied into a throwaway saves folder."
+python -m titanforge anvil-test-world-status out\tiny-test-world
 ```
 
 ## Tests

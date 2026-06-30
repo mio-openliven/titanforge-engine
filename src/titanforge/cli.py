@@ -38,7 +38,9 @@ from titanforge.spikes.anvil_save_shell import format_anvil_save_shell_result, w
 from titanforge.spikes.anvil_test_world import (
     AnvilTestWorldVerificationError,
     format_anvil_test_world_result,
+    format_test_world_status_result,
     format_test_world_verification_update_result,
+    summarize_test_world_status,
     update_test_world_verification_report,
     write_anvil_test_world,
 )
@@ -212,6 +214,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     anvil_test_world_verify_parser.add_argument("--check-note", help="Note to append to the selected check.")
     anvil_test_world_verify_parser.add_argument("--report-note", help="Note to append to the report note list.")
+
+    anvil_test_world_status_parser = subparsers.add_parser(
+        "anvil-test-world-status",
+        help="Read the current status of an existing test-world candidate without rebuilding it.",
+    )
+    anvil_test_world_status_parser.add_argument("output_dir", type=Path, help="Existing anvil-test-world output folder.")
 
     inventory_parser = subparsers.add_parser(
         "inventory",
@@ -475,6 +483,11 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             report_note=args.report_note,
         )
         print(format_test_world_verification_update_result(result))
+        return 0
+
+    if args.command == "anvil-test-world-status":
+        result = summarize_test_world_status(args.output_dir)
+        print(format_test_world_status_result(result))
         return 0
 
     if args.command == "inventory":
