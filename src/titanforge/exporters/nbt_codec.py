@@ -8,9 +8,18 @@ from typing import Any
 TAG_END = 0
 TAG_BYTE = 1
 TAG_INT = 3
+TAG_LONG = 4
 TAG_STRING = 8
 TAG_LIST = 9
 TAG_COMPOUND = 10
+
+
+class NbtByte(int):
+    """Explicit signed-byte wrapper for cases where NBT type matters."""
+
+
+class NbtLong(int):
+    """Explicit signed-long wrapper for cases where NBT type matters."""
 
 
 def write_nbt(name: str, payload: dict[str, Any]) -> bytes:
@@ -43,10 +52,13 @@ def _write_tag_header(buffer: io.BytesIO, tag_type: int, name: str) -> None:
 
 def _write_payload(buffer: io.BytesIO, tag_type: int, value: Any) -> None:
     if tag_type == TAG_BYTE:
-        buffer.write(struct.pack(">b", 1 if value else 0))
+        buffer.write(struct.pack(">b", int(value)))
         return
     if tag_type == TAG_INT:
         buffer.write(struct.pack(">i", int(value)))
+        return
+    if tag_type == TAG_LONG:
+        buffer.write(struct.pack(">q", int(value)))
         return
     if tag_type == TAG_STRING:
         _write_string(buffer, str(value))
@@ -95,9 +107,14 @@ def _read_named_tag(buffer: io.BytesIO) -> tuple[int, str, Any]:
 
 def _read_payload(buffer: io.BytesIO, tag_type: int) -> Any:
     if tag_type == TAG_BYTE:
-        return bool(struct.unpack(">b", buffer.read(1))[0])
+        value = struct.unpack(">b", buffer.read(1))[0]
+        if value in (0, 1):
+            return bool(value)
+        return value
     if tag_type == TAG_INT:
         return struct.unpack(">i", buffer.read(4))[0]
+    if tag_type == TAG_LONG:
+        return struct.unpack(">q", buffer.read(8))[0]
     if tag_type == TAG_STRING:
         return _read_string(buffer)
     if tag_type == TAG_LIST:
@@ -135,7 +152,11 @@ def _read_ubyte(buffer: io.BytesIO) -> int:
 def _infer_tag_type(value: Any) -> int:
     if isinstance(value, bool):
         return TAG_BYTE
+    if isinstance(value, NbtByte):
+        return TAG_BYTE
     if isinstance(value, int):
+        if isinstance(value, NbtLong):
+            return TAG_LONG
         return TAG_INT
     if isinstance(value, str):
         return TAG_STRING

@@ -93,9 +93,10 @@ If you explicitly need the current donor-backed `.mca` lab spike, install the op
 py -3.11 -m pip install -e .[donor-spikes]
 py -3.11 -m titanforge anvil-region-spike examples\tiny_project\titanforge.toml previews\tiny-anvil-spike --max-side 128
 py -3.11 -m titanforge anvil-save-shell examples\tiny_project\titanforge.toml previews\tiny-save-shell --max-side 128
+py -3.11 -m titanforge anvil-test-world examples\tiny_project\titanforge.toml previews\tiny-test-world --max-side 128
 ```
 
-These are narrow donor-backed experiments, not a full world export. `anvil-save-shell` is the more practical handoff because it wraps the sampled region in a save-like folder and tells you how to inspect it safely.
+These are narrow donor-backed experiments, not a full world export. `anvil-save-shell` is the safer inspection handoff, while `anvil-test-world` is the first manual-open candidate because it also writes `level.dat` and `session.lock`.
 
 ## Overnight Work
 

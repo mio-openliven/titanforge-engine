@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-044",
+      "id": "TF-045",
       "status": "todo",
+      "priority": "P1",
+      "title": "Add first manual-open verification checklist and artifact report for test-world candidates",
+      "acceptance": [
+        "test-world outputs include a short checklist for a human throwaway-world open test",
+        "the report records what should be checked after Minecraft or MCA Selector opens the candidate",
+        "the checklist does not pretend verification already happened",
+        "tests cover the checklist/report artifact contents"
+      ]
+    },
+    {
+      "id": "TF-044",
+      "status": "done",
       "priority": "P1",
       "title": "Add first minimal loadable test-world shell for Minecraft 1.21.11",
       "acceptance": [

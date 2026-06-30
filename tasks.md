@@ -4,7 +4,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## To Do
 
-- `TF-044` `P1` Add first minimal loadable test-world shell for Minecraft 1.21.11.
+- `TF-045` `P1` Add first manual-open verification checklist and artifact report for test-world candidates.
 
 ## In Progress
 
@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-044` `P1` Add first minimal loadable test-world shell for Minecraft 1.21.11.
 - `TF-043` `P1` Add first sampled save-shell handoff for Minecraft 1.21.11.
 - `TF-042` `P1` Add isolated donor-backed region export spike for Minecraft 1.21.11.
 - `TF-041` `P1` Add first vanilla structure-template artifact for Minecraft 1.21.11.

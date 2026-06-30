@@ -1,6 +1,6 @@
 import unittest
 
-from titanforge.exporters.nbt_codec import read_nbt, write_nbt
+from titanforge.exporters.nbt_codec import NbtByte, NbtLong, read_nbt, write_nbt
 
 
 class NbtCodecTests(unittest.TestCase):
@@ -22,3 +22,15 @@ class NbtCodecTests(unittest.TestCase):
         self.assertEqual(decoded["baseY"], 64)
         self.assertEqual(decoded["notes"], ["hello", "world"])
         self.assertEqual(decoded["nested"]["label"], "alpha")
+
+    def test_write_and_read_explicit_byte_and_long_tags(self) -> None:
+        payload = {
+            "difficulty": NbtByte(2),
+            "lastPlayed": NbtLong(4_671_000_000),
+        }
+
+        encoded = write_nbt("", payload)
+        _name, decoded = read_nbt(encoded)
+
+        self.assertEqual(decoded["difficulty"], 2)
+        self.assertEqual(decoded["lastPlayed"], 4_671_000_000)
