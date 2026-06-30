@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-053` `P1` Add plain-language preset guidance to first-map workflow.
 - `TF-052` `P1` Add human-readable world scale guidance to first-map workflow.
 - `TF-051` `P1` Clarify logical world size versus draft raster in first-map workflow.
 - `TF-050` `P1` Add compact failed-check spotlight to test-world status output.

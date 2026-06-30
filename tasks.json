@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-053",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add plain-language preset guidance to first-map workflow",
+      "acceptance": [
+        "init-project output explains what kind of world the chosen preset creates",
+        "first-map output and root review surface the preset story intent in plain language",
+        "the guidance includes a small region lineup so preset choice is less opaque",
+        "tests cover the new preset guidance text"
+      ]
+    },
+    {
       "id": "TF-052",
       "status": "done",
       "priority": "P1",

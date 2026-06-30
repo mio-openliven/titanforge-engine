@@ -120,6 +120,9 @@ def write_project_first_map(
 
 def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
     scale = describe_world_scale(result.template_result.config.width, result.template_result.config.length)
+    region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
+    if len(result.template_result.config.regions) > 3:
+        region_lineup = f"{region_lineup}, +{len(result.template_result.config.regions) - 3} more"
     return "\n".join(
         (
             f"First map: {result.project_dir}",
@@ -131,6 +134,9 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Logical world size: {result.template_result.config.width} x {result.template_result.config.length}",
             f"World scale: {scale.label}",
             f"Scale use: {scale.summary}",
+            f"Preset story: {result.template_result.config.premise}",
+            f"Player feeling: {result.template_result.config.player_experience}",
+            f"Key regions: {region_lineup}",
             f"Draft raster: {result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}",
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             "Change world size later: edit width and length in titanforge.toml, then rerun generation.",

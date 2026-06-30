@@ -27,6 +27,9 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
     manifest_path = result.manifest_path.relative_to(project_dir)
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
+    region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
+    if len(result.template_result.config.regions) > 3:
+        region_lineup = f"{region_lineup}, +{len(result.template_result.config.regions) - 3} more"
 
     return f"""<!doctype html>
 <html lang="en">
@@ -207,6 +210,24 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <h3>World scale</h3>
           <p><strong>{escape(scale.label)}</strong>. {escape(scale.summary)} {escape(scale.planning_note)}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Preset Intent</h2>
+      <div class="links">
+        <article class="card">
+          <h3>Preset story</h3>
+          <p>{escape(result.template_result.config.premise)}</p>
+        </article>
+        <article class="card">
+          <h3>Player feeling</h3>
+          <p>{escape(result.template_result.config.player_experience)}</p>
+        </article>
+        <article class="card">
+          <h3>Key regions</h3>
+          <p>{escape(region_lineup)}</p>
         </article>
       </div>
     </section>

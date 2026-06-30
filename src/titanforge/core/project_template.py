@@ -279,6 +279,7 @@ def write_project_template(
 
 def format_project_template_result(result: ProjectTemplateResult) -> str:
     scale = describe_world_scale(result.config.width, result.config.length)
+    region_lineup = _format_region_lineup(tuple(region.title for region in result.config.regions))
     next_command = (
         f'py -3.11 -m titanforge project-location "{result.config_path}" '
         f'"{result.suggested_output_dir}" --use-cleanup-for-heightmap'
@@ -292,6 +293,9 @@ def format_project_template_result(result: ProjectTemplateResult) -> str:
             f"Allowed size: {PROJECT_TEMPLATE_MIN_SIDE} .. {PROJECT_TEMPLATE_MAX_SIDE} blocks",
             f"World scale: {scale.label}",
             f"Scale use: {scale.summary}",
+            f"Preset story: {result.config.premise}",
+            f"Player feeling: {result.config.player_experience}",
+            f"Key regions: {region_lineup}",
             "Change later: edit width and length in titanforge.toml, then run project-location again.",
             scale.planning_note,
             "Large worlds still use a smaller draft raster during planning; later output shows the blocks-per-pixel scale.",
@@ -359,3 +363,12 @@ def _normalize_project_name(project_name: str | None) -> str:
 
 def _toml_string(value: str) -> str:
     return json.dumps(value)
+
+
+def _format_region_lineup(region_titles: tuple[str, ...], *, limit: int = 3) -> str:
+    if not region_titles:
+        return "No starter regions."
+    if len(region_titles) <= limit:
+        return ", ".join(region_titles)
+    visible = ", ".join(region_titles[:limit])
+    return f"{visible}, +{len(region_titles) - limit} more"
