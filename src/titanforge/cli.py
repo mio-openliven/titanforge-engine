@@ -34,6 +34,7 @@ from titanforge.spikes.anvil_region import (
     format_anvil_region_spike_result,
     write_anvil_region_spike,
 )
+from titanforge.spikes.anvil_save_shell import format_anvil_save_shell_result, write_anvil_save_shell
 from titanforge.terrain.color_preview import format_terrain_color_preview_result, render_terrain_color_preview
 from titanforge.terrain.heightmap_preview import format_heightmap_preview_result, render_heightmap_preview
 from titanforge.terrain.model import format_terrain_grid_result, write_terrain_grid
@@ -154,6 +155,19 @@ def build_parser() -> argparse.ArgumentParser:
     anvil_region_spike_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
     anvil_region_spike_parser.add_argument("output_dir", type=Path, help="Output folder for the donor-backed region spike.")
     anvil_region_spike_parser.add_argument(
+        "--max-side",
+        type=int,
+        default=DEFAULT_SPIKE_MAX_SIDE,
+        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+    )
+
+    anvil_save_shell_parser = subparsers.add_parser(
+        "anvil-save-shell",
+        help="Write one experimental save-like folder around a sampled donor-backed .mca region.",
+    )
+    anvil_save_shell_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
+    anvil_save_shell_parser.add_argument("output_dir", type=Path, help="Output folder for the sampled save-shell handoff.")
+    anvil_save_shell_parser.add_argument(
         "--max-side",
         type=int,
         default=DEFAULT_SPIKE_MAX_SIDE,
@@ -385,6 +399,18 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         config = load_project_config(args.config)
         result = write_anvil_region_spike(config, args.output_dir, max_side=args.max_side)
         print(format_anvil_region_spike_result(result))
+        return 0
+
+    if args.command == "anvil-save-shell":
+        if not 16 <= args.max_side <= 512:
+            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+            return 2
+        if args.max_side % 16 != 0:
+            print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
+            return 2
+        config = load_project_config(args.config)
+        result = write_anvil_save_shell(config, args.output_dir, max_side=args.max_side)
+        print(format_anvil_save_shell_result(result))
         return 0
 
     if args.command == "inventory":

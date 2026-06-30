@@ -167,9 +167,11 @@ If you want one narrow experiment toward real world-region output, install the o
 ```powershell
 py -3.11 -m pip install -e .[donor-spikes]
 python -m titanforge anvil-region-spike examples\tiny_project\titanforge.toml out\tiny-anvil-spike --max-side 128
+python -m titanforge anvil-save-shell examples\tiny_project\titanforge.toml out\tiny-save-shell --max-side 128
 ```
 
 This writes one sampled `region\r.0.0.mca`, a manifest, and a short README. It is intentionally clipped to one chunk-aligned window inside one safe region file. It proves a donor-backed `.mca` write/read path without claiming that TitanForge already exports full playable worlds.
+The `anvil-save-shell` wrapper goes one step further: it creates a save-like folder under `save-shell\`, keeps the sampled region inside `save-shell\region\`, and tells you the next manual test step for MCA Selector or for copying that one region into a backed-up throwaway world.
 
 ## Tests
 

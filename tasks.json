@@ -3,8 +3,20 @@
   "version": 1,
   "tasks": [
     {
-      "id": "TF-043",
+      "id": "TF-044",
       "status": "todo",
+      "priority": "P1",
+      "title": "Add first minimal loadable test-world shell for Minecraft 1.21.11",
+      "acceptance": [
+        "the spike writes the smallest honest folder set needed for a throwaway manual open test",
+        "the command still marks the output experimental and keeps donor-specific logic outside TitanForge core",
+        "the result explains exactly what is still fake, sampled, or unsafe",
+        "tests cover the added shell artifacts and guidance"
+      ]
+    },
+    {
+      "id": "TF-043",
+      "status": "done",
       "priority": "P1",
       "title": "Add first sampled save-shell handoff for Minecraft 1.21.11",
       "acceptance": [

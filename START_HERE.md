@@ -92,9 +92,10 @@ If you explicitly need the current donor-backed `.mca` lab spike, install the op
 ```powershell
 py -3.11 -m pip install -e .[donor-spikes]
 py -3.11 -m titanforge anvil-region-spike examples\tiny_project\titanforge.toml previews\tiny-anvil-spike --max-side 128
+py -3.11 -m titanforge anvil-save-shell examples\tiny_project\titanforge.toml previews\tiny-save-shell --max-side 128
 ```
 
-This is a narrow region-file experiment, not a full world export.
+These are narrow donor-backed experiments, not a full world export. `anvil-save-shell` is the more practical handoff because it wraps the sampled region in a save-like folder and tells you how to inspect it safely.
 
 ## Overnight Work
 
