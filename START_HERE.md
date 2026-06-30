@@ -108,7 +108,7 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-test-world previews\my-first-world
 ```
 
-That writes `previews\my-first-world\minecraft-test-world`. If you omit `--max-side`, TitanForge chooses a safer first sampled window from the logical world size and also repeats that recommendation in `first-map-status`. Open `verification-checklist.txt` first, then use `py -3.11 -m titanforge anvil-test-world-status previews\my-first-world\minecraft-test-world` when you need the current manual-test status again.
+That writes `previews\my-first-world\minecraft-test-world`. If you omit `--max-side`, TitanForge chooses a safer first sampled window from the logical world size and also repeats that recommendation in `first-map-status`. Open `verification-checklist.txt` first, then use `py -3.11 -m titanforge anvil-test-world-status previews\my-first-world\minecraft-test-world` when you need the current manual-test status again. That status now also tells you the next sampled window to try after a passed manual check.
 
 If you need a fresh world brief instead of the example file, start here:
 

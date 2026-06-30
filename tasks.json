@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-066",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add post-verification sample growth guidance for test-world handoff",
+      "acceptance": [
+        "anvil-test-world manifest includes a next-sample strategy for growing the sampled window safely",
+        "anvil-test-world-status surfaces the next sample size and exact rerun command when available",
+        "first-map-driven test-world runs carry the same growth command through the wrapper path",
+        "tests cover current-sample rerun hints and next-sample guidance"
+      ]
+    },
+    {
       "id": "TF-065",
       "status": "done",
       "priority": "P1",

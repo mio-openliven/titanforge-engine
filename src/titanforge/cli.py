@@ -536,7 +536,15 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
             return 2
         config = load_project_config(args.config)
-        result = write_anvil_test_world(config, args.output_dir, max_side=args.max_side)
+        rerun_template = (
+            f'py -3.11 -m titanforge anvil-test-world "{args.config}" "{args.output_dir}" --max-side {{max_side}}'
+        )
+        result = write_anvil_test_world(
+            config,
+            args.output_dir,
+            max_side=args.max_side,
+            rerun_command_template=rerun_template,
+        )
         print(format_anvil_test_world_result(result))
         return 0
 

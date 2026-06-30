@@ -359,7 +359,17 @@ def write_project_first_map_test_world(
     config = load_project_first_map_config(project_dir)
     resolved_output_dir = output_dir if output_dir is not None else build_first_map_test_world_output_dir(project_dir)
     resolved_max_side = max_side if max_side is not None else suggest_first_map_test_world_max_side(config.width, config.length)
-    return write_anvil_test_world(config, resolved_output_dir, max_side=resolved_max_side, anvil_module=anvil_module)
+    command = f'py -3.11 -m titanforge first-map-test-world "{project_dir}"'
+    if output_dir is not None:
+        command += f' --output-dir "{output_dir}"'
+    command += " --max-side {max_side}"
+    return write_anvil_test_world(
+        config,
+        resolved_output_dir,
+        max_side=resolved_max_side,
+        anvil_module=anvil_module,
+        rerun_command_template=command,
+    )
 
 
 def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:

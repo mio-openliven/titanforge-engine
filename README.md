@@ -89,6 +89,8 @@ Use `first-map-test-world` when you already have a `first-map` project and want 
 
 `fixture-summary.json` now also carries a plain `starterTest` verdict: `safe`, `caution`, or `blocked`. The same verdict is surfaced in `location/review.html` and `first-map-status`, so a scenario writer does not need to infer first-test risk from raw warning strings alone.
 
+`anvil-test-world-status` now also tells you the next sampled window to try after a passed manual-open check, plus the exact rerun command when that handoff was created through TitanForge CLI flows.
+
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, gives a plain-language world-scale label for the chosen size, surfaces the preset story intent and starter regions, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 
 Use `preset-catalog` first when you do not yet know whether you want the coast, frontier, or island starter. It prints the story intent, player feeling, and key starter regions for every preset in one short CLI report. Use `preset-catalog --json` when a future UI or helper script needs the same data in a schema-tagged payload instead of text parsing.

@@ -362,6 +362,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(manifest["sampleWindow"]["size"]["width"], 64)
         self.assertEqual(manifest["sampleWindow"]["size"]["length"], 64)
+        self.assertEqual(manifest["sampleGrowth"]["nextMaxSide"], 128)
+        self.assertIn('py -3.11 -m titanforge first-map-test-world', manifest["sampleGrowth"]["nextSampleCommand"])
 
     def test_first_map_test_world_strategy_helpers(self) -> None:
         self.assertEqual(suggest_first_map_test_world_max_side(192, 128), 192)

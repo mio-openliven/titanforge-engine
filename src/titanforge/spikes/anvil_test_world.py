@@ -79,6 +79,10 @@ class AnvilTestWorldStatusResult:
     sampled_width: int
     sampled_length: int
     cropped: bool
+    current_sample_command: str
+    next_sample_max_side: int | None
+    next_sample_summary: str
+    next_sample_command: str
     warnings: tuple[str, ...]
 
 
@@ -88,6 +92,7 @@ def write_anvil_test_world(
     *,
     max_side: int = DEFAULT_SPIKE_MAX_SIDE,
     anvil_module: Any | None = None,
+    rerun_command_template: str | None = None,
 ) -> AnvilTestWorldResult:
     output_dir.mkdir(parents=True, exist_ok=True)
     world_dir = output_dir / TEST_WORLD_DIR_NAME
@@ -108,6 +113,13 @@ def write_anvil_test_world(
         "This is the first minimal test-world candidate, not a verified full Minecraft save.",
         "level.dat and session.lock are present, but this shell is still sampled and has not been validated by opening inside Minecraft in this automation pass.",
         "Use only for backed-up throwaway manual open tests.",
+    )
+    sample_growth = _build_sample_growth_guidance(
+        world_width=config.width,
+        world_length=config.length,
+        sampled_width=spike_result.sampled_width,
+        sampled_length=spike_result.sampled_length,
+        rerun_command_template=rerun_command_template,
     )
 
     manifest = {
@@ -138,6 +150,7 @@ def write_anvil_test_world(
             "size": {"width": spike_result.sampled_width, "length": spike_result.sampled_length},
             "cropped": spike_result.cropped,
         },
+        "sampleGrowth": sample_growth,
         "worldShell": {
             "hasLevelDat": True,
             "hasSessionLock": True,
@@ -217,6 +230,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
     artifacts = manifest.get("artifacts", {})
     world_shell = manifest.get("worldShell", {})
     sample_window = manifest.get("sampleWindow", {})
+    sample_growth = dict(manifest.get("sampleGrowth", {}))
     size = sample_window.get("size", {})
 
     report_path = output_dir / str(artifacts.get("verificationReport", TEST_WORLD_REPORT))
@@ -252,6 +266,12 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         sampled_width=int(size.get("width", 0)),
         sampled_length=int(size.get("length", 0)),
         cropped=bool(sample_window.get("cropped", False)),
+        current_sample_command=str(sample_growth.get("rerunCurrentCommand", "")),
+        next_sample_max_side=(
+            int(sample_growth["nextMaxSide"]) if sample_growth.get("nextMaxSide") is not None else None
+        ),
+        next_sample_summary=str(sample_growth.get("summary", "")),
+        next_sample_command=str(sample_growth.get("nextSampleCommand", "")),
         warnings=tuple(str(item) for item in manifest.get("warnings", [])),
     )
 
@@ -370,6 +390,12 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         f"- verification status: {result.verification_status}",
         f"- verified by Minecraft open: {'yes' if result.verified_by_minecraft_open else 'no'}",
     ]
+    if result.current_sample_command:
+        lines.append(f"- rerun current sample: {result.current_sample_command}")
+    if result.next_sample_summary:
+        lines.append(f"- next sample: {result.next_sample_summary}")
+    if result.next_sample_command:
+        lines.append(f"- next sample command: {result.next_sample_command}")
     if failed_checks:
         lines.append(f"- failed checks: {', '.join(failed_checks)}")
     if result.checks:
@@ -566,4 +592,50 @@ def _build_verification_report(
             "Fill this report only after a manual test.",
             "Keep failed opens or corruption notes instead of deleting them.",
         ],
+    }
+
+
+def _build_sample_growth_guidance(
+    *,
+    world_width: int,
+    world_length: int,
+    sampled_width: int,
+    sampled_length: int,
+    rerun_command_template: str | None,
+) -> dict[str, Any]:
+    current_max_side = max(sampled_width, sampled_length)
+    logical_limit = min(DEFAULT_SPIKE_MAX_SIDE, max(world_width, world_length))
+    logical_limit -= logical_limit % 16
+    if logical_limit <= 0:
+        logical_limit = 16
+
+    next_max_side = min(DEFAULT_SPIKE_MAX_SIDE, current_max_side * 2, logical_limit)
+    next_max_side -= next_max_side % 16
+    if next_max_side <= current_max_side:
+        next_max_side = None
+
+    rerun_current_command = (
+        rerun_command_template.format(max_side=current_max_side)
+        if rerun_command_template is not None
+        else ""
+    )
+    next_sample_command = (
+        rerun_command_template.format(max_side=next_max_side)
+        if rerun_command_template is not None and next_max_side is not None
+        else ""
+    )
+
+    if next_max_side is None:
+        summary = "This sample already reaches the largest safe sampled test-world window TitanForge supports here."
+    else:
+        summary = (
+            f"If the current manual-open test passes, grow next to {next_max_side} x {next_max_side} blocks."
+        )
+
+    return {
+        "currentMaxSide": current_max_side,
+        "nextMaxSide": next_max_side,
+        "summary": summary,
+        "rerunCurrentCommand": rerun_current_command,
+        "nextSampleCommand": next_sample_command,
     }

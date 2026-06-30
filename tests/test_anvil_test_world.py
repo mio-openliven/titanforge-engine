@@ -50,6 +50,9 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(manifest["worldShell"]["manualOpenCandidate"], True)
         self.assertEqual(manifest["worldShell"]["verifiedByMinecraftOpen"], False)
         self.assertEqual(manifest["worldShell"]["verificationStatus"], "pending-manual-check")
+        self.assertEqual(manifest["sampleGrowth"]["currentMaxSide"], 128)
+        self.assertEqual(manifest["sampleGrowth"]["nextMaxSide"], 256)
+        self.assertIn("grow next to 256 x 256", manifest["sampleGrowth"]["summary"])
         self.assertIn("smallest test-world shell", readme_text)
         self.assertIn("Open verification-checklist.txt first", readme_text)
         self.assertIn("Status: pending manual verification", checklist_text)
@@ -207,23 +210,34 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertIn(("mca-selector-open", "failed"), result.checks)
         self.assertIn("- verification status: failed", summary)
         self.assertIn("- failed checks: mca-selector-open", summary)
+        self.assertIn("- next sample:", summary)
         self.assertIn("Checks:", summary)
         self.assertIn("- mca-selector-open: failed", summary)
         self.assertIn("Open next: verification-report.json", summary)
 
     def test_anvil_test_world_status_cli_command(self) -> None:
-        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
-
         with tempfile.TemporaryDirectory() as directory:
             output_dir = Path(directory) / "test-world"
-            write_anvil_test_world(config, output_dir, max_side=128, anvil_module=_FakeAnvilModule)
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                create_exit_code = main(
+                    [
+                        "anvil-test-world",
+                        str(Path("examples") / "tiny_project" / "titanforge.toml"),
+                        str(output_dir),
+                        "--max-side",
+                        "128",
+                    ]
+                )
             stdout = io.StringIO()
 
             with contextlib.redirect_stdout(stdout):
                 exit_code = main(["anvil-test-world-status", str(output_dir)])
 
+        self.assertEqual(create_exit_code, 0)
         self.assertEqual(exit_code, 0)
         self.assertIn("Anvil test-world status:", stdout.getvalue())
         self.assertIn("- verification status: pending", stdout.getvalue())
         self.assertIn("- mca-selector-open: pending", stdout.getvalue())
+        self.assertIn("- next sample:", stdout.getvalue())
+        self.assertIn("- next sample command:", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())

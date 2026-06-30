@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-066` `P1` Add post-verification sample growth guidance for test-world handoff.
 - `TF-065` `P1` Add size-aware sampled test-world strategy for first-map.
 - `TF-064` `P1` Add explicit starter-test safety verdict to fixture handoff.
 - `TF-063` `P1` Make first-map-status a terminal-first scenario-writer handoff.
