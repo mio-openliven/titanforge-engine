@@ -9,7 +9,13 @@ from titanforge.core.project_draft import DEFAULT_MAX_DRAFT_SIDE
 from titanforge.core.project import load_project_config
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
 from titanforge.core.project_first_map_review import write_project_first_map_review_page
-from titanforge.core.project_template import ProjectTemplateResult, describe_world_scale, write_project_template
+from titanforge.core.project_template import (
+    PROJECT_TEMPLATE_MAX_SIDE,
+    PROJECT_TEMPLATE_MIN_SIDE,
+    ProjectTemplateResult,
+    describe_world_scale,
+    write_project_template,
+)
 from titanforge.core.route_plan import build_route_plan
 from titanforge.core.world_plan import build_world_plan
 from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE
@@ -27,6 +33,7 @@ class ProjectFirstMapResult:
     project_dir: Path
     manifest_path: Path
     review_page_path: Path
+    max_draft_side: int
     template_result: ProjectTemplateResult
     location_result: ProjectLocationResult
 
@@ -55,6 +62,17 @@ class ProjectFirstMapWalkthroughStep:
 
 
 @dataclass(frozen=True)
+class ProjectFirstMapSizeOption:
+    option_id: str
+    label: str
+    width: int
+    length: int
+    scale_label: str
+    summary: str
+    rerun_command: str
+
+
+@dataclass(frozen=True)
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
@@ -77,6 +95,8 @@ class ProjectFirstMapStatusResult:
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
     route_handoffs: tuple[ProjectFirstMapRouteHandoff, ...]
     recommended_walkthrough: tuple[ProjectFirstMapWalkthroughStep, ...]
+    size_edit_config_path: Path
+    size_edit_options: tuple[ProjectFirstMapSizeOption, ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -312,6 +332,47 @@ def build_first_map_story_walkthrough(
     return tuple(steps)
 
 
+def build_first_map_size_options(
+    project_dir: Path,
+    project_name: str,
+    preset_name: str,
+    width: int,
+    length: int,
+    *,
+    max_draft_side: int,
+) -> tuple[ProjectFirstMapSizeOption, ...]:
+    options: list[ProjectFirstMapSizeOption] = []
+    seen_sizes: set[tuple[int, int]] = set()
+    for option_id, label, target_max_side in (
+        ("pocket-scene", "Smaller test map", 256),
+        ("local-district", "Town-sized map", 2048),
+        ("regional-journey", "Regional map", 8192),
+        ("long-travel-world", "Large cinematic map", 16000),
+    ):
+        option_width, option_length = _scale_dimensions_to_max_side(width, length, target_max_side)
+        size_key = (option_width, option_length)
+        if size_key in seen_sizes:
+            continue
+        seen_sizes.add(size_key)
+        scale = describe_world_scale(option_width, option_length)
+        options.append(
+            ProjectFirstMapSizeOption(
+                option_id=option_id,
+                label=label,
+                width=option_width,
+                length=option_length,
+                scale_label=scale.label,
+                summary=scale.summary,
+                rerun_command=(
+                    f'py -3.11 -m titanforge first-map "{project_dir.name}" '
+                    f'--name "{project_name}" --width {option_width} --length {option_length} '
+                    f'--preset {preset_name} --max-draft-side {max_draft_side}'
+                ),
+            )
+        )
+    return tuple(options)
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -386,6 +447,7 @@ def write_project_first_map(
         project_dir=project_dir,
         manifest_path=manifest_path,
         review_page_path=review_page_path,
+        max_draft_side=max_draft_side,
         template_result=template_result,
         location_result=location_result,
     )
@@ -413,6 +475,14 @@ def write_project_first_map(
         template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
     )
+    size_options = build_first_map_size_options(
+        project_dir,
+        template_result.config.name,
+        template_result.preset_name,
+        template_result.config.width,
+        template_result.config.length,
+        max_draft_side=max_draft_side,
+    )
 
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
@@ -437,6 +507,26 @@ def write_project_first_map(
                 "story": template_result.config.premise,
                 "playerFeeling": template_result.config.player_experience,
                 "keyRegions": list(key_regions),
+            },
+            "worldSizeEdits": {
+                "editFile": template_result.config_path.name,
+                "editFields": ["width", "length"],
+                "allowedRange": {
+                    "minBlocks": PROJECT_TEMPLATE_MIN_SIDE,
+                    "maxBlocks": PROJECT_TEMPLATE_MAX_SIDE,
+                },
+                "examples": [
+                    {
+                        "id": option.option_id,
+                        "label": option.label,
+                        "width": option.width,
+                        "length": option.length,
+                        "scaleLabel": option.scale_label,
+                        "summary": option.summary,
+                        "rerunCommand": option.rerun_command,
+                    }
+                    for option in size_options
+                ],
             },
             "storyRoutes": {
                 "routePlan": str(location_result.draft_result.route_plan_path.relative_to(project_dir)),
@@ -613,6 +703,7 @@ def write_project_first_map(
         project_dir=project_dir,
         manifest_path=manifest_path,
         review_page_path=review_page_path,
+        max_draft_side=max_draft_side,
         template_result=template_result,
         location_result=location_result,
     )
@@ -712,6 +803,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     action_plan = dict(guidance.get("actionPlan", {}))
     world_scale = dict(guidance.get("worldScale", {}))
     preset = dict(guidance.get("preset", {}))
+    world_size_edits = dict(guidance.get("worldSizeEdits", {}))
     story_routes = dict(guidance.get("storyRoutes", {}))
     commands = dict(manifest.get("commands", {}))
     artifacts = dict(manifest.get("artifacts", {}))
@@ -761,6 +853,18 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
             status_command=str(item.get("statusCommand", "")),
         )
         for item in story_routes.get("recommendedWalkthrough", [])
+    )
+    size_edit_options = tuple(
+        ProjectFirstMapSizeOption(
+            option_id=str(item.get("id", "")),
+            label=str(item.get("label", "")),
+            width=int(item.get("width", 0)),
+            length=int(item.get("length", 0)),
+            scale_label=str(item.get("scaleLabel", "")),
+            summary=str(item.get("summary", "")),
+            rerun_command=str(item.get("rerunCommand", "")),
+        )
+        for item in world_size_edits.get("examples", [])
     )
 
     open_sequence = tuple(
@@ -816,6 +920,8 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_focus_anchor_commands=test_world_focus_anchor_commands,
         route_handoffs=route_handoffs,
         recommended_walkthrough=recommended_walkthrough,
+        size_edit_config_path=project_dir / str(world_size_edits.get("editFile", project.get("configPath", "titanforge.toml"))),
+        size_edit_options=size_edit_options,
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -871,6 +977,16 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             lines.append(f"- use: {result.world_scale_summary}")
         if result.world_scale_planning_note:
             lines.append(f"- planning note: {result.world_scale_planning_note}")
+    if result.size_edit_options:
+        lines.append("Change world size:")
+        lines.append(
+            f"- edit {result.size_edit_config_path.name}: width and length must stay between {PROJECT_TEMPLATE_MIN_SIDE} and {PROJECT_TEMPLATE_MAX_SIDE} blocks."
+        )
+        for option in result.size_edit_options:
+            lines.append(
+                f"- {option.label}: {option.width} x {option.length} ({option.scale_label}; {option.summary})"
+            )
+            lines.append(f"- rerun example: {option.rerun_command}")
     if result.open_sequence:
         lines.append("Review now:")
         open_summaries = dict(result.open_sequence_summaries)
@@ -958,3 +1074,23 @@ def _slugify_focus_part(value: str) -> str:
     cleaned = "".join(character if character.isalnum() else "-" for character in lowered)
     parts = [part for part in cleaned.split("-") if part]
     return "-".join(parts)
+
+
+def _scale_dimensions_to_max_side(width: int, length: int, target_max_side: int) -> tuple[int, int]:
+    if width <= 0 or length <= 0:
+        return PROJECT_TEMPLATE_MIN_SIDE, PROJECT_TEMPLATE_MIN_SIDE
+
+    current_max_side = max(width, length)
+    scale = target_max_side / current_max_side
+    scaled_width = max(PROJECT_TEMPLATE_MIN_SIDE, min(PROJECT_TEMPLATE_MAX_SIDE, round(width * scale)))
+    scaled_length = max(PROJECT_TEMPLATE_MIN_SIDE, min(PROJECT_TEMPLATE_MAX_SIDE, round(length * scale)))
+
+    if max(scaled_width, scaled_length) > target_max_side:
+        if scaled_width >= scaled_length:
+            scaled_width = target_max_side
+            scaled_length = max(PROJECT_TEMPLATE_MIN_SIDE, round(target_max_side * length / width))
+        else:
+            scaled_length = target_max_side
+            scaled_width = max(PROJECT_TEMPLATE_MIN_SIDE, round(target_max_side * width / length))
+
+    return scaled_width, scaled_length

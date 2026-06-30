@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-073` `P1` Add first-map size edit handoff.
 - `TF-072` `P1` Add recommended first-map walkthrough handoff.
 - `TF-071` `P1` Add route-focused first-map handoff.
 - `TF-070` `P1` Prevent focused test-world handoff from overwriting sibling samples.

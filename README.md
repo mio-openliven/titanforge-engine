@@ -81,7 +81,7 @@ python -m titanforge terrain-color-preview out\demo-location\layout.json out\dem
 python -m titanforge terrain-grid out\demo-location\layout.json out\demo-location\terrain-grid.json --mask out\demo-location\mask-cleanup-preview.png
 ```
 
-Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, labels the requested world scale in plain language, surfaces the preset story intent and key regions, and tells you to open that root page first.
+Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, labels the requested world scale in plain language, surfaces the preset story intent and key regions, gives a few exact safe size examples with rerun commands, and tells you to open that root page first.
 
 Use `first-map-status` when the pack already exists and you only need the current handoff summary again. It reads `first-map-manifest.json` and now reprints the preset intent, world-scale guidance, review order, next actions, Minecraft caution notes, and saved command hints without rebuilding anything. It starts with a short recommended walkthrough built from the current route plan, then keeps the deeper route preview, route-plan, region-focused, and anchor-focused `first-map-test-world` commands available when a scenario writer needs to inspect a named zone such as the harbor, coast, forest, village, or ridge.
 

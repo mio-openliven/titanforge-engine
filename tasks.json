@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-073",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map size edit handoff",
+      "acceptance": [
+        "first-map-manifest.json records safe world-size edit guidance with exact width/length examples and rerun commands",
+        "first-map-status surfaces a short size-change block so a scenario writer can understand how to make the world smaller or larger without opening source files blindly",
+        "root first-map review page shows the same size examples near the logical size explanation",
+        "tests cover the new size edit handoff"
+      ]
+    },
+    {
       "id": "TF-072",
       "status": "done",
       "priority": "P1",

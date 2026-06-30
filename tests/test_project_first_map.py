@@ -61,6 +61,38 @@ class ProjectFirstMapTests(unittest.TestCase):
             ["Harbor Town", "Salt Coast", "Old Pine Forest"],
         )
         self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["editFile"],
+            "titanforge.toml",
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["allowedRange"]["minBlocks"],
+            64,
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["allowedRange"]["maxBlocks"],
+            32000,
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["examples"][0]["label"],
+            "Smaller test map",
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["examples"][0]["width"],
+            256,
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["examples"][0]["length"],
+            192,
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["examples"][1]["scaleLabel"],
+            "Local district",
+        )
+        self.assertIn(
+            '--width 8192 --length 6144',
+            manifest["guidance"]["worldSizeEdits"]["examples"][2]["rerunCommand"],
+        )
+        self.assertEqual(
             manifest["guidance"]["storyRoutes"]["routePreview"],
             "first-map\\draft\\route-preview.png",
         )
@@ -212,6 +244,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Logical world size", root_review_html)
         self.assertIn("1 px = 8 blocks", root_review_html)
         self.assertIn("World scale", root_review_html)
+        self.assertIn("Change size safely", root_review_html)
+        self.assertIn("64 .. 32000", root_review_html)
+        self.assertIn("Smaller test map", root_review_html)
+        self.assertIn("--width 16000 --length 12000", root_review_html)
         self.assertIn("Local district", root_review_html)
         self.assertIn("Change <code>width</code> or <code>length</code>", root_review_html)
         self.assertIn('href="first-map/location/review.html"', root_review_html)
@@ -262,6 +298,12 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("comfortable for local travel beats", result.world_scale_planning_note)
         self.assertIn("A cinematic coast-to-mountain story space", result.preset_story)
         self.assertEqual(result.key_regions[:3], ("Harbor Town", "Salt Coast", "Old Pine Forest"))
+        self.assertEqual(result.size_edit_config_path, project_dir / "titanforge.toml")
+        self.assertEqual(result.size_edit_options[0].label, "Smaller test map")
+        self.assertEqual(result.size_edit_options[0].width, 256)
+        self.assertEqual(result.size_edit_options[0].length, 192)
+        self.assertEqual(result.size_edit_options[1].scale_label, "Local district")
+        self.assertIn('--width 16000 --length 12000', result.size_edit_options[-1].rerun_command)
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
@@ -306,6 +348,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- location review: first-map\\location\\review.html", summary)
         self.assertIn("Preset intent:", summary)
         self.assertIn("Size guidance:", summary)
+        self.assertIn("Change world size:", summary)
+        self.assertIn("- edit titanforge.toml: width and length must stay between 64 and 32000 blocks.", summary)
+        self.assertIn("- Smaller test map: 256 x 192", summary)
+        self.assertIn("- Regional map: 8192 x 6144", summary)
+        self.assertIn("- rerun example: py -3.11 -m titanforge first-map", summary)
         self.assertIn("Review now:", summary)
         self.assertIn("Story routes:", summary)
         self.assertIn("- route-preview: first-map\\draft\\route-preview.png", summary)

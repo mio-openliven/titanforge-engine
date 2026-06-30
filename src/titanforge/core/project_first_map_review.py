@@ -34,6 +34,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     from titanforge.core.project_first_map import build_first_map_focus_anchor_commands
     from titanforge.core.project_first_map import build_first_map_route_handoffs
     from titanforge.core.project_first_map import build_first_map_story_walkthrough
+    from titanforge.core.project_first_map import build_first_map_size_options
     test_world_strategy = build_first_map_test_world_strategy(
         result.template_result.config.width,
         result.template_result.config.length,
@@ -52,6 +53,14 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         result.project_dir,
         result.template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
+    )
+    size_options = build_first_map_size_options(
+        result.project_dir,
+        result.template_result.config.name,
+        result.template_result.preset_name,
+        result.template_result.config.width,
+        result.template_result.config.length,
+        max_draft_side=result.max_draft_side,
     )
     build_test_world_command = (
         f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
@@ -80,6 +89,15 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
             f'<small>status:</small> {escape(step.status_command)}'
         )
         for step in recommended_walkthrough
+    )
+    size_options_preview = "<br><br>".join(
+        (
+            f'<strong>{escape(option.label)}</strong>: {option.width} x {option.length} '
+            f'[{escape(option.scale_label)}]<br>'
+            f'{escape(option.summary)}<br>'
+            f'<small>rerun:</small> {escape(option.rerun_command)}'
+        )
+        for option in size_options
     )
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
@@ -265,6 +283,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <h3>World scale</h3>
           <p><strong>{escape(scale.label)}</strong>. {escape(scale.summary)} {escape(scale.planning_note)}</p>
+        </article>
+        <article class="card">
+          <h3>Change size safely</h3>
+          <p>Edit <code>width</code> and <code>length</code> in <code>titanforge.toml</code>. TitanForge accepts <code>64 .. 32000</code> blocks on each side. Starter examples:<br><code>{size_options_preview}</code></p>
         </article>
       </div>
     </section>
