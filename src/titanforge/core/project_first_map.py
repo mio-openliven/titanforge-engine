@@ -43,7 +43,19 @@ class ProjectFirstMapStatusResult:
     world_width: int
     world_length: int
     world_scale_label: str
+    world_scale_summary: str
+    world_scale_planning_note: str
+    preset_story: str
+    player_feeling: str
+    key_regions: tuple[str, ...]
     open_sequence: tuple[tuple[str, str], ...]
+    open_sequence_summaries: tuple[tuple[str, str], ...]
+    next_actions: tuple[tuple[str, str, str], ...]
+    minecraft_review_order: tuple[tuple[str, str, str], ...]
+    test_world_requires_optional_extra: str
+    test_world_build_command: str
+    test_world_status_command: str
+    test_world_output_dir: str
     commands: tuple[tuple[str, str], ...]
 
 
@@ -313,14 +325,37 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     world = manifest.get("world", {})
     guidance = manifest.get("guidance", {})
     action_plan = dict(guidance.get("actionPlan", {}))
+    world_scale = dict(guidance.get("worldScale", {}))
+    preset = dict(guidance.get("preset", {}))
     commands = dict(manifest.get("commands", {}))
     artifacts = dict(manifest.get("artifacts", {}))
     minecraft_handoff = dict(manifest.get("minecraftHandoff", {}))
     handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
+    test_world = dict(minecraft_handoff.get("testWorld", {}))
 
     open_sequence = tuple(
         (str(item.get("id", "unknown")), str(item.get("path", "")))
         for item in action_plan.get("openSequence", [])
+    )
+    open_sequence_summaries = tuple(
+        (str(item.get("id", "unknown")), str(item.get("summary", "")))
+        for item in action_plan.get("openSequence", [])
+    )
+    next_actions = tuple(
+        (
+            str(item.get("id", "unknown")),
+            str(item.get("summary", "")),
+            str(item.get("commandHint") or item.get("path") or ""),
+        )
+        for item in action_plan.get("nextActions", [])
+    )
+    minecraft_review_order = tuple(
+        (
+            str(item.get("id", "unknown")),
+            str(item.get("path", "")),
+            str(item.get("summary", "")),
+        )
+        for item in minecraft_handoff.get("reviewOrder", [])
     )
     command_items = tuple((str(key), str(value)) for key, value in commands.items())
 
@@ -337,13 +372,28 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
-        world_scale_label=str(dict(guidance.get("worldScale", {})).get("label", "unknown")),
+        world_scale_label=str(world_scale.get("label", "unknown")),
+        world_scale_summary=str(world_scale.get("summary", "")),
+        world_scale_planning_note=str(world_scale.get("planningNote", "")),
+        preset_story=str(preset.get("story", "")),
+        player_feeling=str(preset.get("playerFeeling", "")),
+        key_regions=tuple(str(item) for item in preset.get("keyRegions", [])),
         open_sequence=open_sequence,
+        open_sequence_summaries=open_sequence_summaries,
+        next_actions=next_actions,
+        minecraft_review_order=minecraft_review_order,
+        test_world_requires_optional_extra=str(test_world.get("requiresOptionalExtra", "")),
+        test_world_build_command=str(test_world.get("buildCommand", "")),
+        test_world_status_command=str(test_world.get("statusCommand", "")),
+        test_world_output_dir=str(test_world.get("outputDir", "")),
         commands=command_items,
     )
 
 
 def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) -> str:
+    key_regions_line = ", ".join(result.key_regions[:3])
+    if len(result.key_regions) > 3:
+        key_regions_line = f"{key_regions_line}, +{len(result.key_regions) - 3} more"
     lines = [
         f"First-map status: {result.project_dir}",
         f"- manifest: {result.manifest_path.name}",
@@ -358,10 +408,54 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
         f"- fixture commands: {result.fixture_commands_path.relative_to(result.project_dir)}",
         f"- datapack zip: {result.datapack_fixture_zip_path.relative_to(result.project_dir)}",
     ]
+    if result.preset_story or result.player_feeling or key_regions_line:
+        lines.append("Preset intent:")
+        if result.preset_story:
+            lines.append(f"- story: {result.preset_story}")
+        if result.player_feeling:
+            lines.append(f"- player feeling: {result.player_feeling}")
+        if key_regions_line:
+            lines.append(f"- key regions: {key_regions_line}")
+    if result.world_scale_summary or result.world_scale_planning_note:
+        lines.append("Size guidance:")
+        if result.world_scale_summary:
+            lines.append(f"- use: {result.world_scale_summary}")
+        if result.world_scale_planning_note:
+            lines.append(f"- planning note: {result.world_scale_planning_note}")
     if result.open_sequence:
-        lines.append("Open order:")
+        lines.append("Review now:")
+        open_summaries = dict(result.open_sequence_summaries)
         for item_id, item_path in result.open_sequence:
-            lines.append(f"- {item_id}: {item_path}")
+            summary = open_summaries.get(item_id, "")
+            if summary:
+                lines.append(f"- {item_id}: {summary} ({item_path})")
+            else:
+                lines.append(f"- {item_id}: {item_path}")
+    if result.next_actions:
+        lines.append("If you need changes:")
+        for item_id, summary, detail in result.next_actions:
+            if detail:
+                lines.append(f"- {item_id}: {summary} ({detail})")
+            else:
+                lines.append(f"- {item_id}: {summary}")
+    if result.minecraft_review_order or result.test_world_build_command:
+        lines.append("Minecraft later:")
+        for item_id, item_path, summary in result.minecraft_review_order:
+            if summary:
+                lines.append(f"- {item_id}: {summary} ({item_path})")
+            else:
+                lines.append(f"- {item_id}: {item_path}")
+        if result.test_world_build_command:
+            lines.append(
+                "- optional-test-world: Experimental manual-open shell only, not full world export."
+            )
+            if result.test_world_requires_optional_extra:
+                lines.append(f"- install extra first: {result.test_world_requires_optional_extra}")
+            lines.append(f"- build shell: {result.test_world_build_command}")
+            if result.test_world_output_dir:
+                lines.append(f"- shell folder: {result.test_world_output_dir}")
+            if result.test_world_status_command:
+                lines.append(f"- reread shell status: {result.test_world_status_command}")
     if result.commands:
         lines.append("Command hints:")
         for command_id, command_value in result.commands:

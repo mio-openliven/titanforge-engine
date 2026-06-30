@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-063",
+      "status": "done",
+      "priority": "P1",
+      "title": "Make first-map-status a terminal-first scenario-writer handoff",
+      "acceptance": [
+        "first-map-status surfaces human-readable preset, scale, review order, and next-action guidance from first-map-manifest.json",
+        "the status output warns in plain language before Minecraft-side handoff instead of only listing raw file paths",
+        "the formatter reads current manifest guidance rather than reconstructing separate rules",
+        "tests cover the richer status summary and CLI output"
+      ]
+    },
+    {
       "id": "TF-062",
       "status": "done",
       "priority": "P1",

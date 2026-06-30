@@ -152,11 +152,31 @@ class ProjectFirstMapTests(unittest.TestCase):
 
         self.assertEqual(result.preset_name, "coastal-valley")
         self.assertEqual(result.world_scale_label, "Local district")
+        self.assertIn("Good for one town plus nearby coast", result.world_scale_summary)
+        self.assertIn("comfortable for local travel beats", result.world_scale_planning_note)
+        self.assertIn("A cinematic coast-to-mountain story space", result.preset_story)
+        self.assertEqual(result.key_regions[:3], ("Harbor Town", "Salt Coast", "Old Pine Forest"))
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world"'), result.commands)
+        self.assertEqual(
+            result.next_actions[0],
+            (
+                "rerun-project-location",
+                "After editing the config, rerun project-location to refresh the first map outputs.",
+                'py -3.11 -m titanforge project-location "titanforge.toml" "first-map" --use-cleanup-for-heightmap',
+            ),
+        )
+        self.assertEqual(result.minecraft_review_order[0][0], "fixture-summary")
+        self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
         self.assertIn("- location review: first-map\\location\\review.html", summary)
-        self.assertIn("Open order:", summary)
+        self.assertIn("Preset intent:", summary)
+        self.assertIn("Size guidance:", summary)
+        self.assertIn("Review now:", summary)
+        self.assertIn("If you need changes:", summary)
+        self.assertIn("Minecraft later:", summary)
+        self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
+        self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
         self.assertIn("Open first: review.html", summary)
 
@@ -229,6 +249,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("First-map status:", stdout.getvalue())
         self.assertIn("- preset: frontier-basin", stdout.getvalue())
         self.assertIn("- root review: review.html", stdout.getvalue())
+        self.assertIn("Preset intent:", stdout.getvalue())
+        self.assertIn("Review now:", stdout.getvalue())
+        self.assertIn("Minecraft later:", stdout.getvalue())
         self.assertIn("Command hints:", stdout.getvalue())
         self.assertIn("buildTestWorld", stdout.getvalue())
 

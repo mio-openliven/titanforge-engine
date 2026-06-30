@@ -83,7 +83,7 @@ python -m titanforge terrain-grid out\demo-location\layout.json out\demo-locatio
 
 Use `first-map` when you want the fastest path from idea to the first reviewable map pack. It now writes a starter `titanforge.toml`, builds the first `project-location` output, writes a small root manifest, writes a root `review.html`, labels the requested world scale in plain language, surfaces the preset story intent and key regions, and tells you to open that root page first.
 
-Use `first-map-status` when the pack already exists and you only need the current handoff summary again. It reads `first-map-manifest.json` and points back to the root review, location review, draft review, fixture summary, fixture commands, datapack zip, open order, and saved command hints without rebuilding anything.
+Use `first-map-status` when the pack already exists and you only need the current handoff summary again. It reads `first-map-manifest.json` and now reprints the preset intent, world-scale guidance, review order, next actions, Minecraft caution notes, and saved command hints without rebuilding anything.
 
 Use `first-map-test-world` when you already have a `first-map` project and want the shortest path to one experimental Minecraft manual-open candidate without hunting for `titanforge.toml` yourself. It resolves the config from `first-map-manifest.json`, writes a donor-backed `minecraft-test-world` folder, and prints the same checklist/report handoff used by `anvil-test-world`. Install the optional extra first with `py -3.11 -m pip install -e .[donor-spikes]`.
 
