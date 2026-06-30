@@ -83,6 +83,7 @@ class AnvilTestWorldStatusResult:
     next_sample_max_side: int | None
     next_sample_summary: str
     next_sample_command: str
+    project_status_command: str
     warnings: tuple[str, ...]
 
 
@@ -93,6 +94,7 @@ def write_anvil_test_world(
     max_side: int = DEFAULT_SPIKE_MAX_SIDE,
     anvil_module: Any | None = None,
     rerun_command_template: str | None = None,
+    project_status_command: str | None = None,
 ) -> AnvilTestWorldResult:
     output_dir.mkdir(parents=True, exist_ok=True)
     world_dir = output_dir / TEST_WORLD_DIR_NAME
@@ -151,6 +153,9 @@ def write_anvil_test_world(
             "cropped": spike_result.cropped,
         },
         "sampleGrowth": sample_growth,
+        "originHandoff": {
+            "projectStatusCommand": project_status_command,
+        },
         "worldShell": {
             "hasLevelDat": True,
             "hasSessionLock": True,
@@ -231,6 +236,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
     world_shell = manifest.get("worldShell", {})
     sample_window = manifest.get("sampleWindow", {})
     sample_growth = dict(manifest.get("sampleGrowth", {}))
+    origin_handoff = dict(manifest.get("originHandoff", {}))
     size = sample_window.get("size", {})
 
     report_path = output_dir / str(artifacts.get("verificationReport", TEST_WORLD_REPORT))
@@ -272,6 +278,7 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         ),
         next_sample_summary=str(sample_growth.get("summary", "")),
         next_sample_command=str(sample_growth.get("nextSampleCommand", "")),
+        project_status_command=str(origin_handoff.get("projectStatusCommand", "")),
         warnings=tuple(str(item) for item in manifest.get("warnings", [])),
     )
 
@@ -396,6 +403,20 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         lines.append(f"- next sample: {result.next_sample_summary}")
     if result.next_sample_command:
         lines.append(f"- next sample command: {result.next_sample_command}")
+    if result.verification_status == "failed":
+        lines.append("- decision: stop sample growth and fix the current map direction first.")
+        if result.project_status_command:
+            lines.append(f"- go back to project handoff: {result.project_status_command}")
+    elif result.verification_status == "passed":
+        if result.next_sample_command:
+            lines.append("- decision: current sample passed, so you can grow to the next sampled window.")
+        elif result.project_status_command:
+            lines.append("- decision: the safe sampled ladder is exhausted here; go back to the project handoff before trying a larger workflow.")
+            lines.append(f"- go back to project handoff: {result.project_status_command}")
+    elif result.verification_status == "in_progress":
+        lines.append("- decision: finish the current manual checks before growing or editing the map.")
+    else:
+        lines.append("- decision: finish the current checklist before growing the sampled window.")
     if failed_checks:
         lines.append(f"- failed checks: {', '.join(failed_checks)}")
     if result.checks:

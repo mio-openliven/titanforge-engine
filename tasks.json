@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-067",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add decision handoff after manual sample verification",
+      "acceptance": [
+        "anvil-test-world-status explains whether to grow the sample, finish the current check, or stop and fix the map first",
+        "first-map-driven test-world runs include a direct return command back to first-map-status",
+        "failed sample verification no longer looks like a generic dead end in the status summary",
+        "tests cover the return-to-project guidance on the wrapper path"
+      ]
+    },
+    {
       "id": "TF-066",
       "status": "done",
       "priority": "P1",

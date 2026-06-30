@@ -19,6 +19,7 @@ from titanforge.core.project_first_map import (
     write_project_first_map_test_world,
     write_project_first_map,
 )
+from titanforge.spikes.anvil_test_world import update_test_world_verification_report
 from tests.test_anvil_region_spike import _FakeAnvilModule
 
 
@@ -364,6 +365,37 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["size"]["length"], 64)
         self.assertEqual(manifest["sampleGrowth"]["nextMaxSide"], 128)
         self.assertIn('py -3.11 -m titanforge first-map-test-world', manifest["sampleGrowth"]["nextSampleCommand"])
+        self.assertIn('py -3.11 -m titanforge first-map-status', manifest["originHandoff"]["projectStatusCommand"])
+
+    def test_first_map_test_world_failed_status_points_back_to_project_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "failed-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Failed Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                exit_code = main(["first-map-test-world", str(project_dir), "--max-side", "128"])
+            update_test_world_verification_report(
+                project_dir / "minecraft-test-world" / "verification-report.json",
+                check_id="minecraft-open",
+                check_status="failed",
+                check_note="Client did not open the sample cleanly.",
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status_exit_code = main(["anvil-test-world-status", str(project_dir / "minecraft-test-world")])
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(status_exit_code, 0)
+        self.assertIn("- decision: stop sample growth and fix the current map direction first.", stdout.getvalue())
+        self.assertIn("- go back to project handoff: py -3.11 -m titanforge first-map-status", stdout.getvalue())
 
     def test_first_map_test_world_strategy_helpers(self) -> None:
         self.assertEqual(suggest_first_map_test_world_max_side(192, 128), 192)

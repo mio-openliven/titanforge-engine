@@ -369,6 +369,7 @@ def write_project_first_map_test_world(
         max_side=resolved_max_side,
         anvil_module=anvil_module,
         rerun_command_template=command,
+        project_status_command=f'py -3.11 -m titanforge first-map-status "{project_dir}"',
     )
 
 

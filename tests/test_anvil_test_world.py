@@ -240,4 +240,5 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertIn("- mca-selector-open: pending", stdout.getvalue())
         self.assertIn("- next sample:", stdout.getvalue())
         self.assertIn("- next sample command:", stdout.getvalue())
+        self.assertIn("- decision: finish the current checklist before growing the sampled window.", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())
