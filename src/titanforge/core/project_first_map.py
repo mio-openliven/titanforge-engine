@@ -45,6 +45,16 @@ class ProjectFirstMapRouteHandoff:
 
 
 @dataclass(frozen=True)
+class ProjectFirstMapWalkthroughStep:
+    step_id: str
+    title: str
+    summary: str
+    command: str
+    output_dir: str
+    status_command: str
+
+
+@dataclass(frozen=True)
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
@@ -66,6 +76,7 @@ class ProjectFirstMapStatusResult:
     test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
     route_handoffs: tuple[ProjectFirstMapRouteHandoff, ...]
+    recommended_walkthrough: tuple[ProjectFirstMapWalkthroughStep, ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -227,6 +238,80 @@ def build_first_map_route_handoffs(
     return tuple(handoffs)
 
 
+def build_first_map_story_walkthrough(
+    project_dir: Path,
+    config,
+    recommended_max_side: int,
+) -> tuple[ProjectFirstMapWalkthroughStep, ...]:
+    world_plan = build_world_plan(config)
+    route_plan = build_route_plan(world_plan)
+    steps: list[ProjectFirstMapWalkthroughStep] = []
+    seen_points: set[tuple[str, str]] = set()
+
+    def append_step(
+        *,
+        region_title: str,
+        anchor_id: str,
+        title: str,
+        summary: str,
+    ) -> None:
+        key = (region_title, anchor_id)
+        if key in seen_points:
+            return
+        seen_points.add(key)
+        output_dir = build_first_map_test_world_output_dir(
+            project_dir,
+            focus_region_title=region_title,
+            focus_anchor_id=anchor_id,
+        ).name
+        step_index = len(steps) + 1
+        steps.append(
+            ProjectFirstMapWalkthroughStep(
+                step_id=f"step-{step_index:02d}",
+                title=title,
+                summary=summary,
+                command=_build_first_map_shell_command(
+                    project_dir,
+                    output_dir,
+                    recommended_max_side,
+                    focus_region_title=region_title,
+                    focus_anchor_id=anchor_id,
+                ),
+                output_dir=output_dir,
+                status_command=_build_first_map_shell_status_command(output_dir),
+            )
+        )
+
+    intra_routes = tuple(route for route in route_plan.routes if route.kind == "intra-region")
+    transition_routes = tuple(route for route in route_plan.routes if route.kind == "transition")
+
+    if intra_routes:
+        first_local = intra_routes[0]
+        append_step(
+            region_title=first_local.from_point.region_title,
+            anchor_id=first_local.from_point.anchor_id,
+            title="Start here",
+            summary=f'Open the first story entry point in {first_local.from_point.region_title}.',
+        )
+        append_step(
+            region_title=first_local.to_point.region_title,
+            anchor_id=first_local.to_point.anchor_id,
+            title="First local payoff",
+            summary=f'Move to the main focal point in {first_local.to_point.region_title}.',
+        )
+
+    for index, route in enumerate(transition_routes, start=1):
+        title = "Final reveal" if index == len(transition_routes) else f"Travel beat {index}"
+        append_step(
+            region_title=route.to_point.region_title,
+            anchor_id=route.to_point.anchor_id,
+            title=title,
+            summary=f'Continue into {route.to_point.region_title} through {route.to_point.anchor_id}.',
+        )
+
+    return tuple(steps)
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -323,6 +408,11 @@ def write_project_first_map(
         template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
     )
+    recommended_walkthrough = build_first_map_story_walkthrough(
+        project_dir,
+        template_result.config,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
 
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
@@ -351,6 +441,17 @@ def write_project_first_map(
             "storyRoutes": {
                 "routePlan": str(location_result.draft_result.route_plan_path.relative_to(project_dir)),
                 "routePreview": str(location_result.draft_result.route_preview_path.relative_to(project_dir)),
+                "recommendedWalkthrough": [
+                    {
+                        "stepId": step.step_id,
+                        "title": step.title,
+                        "summary": step.summary,
+                        "command": step.command,
+                        "outputDir": step.output_dir,
+                        "statusCommand": step.status_command,
+                    }
+                    for step in recommended_walkthrough
+                ],
                 "routeSamples": [
                     {
                         "routeId": route.route_id,
@@ -650,6 +751,17 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         )
         for item in story_routes.get("routeSamples", [])
     )
+    recommended_walkthrough = tuple(
+        ProjectFirstMapWalkthroughStep(
+            step_id=str(item.get("stepId", "")),
+            title=str(item.get("title", "")),
+            summary=str(item.get("summary", "")),
+            command=str(item.get("command", "")),
+            output_dir=str(item.get("outputDir", "")),
+            status_command=str(item.get("statusCommand", "")),
+        )
+        for item in story_routes.get("recommendedWalkthrough", [])
+    )
 
     open_sequence = tuple(
         (str(item.get("id", "unknown")), str(item.get("path", "")))
@@ -703,6 +815,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_focus_commands=test_world_focus_commands,
         test_world_focus_anchor_commands=test_world_focus_anchor_commands,
         route_handoffs=route_handoffs,
+        recommended_walkthrough=recommended_walkthrough,
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -771,14 +884,16 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
         lines.append("Story routes:")
         lines.append(f"- route-preview: {result.route_preview_path.relative_to(result.project_dir)}")
         lines.append(f"- route-plan: {result.route_plan_path.relative_to(result.project_dir)}")
-        for route in result.route_handoffs:
-            lines.append(f"- {route.route_id} [{route.kind}]: {route.summary}")
-            lines.append(
-                f"- start shell: {route.start_command} (folder: {route.start_output_dir}; status: {route.start_status_command})"
-            )
-            lines.append(
-                f"- end shell: {route.end_command} (folder: {route.end_output_dir}; status: {route.end_status_command})"
-            )
+        if result.recommended_walkthrough:
+            lines.append("- recommended walkthrough:")
+            for step in result.recommended_walkthrough:
+                lines.append(f"- {step.step_id}: {step.title} ({step.summary})")
+                lines.append(
+                    f"- walkthrough shell: {step.command} (folder: {step.output_dir}; status: {step.status_command})"
+                )
+        lines.append(
+            f"- full route sample pairs: {len(result.route_handoffs)} saved in first-map-manifest.json under guidance.storyRoutes.routeSamples."
+        )
     if result.next_actions:
         lines.append("If you need changes:")
         for item_id, summary, detail in result.next_actions:

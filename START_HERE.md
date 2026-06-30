@@ -96,7 +96,7 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-status previews\my-first-world
 ```
 
-That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths. It also includes route-focused handoff guidance from the current `route-plan.json` plus region-focused and anchor-focused sample commands for the named story zones, so you can target places like the harbor, coast, forest, village, or ridge, then narrow further to exact anchors such as `arrival`, `center`, `shoreline`, or `ridge-vista`.
+That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths. It now starts with a short recommended walkthrough built from the current route plan, then keeps the fuller route-focused, region-focused, and anchor-focused sample commands available below when you need deeper inspection.
 
 The Minecraft handoff now also surfaces a plain starter-test verdict from `fixture-summary.json` such as `safe` or `caution`, so you can see quickly whether the first disposable Minecraft pass looks comfortable or needs extra care first.
 

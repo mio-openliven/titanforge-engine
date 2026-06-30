@@ -33,6 +33,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     from titanforge.core.project_first_map import build_first_map_test_world_strategy
     from titanforge.core.project_first_map import build_first_map_focus_anchor_commands
     from titanforge.core.project_first_map import build_first_map_route_handoffs
+    from titanforge.core.project_first_map import build_first_map_story_walkthrough
     test_world_strategy = build_first_map_test_world_strategy(
         result.template_result.config.width,
         result.template_result.config.length,
@@ -43,6 +44,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         int(test_world_strategy["recommendedMaxSide"]),
     )
     route_handoffs = build_first_map_route_handoffs(
+        result.project_dir,
+        result.template_result.config,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
+    recommended_walkthrough = build_first_map_story_walkthrough(
         result.project_dir,
         result.template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
@@ -65,6 +71,15 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
             f'<small>status:</small> {escape(route.end_status_command)}'
         )
         for route in route_handoffs[:3]
+    )
+    walkthrough_preview = "<br><br>".join(
+        (
+            f'<strong>{escape(step.step_id)}: {escape(step.title)}</strong><br>'
+            f'{escape(step.summary)}<br>'
+            f'<small>shell:</small> {escape(step.command)}<br>'
+            f'<small>status:</small> {escape(step.status_command)}'
+        )
+        for step in recommended_walkthrough
     )
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
@@ -305,8 +320,12 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <p>Use this when you need the exact route ids and anchor pairs behind the preview.</p>
         </article>
         <article class="card">
-          <h3>Route-focused shell starts</h3>
-          <p>When the story beat is more about travel than one static point, sample both ends of a route before trusting the larger world. Typical pairs look like:<br><code>{route_handoff_preview}</code></p>
+          <h3>Recommended walkthrough</h3>
+          <p>Use this when you want the shortest beginner-friendly path through the story world before opening every route pair:<br><code>{walkthrough_preview}</code></p>
+        </article>
+        <article class="card">
+          <h3>Full route sample pairs</h3>
+          <p>When the walkthrough is not enough, inspect the full route shell pairs from <code>first-map-status</code> or <code>first-map-manifest.json</code>. Typical pairs look like:<br><code>{route_handoff_preview}</code></p>
         </article>
       </div>
     </section>

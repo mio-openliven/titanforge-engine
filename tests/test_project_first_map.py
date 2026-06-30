@@ -69,6 +69,34 @@ class ProjectFirstMapTests(unittest.TestCase):
             "first-map\\draft\\route-plan.json",
         )
         self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][0]["stepId"],
+            "step-01",
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][0]["title"],
+            "Start here",
+        )
+        self.assertIn(
+            "Open the first story entry point in Harbor Town.",
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][0]["summary"],
+        )
+        self.assertIn(
+            '--focus-anchor "arrival"',
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][0]["command"],
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][0]["outputDir"],
+            "minecraft-test-world-harbor-town-arrival",
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][-1]["title"],
+            "Final reveal",
+        )
+        self.assertIn(
+            "Broken Ridge",
+            manifest["guidance"]["storyRoutes"]["recommendedWalkthrough"][-1]["summary"],
+        )
+        self.assertEqual(
             manifest["guidance"]["storyRoutes"]["routeSamples"][0]["routeId"],
             "region-00",
         )
@@ -192,7 +220,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="first-map/draft/route-plan.json"', root_review_html)
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
-        self.assertIn("Route-focused shell starts", root_review_html)
+        self.assertIn("Recommended walkthrough", root_review_html)
+        self.assertIn("Full route sample pairs", root_review_html)
+        self.assertIn("step-01: Start here", root_review_html)
         self.assertIn("region-00", root_review_html)
         self.assertIn("minecraft-test-world-harbor-town-center", root_review_html)
         self.assertIn("Optional test-world shell", root_review_html)
@@ -244,6 +274,13 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.route_handoffs[0].start_output_dir, "minecraft-test-world-harbor-town-arrival")
         self.assertIn('--focus-anchor "center"', result.route_handoffs[0].end_command)
         self.assertEqual(result.route_handoffs[0].end_output_dir, "minecraft-test-world-harbor-town-center")
+        self.assertEqual(result.recommended_walkthrough[0].step_id, "step-01")
+        self.assertEqual(result.recommended_walkthrough[0].title, "Start here")
+        self.assertIn("Harbor Town", result.recommended_walkthrough[0].summary)
+        self.assertIn('--focus-anchor "arrival"', result.recommended_walkthrough[0].command)
+        self.assertEqual(result.recommended_walkthrough[0].output_dir, "minecraft-test-world-harbor-town-arrival")
+        self.assertEqual(result.recommended_walkthrough[-1].title, "Final reveal")
+        self.assertIn("Broken Ridge", result.recommended_walkthrough[-1].summary)
         self.assertEqual(
             result.next_actions[0],
             (
@@ -273,9 +310,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Story routes:", summary)
         self.assertIn("- route-preview: first-map\\draft\\route-preview.png", summary)
         self.assertIn("- route-plan: first-map\\draft\\route-plan.json", summary)
-        self.assertIn("- region-00 [intra-region]: Harbor Town / arrival -> Harbor Town / center", summary)
-        self.assertIn("- start shell: py -3.11 -m titanforge first-map-test-world", summary)
-        self.assertIn("minecraft-test-world-harbor-town-center", summary)
+        self.assertIn("- recommended walkthrough:", summary)
+        self.assertIn("- step-01: Start here (Open the first story entry point in Harbor Town.)", summary)
+        self.assertIn("- walkthrough shell: py -3.11 -m titanforge first-map-test-world", summary)
+        self.assertIn("minecraft-test-world-harbor-town-arrival", summary)
+        self.assertIn("full route sample pairs", summary)
         self.assertIn("If you need changes:", summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)

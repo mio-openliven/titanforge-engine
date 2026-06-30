@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-072",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add recommended first-map walkthrough handoff",
+      "acceptance": [
+        "first-map-manifest.json records a short recommended walkthrough built from current world-plan anchors and route transitions",
+        "first-map-status surfaces the walkthrough first so a scenario writer gets a small ordered set of sample commands instead of a wall of route pairs",
+        "root first-map review page shows the same walkthrough next to route-preview and route-plan links",
+        "tests cover walkthrough manifest, status, and review output"
+      ]
+    },
+    {
       "id": "TF-071",
       "status": "done",
       "priority": "P1",
