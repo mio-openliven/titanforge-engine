@@ -69,7 +69,7 @@ python -m titanforge preset-catalog
 python -m titanforge preset-catalog --json
 python -m titanforge first-map out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
 python -m titanforge first-map-status out\my-first-world
-python -m titanforge first-map-test-world out\my-first-world --max-side 128
+python -m titanforge first-map-test-world out\my-first-world
 python -m titanforge init-project out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
 python -m titanforge project-location examples\tiny_project\titanforge.toml out\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
@@ -85,7 +85,7 @@ Use `first-map` when you want the fastest path from idea to the first reviewable
 
 Use `first-map-status` when the pack already exists and you only need the current handoff summary again. It reads `first-map-manifest.json` and now reprints the preset intent, world-scale guidance, review order, next actions, Minecraft caution notes, and saved command hints without rebuilding anything.
 
-Use `first-map-test-world` when you already have a `first-map` project and want the shortest path to one experimental Minecraft manual-open candidate without hunting for `titanforge.toml` yourself. It resolves the config from `first-map-manifest.json`, writes a donor-backed `minecraft-test-world` folder, and prints the same checklist/report handoff used by `anvil-test-world`. Install the optional extra first with `py -3.11 -m pip install -e .[donor-spikes]`.
+Use `first-map-test-world` when you already have a `first-map` project and want the shortest path to one experimental Minecraft manual-open candidate without hunting for `titanforge.toml` yourself. It resolves the config from `first-map-manifest.json`, writes a donor-backed `minecraft-test-world` folder, and prints the same checklist/report handoff used by `anvil-test-world`. If you omit `--max-side`, TitanForge now picks a safer starter sample from the logical world size. Install the optional extra first with `py -3.11 -m pip install -e .[donor-spikes]`.
 
 `fixture-summary.json` now also carries a plain `starterTest` verdict: `safe`, `caution`, or `blocked`. The same verdict is surfaced in `location/review.html` and `first-map-status`, so a scenario writer does not need to infer first-test risk from raw warning strings alone.
 
@@ -170,7 +170,7 @@ titanforge.toml
 first-map\
 ```
 
-Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance plus a machine-readable open order, next-action plan, command hints, and Minecraft handoff artifact order for future UI layers. If you revisit the folder later, `python -m titanforge first-map-status out\my-first-world` prints that handoff summary again without rerunning generation, and `python -m titanforge first-map-test-world out\my-first-world --max-side 128` gives the shortest donor-backed path to a throwaway Minecraft manual-open candidate.
+Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance plus a machine-readable open order, next-action plan, command hints, Minecraft handoff artifact order, and a recommended sampled test-world size for future UI layers. If you revisit the folder later, `python -m titanforge first-map-status out\my-first-world` prints that handoff summary again without rerunning generation, and `python -m titanforge first-map-test-world out\my-first-world` uses the stored safe starter sample for the shortest donor-backed path to a throwaway Minecraft manual-open candidate.
 
 ## Optional Donor Spike
 

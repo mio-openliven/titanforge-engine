@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-065",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add size-aware sampled test-world strategy for first-map",
+      "acceptance": [
+        "first-map manifest includes a recommended sampled test-world strategy based on logical world size",
+        "first-map-test-world uses that safe recommended sample size when --max-side is omitted",
+        "first-map review and first-map status surface the recommended sample size and exact build command",
+        "tests cover the auto-selected sample strategy and surfaced handoff output"
+      ]
+    },
+    {
       "id": "TF-064",
       "status": "done",
       "priority": "P1",

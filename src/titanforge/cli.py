@@ -150,8 +150,7 @@ def build_parser() -> argparse.ArgumentParser:
     first_map_test_world_parser.add_argument(
         "--max-side",
         type=int,
-        default=DEFAULT_SPIKE_MAX_SIDE,
-        help="Chunk-aligned sampled side in blocks. Must stay within one region file.",
+        help="Optional chunk-aligned sampled side in blocks. If omitted, TitanForge picks a safer starter sample from the first-map project.",
     )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
@@ -462,6 +461,12 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return 0
 
     if args.command == "first-map-test-world":
+        if args.max_side is not None and not 16 <= args.max_side <= 512:
+            print(f"error: --max-side must be between 16 and 512, got {args.max_side}", file=sys.stderr)
+            return 2
+        if args.max_side is not None and args.max_side % 16 != 0:
+            print(f"error: --max-side must be divisible by 16, got {args.max_side}", file=sys.stderr)
+            return 2
         result = write_project_first_map_test_world(
             args.project_dir,
             output_dir=args.output_dir,

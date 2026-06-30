@@ -8,6 +8,7 @@ from titanforge.core.project_template import describe_world_scale
 
 if TYPE_CHECKING:
     from titanforge.core.project_first_map import ProjectFirstMapResult
+    from titanforge.core.project_first_map import build_first_map_test_world_strategy
 
 
 def write_project_first_map_review_page(result: "ProjectFirstMapResult", output_path: Path) -> Path:
@@ -27,7 +28,15 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
     manifest_path = result.manifest_path.relative_to(project_dir)
     test_world_dir = Path("minecraft-test-world")
-    build_test_world_command = f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}"'
+    from titanforge.core.project_first_map import build_first_map_test_world_strategy
+    test_world_strategy = build_first_map_test_world_strategy(
+        result.template_result.config.width,
+        result.template_result.config.length,
+    )
+    build_test_world_command = (
+        f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
+        f'--max-side {test_world_strategy["recommendedMaxSide"]}'
+    )
     test_world_status_command = f'py -3.11 -m titanforge anvil-test-world-status "{test_world_dir.as_posix()}"'
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
@@ -273,7 +282,8 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         </article>
         <article class="card">
           <h3>Optional test-world shell</h3>
-          <p>This is still an experimental manual-open candidate, not full world export. Install the donor extra with <code>py -3.11 -m pip install -e .[donor-spikes]</code>, then run <code>{escape(build_test_world_command)}</code>. After it finishes, inspect <code>verification-checklist.txt</code> first and later reread status with <code>{escape(test_world_status_command)}</code>.</p>
+          <p>This is still an experimental manual-open candidate, not full world export. Install the donor extra with <code>py -3.11 -m pip install -e .[donor-spikes]</code>, then run <code>{escape(build_test_world_command)}</code>. TitanForge recommends <code>--max-side {escape(str(test_world_strategy["recommendedMaxSide"]))}</code> here because {escape(str(test_world_strategy["reason"]))}</p>
+          <p>After it finishes, inspect <code>verification-checklist.txt</code> first and later reread status with <code>{escape(test_world_status_command)}</code>.</p>
         </article>
       </div>
     </section>

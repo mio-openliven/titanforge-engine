@@ -17,6 +17,7 @@ from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
 PROJECT_FIRST_MAP_VERSION = 1
 DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME = "minecraft-test-world"
+MIN_FIRST_MAP_TEST_WORLD_SIDE = 64
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,9 @@ class ProjectFirstMapStatusResult:
     starter_test_verdict: str
     starter_test_summary: str
     starter_test_world_advice: str
+    test_world_recommended_max_side: int
+    test_world_strategy_summary: str
+    test_world_strategy_reason: str
     preset_name: str
     world_width: int
     world_length: int
@@ -64,6 +68,39 @@ class ProjectFirstMapStatusResult:
 
 def build_first_map_test_world_output_dir(project_dir: Path) -> Path:
     return project_dir / DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME
+
+
+def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
+    logical_max_side = max(width, length)
+    if logical_max_side <= 256:
+        return max(16, logical_max_side - (logical_max_side % 16))
+    if logical_max_side <= 1024:
+        return 256
+    if logical_max_side <= 4096:
+        return 128
+    return MIN_FIRST_MAP_TEST_WORLD_SIDE
+
+
+def build_first_map_test_world_strategy(width: int, length: int) -> dict[str, object]:
+    recommended_max_side = suggest_first_map_test_world_max_side(width, length)
+    logical_max_side = max(width, length)
+    if logical_max_side <= 256:
+        summary = "The first sampled Minecraft test can stay close to the real footprint."
+        reason = "This world is already small enough that a near-full sampled window stays manageable."
+    elif logical_max_side <= 1024:
+        summary = "Start with a 256 x 256 sampled window before trying larger manual Minecraft passes."
+        reason = "This keeps the first throwaway test readable while still covering a meaningful slice of the map."
+    elif logical_max_side <= 4096:
+        summary = "Start with a 128 x 128 sampled window before trying larger manual Minecraft passes."
+        reason = "The logical world is large enough that a smaller first sample is safer for command load, cleanup, and visual inspection."
+    else:
+        summary = "Start with a 64 x 64 sampled window before trying larger manual Minecraft passes."
+        reason = "This world is too large for a comfortable first manual Minecraft pass, so begin with a very small disposable slice."
+    return {
+        "recommendedMaxSide": recommended_max_side,
+        "summary": summary,
+        "reason": reason,
+    }
 
 
 def write_project_first_map(
@@ -112,6 +149,7 @@ def write_project_first_map(
     )
     write_project_first_map_review_page(provisional_result, review_page_path)
     scale = describe_world_scale(template_result.config.width, template_result.config.length)
+    test_world_strategy = build_first_map_test_world_strategy(template_result.config.width, template_result.config.length)
     key_regions = tuple(region.title for region in template_result.config.regions)
 
     manifest = {
@@ -192,7 +230,8 @@ def write_project_first_map(
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
             ),
             "buildTestWorld": (
-                f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}"'
+                f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+                f'--max-side {test_world_strategy["recommendedMaxSide"]}'
             ),
             "testWorldStatus": (
                 f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"'
@@ -206,9 +245,13 @@ def write_project_first_map(
             },
             "testWorld": {
                 "requiresOptionalExtra": "py -3.11 -m pip install -e .[donor-spikes]",
-                "buildCommand": f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}"',
+                "buildCommand": (
+                    f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+                    f'--max-side {test_world_strategy["recommendedMaxSide"]}'
+                ),
                 "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
                 "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
+                "strategy": test_world_strategy,
             },
             "reviewOrder": [
                 {
@@ -310,12 +353,13 @@ def write_project_first_map_test_world(
     project_dir: Path,
     *,
     output_dir: Path | None = None,
-    max_side: int = DEFAULT_SPIKE_MAX_SIDE,
+    max_side: int | None = None,
     anvil_module: Any | None = None,
 ) -> AnvilTestWorldResult:
     config = load_project_first_map_config(project_dir)
     resolved_output_dir = output_dir if output_dir is not None else build_first_map_test_world_output_dir(project_dir)
-    return write_anvil_test_world(config, resolved_output_dir, max_side=max_side, anvil_module=anvil_module)
+    resolved_max_side = max_side if max_side is not None else suggest_first_map_test_world_max_side(config.width, config.length)
+    return write_anvil_test_world(config, resolved_output_dir, max_side=resolved_max_side, anvil_module=anvil_module)
 
 
 def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:
@@ -335,6 +379,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     minecraft_handoff = dict(manifest.get("minecraftHandoff", {}))
     handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
     test_world = dict(minecraft_handoff.get("testWorld", {}))
+    test_world_strategy = dict(test_world.get("strategy", {}))
 
     open_sequence = tuple(
         (str(item.get("id", "unknown")), str(item.get("path", "")))
@@ -380,6 +425,9 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         starter_test_verdict=str(starter_test.get("verdict", "unknown")),
         starter_test_summary=str(starter_test.get("summary", "")),
         starter_test_world_advice=str(starter_test.get("worldAdvice", "")),
+        test_world_recommended_max_side=int(test_world_strategy.get("recommendedMaxSide", DEFAULT_SPIKE_MAX_SIDE)),
+        test_world_strategy_summary=str(test_world_strategy.get("summary", "")),
+        test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -457,6 +505,12 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             )
             if result.starter_test_world_advice:
                 lines.append(f"- world advice: {result.starter_test_world_advice}")
+        if result.test_world_strategy_summary:
+            lines.append(
+                f"- sampled-test-strategy: start with --max-side {result.test_world_recommended_max_side} ({result.test_world_strategy_summary})"
+            )
+        if result.test_world_strategy_reason:
+            lines.append(f"- strategy reason: {result.test_world_strategy_reason}")
         for item_id, item_path, summary in result.minecraft_review_order:
             if summary:
                 lines.append(f"- {item_id}: {summary} ({item_path})")

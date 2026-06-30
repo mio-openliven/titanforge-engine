@@ -11,8 +11,10 @@ from unittest import mock
 from titanforge.cli import main
 from titanforge.core.project import load_project_config
 from titanforge.core.project_first_map import (
+    build_first_map_test_world_strategy,
     format_project_first_map_result,
     format_project_first_map_status_result,
+    suggest_first_map_test_world_max_side,
     summarize_project_first_map_status,
     write_project_first_map_test_world,
     write_project_first_map,
@@ -76,7 +78,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("py -3.11 -m titanforge first-map", manifest["commands"]["rerunFirstMap"])
         self.assertIn("--preset coastal-valley", manifest["commands"]["rerunFirstMap"])
         self.assertIn("py -3.11 -m titanforge project-location", manifest["commands"]["rerunProjectLocation"])
-        self.assertEqual(manifest["commands"]["buildTestWorld"], 'py -3.11 -m titanforge first-map-test-world "first-world"')
+        self.assertEqual(manifest["commands"]["buildTestWorld"], 'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128')
         self.assertEqual(manifest["commands"]["testWorldStatus"], 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
         self.assertEqual(
             manifest["minecraftHandoff"]["artifacts"]["fixtureSummary"],
@@ -88,9 +90,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["buildCommand"],
-            'py -3.11 -m titanforge first-map-test-world "first-world"',
+            'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128',
         )
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["outputDir"], "minecraft-test-world")
+        self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedMaxSide"], 128)
         self.assertEqual(
             manifest["minecraftHandoff"]["reviewOrder"][0]["id"],
             "fixture-summary",
@@ -125,6 +128,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
         self.assertIn("Optional test-world shell", root_review_html)
         self.assertIn("first-map-test-world", root_review_html)
+        self.assertIn("--max-side 128", root_review_html)
         self.assertIn("verification-checklist.txt", root_review_html)
         self.assertIn("First map:", summary)
         self.assertIn("- root review: review.html", summary)
@@ -158,7 +162,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.key_regions[:3], ("Harbor Town", "Salt Coast", "Old Pine Forest"))
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
-        self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world"'), result.commands)
+        self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(
             result.next_actions[0],
             (
@@ -169,6 +173,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(result.minecraft_review_order[0][0], "fixture-summary")
         self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
+        self.assertEqual(result.test_world_recommended_max_side, 128)
+        self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
@@ -178,6 +184,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("If you need changes:", summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
+        self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
         self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
@@ -284,6 +291,27 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["size"]["width"], 128)
         self.assertTrue(checklist_exists)
 
+    def test_write_project_first_map_test_world_uses_recommended_sample_when_omitted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "auto-sample"
+            write_project_first_map(
+                project_dir,
+                "Auto Sample",
+                8192,
+                4096,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            result = write_project_first_map_test_world(
+                project_dir,
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads((result.output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(manifest["sampleWindow"]["size"]["width"], 64)
+        self.assertEqual(manifest["sampleWindow"]["size"]["length"], 64)
+
     def test_first_map_test_world_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project_dir = Path(directory) / "cli-shell"
@@ -308,3 +336,38 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertTrue(manifest_exists)
         self.assertIn("Anvil test world:", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())
+
+    def test_first_map_test_world_cli_uses_recommended_sample_when_omitted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "cli-auto-shell"
+            write_project_first_map(
+                project_dir,
+                "CLI Auto Shell",
+                8192,
+                4096,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            stdout = io.StringIO()
+
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["first-map-test-world", str(project_dir)])
+
+            manifest = json.loads(
+                (project_dir / "minecraft-test-world" / "anvil-test-world-manifest.json").read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(manifest["sampleWindow"]["size"]["width"], 64)
+        self.assertEqual(manifest["sampleWindow"]["size"]["length"], 64)
+
+    def test_first_map_test_world_strategy_helpers(self) -> None:
+        self.assertEqual(suggest_first_map_test_world_max_side(192, 128), 192)
+        self.assertEqual(suggest_first_map_test_world_max_side(1024, 768), 256)
+        self.assertEqual(suggest_first_map_test_world_max_side(2048, 1536), 128)
+        self.assertEqual(suggest_first_map_test_world_max_side(8192, 4096), 64)
+        strategy = build_first_map_test_world_strategy(2048, 1536)
+        self.assertEqual(strategy["recommendedMaxSide"], 128)
+        self.assertIn("128 x 128 sampled window", strategy["summary"])
