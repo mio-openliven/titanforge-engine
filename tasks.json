@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-056",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map manifest action plan for future UI handoff",
+      "acceptance": [
+        "first-map-manifest.json records the recommended open order in machine-readable form",
+        "the manifest records short next actions a future UI can surface without parsing prose",
+        "the action plan stays aligned with the existing root review guidance",
+        "tests cover the action plan block"
+      ]
+    },
+    {
       "id": "TF-055",
       "status": "done",
       "priority": "P1",

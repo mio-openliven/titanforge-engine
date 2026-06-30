@@ -95,6 +95,45 @@ def write_project_first_map(
                 "playerFeeling": template_result.config.player_experience,
                 "keyRegions": list(key_regions),
             },
+            "actionPlan": {
+                "openSequence": [
+                    {
+                        "id": "root-review",
+                        "path": review_page_path.name,
+                        "summary": "Start here for the overview before opening draft or Minecraft handoff files.",
+                    },
+                    {
+                        "id": "location-review",
+                        "path": str(location_result.location_result.review_page_path.relative_to(project_dir)),
+                        "summary": "Use this for the main non-technical review surface with previews and validation.",
+                    },
+                    {
+                        "id": "draft-review",
+                        "path": str(location_result.draft_result.review_page_path.relative_to(project_dir)),
+                        "summary": "Use this when you need the earlier planning view and rough world shape.",
+                    },
+                    {
+                        "id": "project-config",
+                        "path": template_result.config_path.name,
+                        "summary": "Edit this when world size, premise, or regions need another generation pass.",
+                    },
+                ],
+                "nextActions": [
+                    {
+                        "id": "rerun-project-location",
+                        "summary": "After editing the config, rerun project-location to refresh the first map outputs.",
+                        "commandHint": (
+                            f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
+                            f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
+                        ),
+                    },
+                    {
+                        "id": "inspect-fixture-summary",
+                        "summary": "Check fixture scope and warnings before any Minecraft-side testing.",
+                        "path": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
+                    },
+                ],
+            },
         },
         "artifacts": {
             "rootReviewPage": review_page_path.name,

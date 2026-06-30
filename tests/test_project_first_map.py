@@ -49,6 +49,20 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["preset"]["keyRegions"][:3],
             ["Harbor Town", "Salt Coast", "Old Pine Forest"],
         )
+        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["id"], "root-review")
+        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["path"], "review.html")
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["openSequence"][1]["path"],
+            "first-map\\location\\review.html",
+        )
+        self.assertIn(
+            "project-location",
+            manifest["guidance"]["actionPlan"]["nextActions"][0]["commandHint"],
+        )
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["nextActions"][1]["path"],
+            "first-map\\draft\\fixture-summary.json",
+        )
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")

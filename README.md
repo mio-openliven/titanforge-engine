@@ -161,7 +161,7 @@ titanforge.toml
 first-map\
 ```
 
-Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance in machine-readable form for future UI layers.
+Use it when you want the quickest scenario-writer flow. Open the root `review.html` first; it now explains the preset story intent, the key starter regions, the logical world size, the plain-language world scale, the smaller draft raster, and the `blocksPerPixel` bridge before you jump into `first-map\location\review.html`, `first-map\draft\review.html`, or the Minecraft handoff files. The root `first-map-manifest.json` now also records that same guidance plus a machine-readable open order and next-action plan for future UI layers.
 
 ## Optional Donor Spike
 
