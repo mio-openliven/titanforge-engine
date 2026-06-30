@@ -130,6 +130,27 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Old Pine Forest")
         self.assertIn('Intended story focus: "Old Pine Forest"', checklist_text)
 
+    def test_write_anvil_test_world_records_focused_anchor(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "anchor-world"
+            result = write_anvil_test_world(
+                config,
+                output_dir,
+                max_side=128,
+                focus_region_title="Broken Ridge",
+                focus_anchor_id="ridge-vista",
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads((output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+            checklist_text = (output_dir / "verification-checklist.txt").read_text(encoding="utf-8")
+
+        self.assertEqual(result.focus_region_title, "Broken Ridge")
+        self.assertEqual(result.focus_anchor_id, "ridge-vista")
+        self.assertEqual(manifest["sampleWindow"]["focusAnchor"], "ridge-vista")
+        self.assertIn('Intended anchor focus: "ridge-vista"', checklist_text)
+
     def test_update_test_world_verification_report_updates_check_and_manifest(self) -> None:
         config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
 

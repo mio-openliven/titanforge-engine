@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-069",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add anchor-focused sampled test-world handoff",
+      "acceptance": [
+        "first-map-test-world and anvil-test-world can target a named anchor inside a focused region instead of only the region default anchor",
+        "anvil-test-world artifacts record the focused anchor when an anchor-targeted sample is used",
+        "first-map handoff surfaces ready anchor-focused build commands for repeat use",
+        "tests cover focused anchor origin selection and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-068",
       "status": "done",
       "priority": "P1",

@@ -29,15 +29,25 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     manifest_path = result.manifest_path.relative_to(project_dir)
     test_world_dir = Path("minecraft-test-world")
     from titanforge.core.project_first_map import build_first_map_test_world_strategy
+    from titanforge.core.project_first_map import build_first_map_focus_anchor_commands
     test_world_strategy = build_first_map_test_world_strategy(
         result.template_result.config.width,
         result.template_result.config.length,
+    )
+    focus_anchor_commands = build_first_map_focus_anchor_commands(
+        result.project_dir,
+        result.template_result.config,
+        int(test_world_strategy["recommendedMaxSide"]),
     )
     build_test_world_command = (
         f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
         f'--max-side {test_world_strategy["recommendedMaxSide"]}'
     )
     test_world_status_command = f'py -3.11 -m titanforge anvil-test-world-status "{test_world_dir.as_posix()}"'
+    focus_anchor_preview = "<br>".join(
+        escape(command)
+        for _, command in focus_anchor_commands[:4]
+    )
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
     if len(result.template_result.config.regions) > 3:
@@ -284,6 +294,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <h3>Optional test-world shell</h3>
           <p>This is still an experimental manual-open candidate, not full world export. Install the donor extra with <code>py -3.11 -m pip install -e .[donor-spikes]</code>, then run <code>{escape(build_test_world_command)}</code>. TitanForge recommends <code>--max-side {escape(str(test_world_strategy["recommendedMaxSide"]))}</code> here because {escape(str(test_world_strategy["reason"]))}</p>
           <p>After it finishes, inspect <code>verification-checklist.txt</code> first and later reread status with <code>{escape(test_world_status_command)}</code>.</p>
+        </article>
+        <article class="card">
+          <h3>Anchor-focused shell starts</h3>
+          <p>When the first shell should target a specific reveal point instead of the region default, reuse the anchor commands from <code>first-map-status</code>. Typical starts look like:<br><code>{focus_anchor_preview}</code></p>
         </article>
       </div>
     </section>

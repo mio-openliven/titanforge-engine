@@ -10,6 +10,7 @@ from titanforge.core.project import load_project_config
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
 from titanforge.core.project_first_map_review import write_project_first_map_review_page
 from titanforge.core.project_template import ProjectTemplateResult, describe_world_scale, write_project_template
+from titanforge.core.world_plan import build_world_plan
 from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE
 from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil_test_world
 
@@ -47,6 +48,7 @@ class ProjectFirstMapStatusResult:
     test_world_strategy_summary: str
     test_world_strategy_reason: str
     test_world_focus_commands: tuple[tuple[str, str], ...]
+    test_world_focus_anchor_commands: tuple[tuple[str, str], ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -86,6 +88,27 @@ def build_first_map_focus_region_commands(
         )
         for region_title in region_titles
     )
+
+
+def build_first_map_focus_anchor_commands(
+    project_dir: Path,
+    config,
+    recommended_max_side: int,
+) -> tuple[tuple[str, str], ...]:
+    world_plan = build_world_plan(config)
+    commands: list[tuple[str, str]] = []
+    for region in world_plan.regions:
+        for anchor in region.anchors:
+            commands.append(
+                (
+                    f"{region.title} / {anchor.id}",
+                    (
+                        f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+                        f'--max-side {recommended_max_side} --focus-region "{region.title}" --focus-anchor "{anchor.id}"'
+                    ),
+                )
+            )
+    return tuple(commands)
 
 
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
@@ -172,6 +195,11 @@ def write_project_first_map(
     focus_region_commands = build_first_map_focus_region_commands(
         project_dir,
         key_regions,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
+    focus_anchor_commands = build_first_map_focus_anchor_commands(
+        project_dir,
+        template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
     )
 
@@ -282,6 +310,13 @@ def write_project_first_map(
                     }
                     for region_title, command in focus_region_commands
                 ],
+                "focusAnchorCommands": [
+                    {
+                        "anchorLabel": anchor_label,
+                        "command": command,
+                    }
+                    for anchor_label, command in focus_anchor_commands
+                ],
             },
             "reviewOrder": [
                 {
@@ -385,6 +420,7 @@ def write_project_first_map_test_world(
     output_dir: Path | None = None,
     max_side: int | None = None,
     focus_region_title: str | None = None,
+    focus_anchor_id: str | None = None,
     anvil_module: Any | None = None,
 ) -> AnvilTestWorldResult:
     config = load_project_first_map_config(project_dir)
@@ -396,11 +432,14 @@ def write_project_first_map_test_world(
     command += " --max-side {max_side}"
     if focus_region_title is not None:
         command += f' --focus-region "{focus_region_title}"'
+    if focus_anchor_id is not None:
+        command += f' --focus-anchor "{focus_anchor_id}"'
     return write_anvil_test_world(
         config,
         resolved_output_dir,
         max_side=resolved_max_side,
         focus_region_title=focus_region_title,
+        focus_anchor_id=focus_anchor_id,
         anvil_module=anvil_module,
         rerun_command_template=command,
         project_status_command=f'py -3.11 -m titanforge first-map-status "{project_dir}"',
@@ -431,6 +470,13 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
             str(item.get("command", "")),
         )
         for item in test_world.get("focusRegionCommands", [])
+    )
+    test_world_focus_anchor_commands = tuple(
+        (
+            str(item.get("anchorLabel", "")),
+            str(item.get("command", "")),
+        )
+        for item in test_world.get("focusAnchorCommands", [])
     )
 
     open_sequence = tuple(
@@ -481,6 +527,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_strategy_summary=str(test_world_strategy.get("summary", "")),
         test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
         test_world_focus_commands=test_world_focus_commands,
+        test_world_focus_anchor_commands=test_world_focus_anchor_commands,
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -568,6 +615,10 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             lines.append("- focus samples:")
             for region_title, command in result.test_world_focus_commands:
                 lines.append(f"- {region_title}: {command}")
+        if result.test_world_focus_anchor_commands:
+            lines.append("- focus anchors:")
+            for anchor_label, command in result.test_world_focus_anchor_commands:
+                lines.append(f"- {anchor_label}: {command}")
         for item_id, item_path, summary in result.minecraft_review_order:
             if summary:
                 lines.append(f"- {item_id}: {summary} ({item_path})")

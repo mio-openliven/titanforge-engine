@@ -53,6 +53,7 @@ class AnvilTestWorldResult:
     sampled_length: int
     cropped: bool
     focus_region_title: str | None
+    focus_anchor_id: str | None
     warnings: tuple[str, ...]
 
 
@@ -85,6 +86,7 @@ class AnvilTestWorldStatusResult:
     sampled_length: int
     cropped: bool
     focus_region_title: str | None
+    focus_anchor_id: str | None
     current_sample_command: str
     next_sample_max_side: int | None
     next_sample_summary: str
@@ -99,6 +101,7 @@ def write_anvil_test_world(
     *,
     max_side: int = DEFAULT_SPIKE_MAX_SIDE,
     focus_region_title: str | None = None,
+    focus_anchor_id: str | None = None,
     anvil_module: Any | None = None,
     rerun_command_template: str | None = None,
     project_status_command: str | None = None,
@@ -118,6 +121,7 @@ def write_anvil_test_world(
         world_dir,
         max_side=max_side,
         focus_region_title=focus_region_title,
+        focus_anchor_id=focus_anchor_id,
         anvil_module=anvil_module,
     )
     world_name = _sanitize_world_name(config.name)
@@ -166,6 +170,7 @@ def write_anvil_test_world(
             "size": {"width": spike_result.sampled_width, "length": spike_result.sampled_length},
             "cropped": spike_result.cropped,
             "focusRegion": spike_result.focus_region_title,
+            "focusAnchor": spike_result.focus_anchor_id,
         },
         "sampleGrowth": sample_growth,
         "originHandoff": {
@@ -207,6 +212,7 @@ def write_anvil_test_world(
         sampled_length=spike_result.sampled_length,
         cropped=spike_result.cropped,
         focus_region_title=spike_result.focus_region_title,
+        focus_anchor_id=spike_result.focus_anchor_id,
         warnings=warnings,
     )
 
@@ -230,6 +236,8 @@ def format_anvil_test_world_result(result: AnvilTestWorldResult) -> str:
     ]
     if result.focus_region_title:
         lines.append(f"- focus region: {result.focus_region_title}")
+    if result.focus_anchor_id:
+        lines.append(f"- focus anchor: {result.focus_anchor_id}")
     for warning in result.warnings:
         lines.append(f"Warning: {warning}")
     return "\n".join(lines)
@@ -298,6 +306,9 @@ def summarize_test_world_status(output_dir: Path) -> AnvilTestWorldStatusResult:
         cropped=bool(sample_window.get("cropped", False)),
         focus_region_title=(
             str(sample_window.get("focusRegion")) if sample_window.get("focusRegion") is not None else None
+        ),
+        focus_anchor_id=(
+            str(sample_window.get("focusAnchor")) if sample_window.get("focusAnchor") is not None else None
         ),
         current_sample_command=str(sample_growth.get("rerunCurrentCommand", "")),
         next_sample_max_side=(
@@ -427,6 +438,8 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
     ]
     if result.focus_region_title:
         lines.append(f"- focus region: {result.focus_region_title}")
+    if result.focus_anchor_id:
+        lines.append(f"- focus anchor: {result.focus_anchor_id}")
     if result.current_sample_command:
         lines.append(f"- rerun current sample: {result.current_sample_command}")
     if result.next_sample_summary:
@@ -514,6 +527,11 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
         if spike_result.focus_region_title
         else "- Focus region: world origin sample"
     )
+    anchor_line = (
+        f'- Focus anchor: "{spike_result.focus_anchor_id}"'
+        if spike_result.focus_anchor_id
+        else "- Focus anchor: region default anchor"
+    )
     return (
         "TitanForge minimal test-world candidate",
         "",
@@ -534,6 +552,7 @@ def _build_readme_lines(config: ProjectConfig, spike_result: Any) -> tuple[str, 
         "- The world is still sampled, donor-backed, and unverified by an automated in-game open.",
         f"- Sample origin inside the logical world: x={spike_result.origin_x}, z={spike_result.origin_z}",
         focus_line,
+        anchor_line,
         f"- {crop_line}",
     )
 
@@ -573,6 +592,11 @@ def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[st
         if spike_result.focus_region_title
         else "- Intended story focus: world origin sample"
     )
+    anchor_line = (
+        f'- Intended anchor focus: "{spike_result.focus_anchor_id}"'
+        if spike_result.focus_anchor_id
+        else "- Intended anchor focus: region default anchor"
+    )
     return (
         "TitanForge manual-open verification checklist",
         "",
@@ -598,6 +622,7 @@ def _build_checklist_lines(config: ProjectConfig, spike_result: Any) -> tuple[st
         "Scope reminder:",
         f"- {crop_line}",
         focus_line,
+        anchor_line,
         "- This checklist does not mean verification already happened.",
     )
 
@@ -631,6 +656,7 @@ def _build_verification_report(
             "length": spike_result.sampled_length,
             "cropped": spike_result.cropped,
             "focusRegion": spike_result.focus_region_title,
+            "focusAnchor": spike_result.focus_anchor_id,
         },
         "checks": [
             {

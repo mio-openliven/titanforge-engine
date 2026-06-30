@@ -164,6 +164,27 @@ class AnvilRegionSpikeTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Old Pine Forest")
         self.assertIn('Focus region: "Old Pine Forest"', readme_text)
 
+    def test_write_anvil_region_spike_can_focus_named_anchor(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "anchor-spike"
+            result = write_anvil_region_spike(
+                config,
+                output_dir,
+                max_side=128,
+                focus_region_title="Broken Ridge",
+                focus_anchor_id="ridge-vista",
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(result.origin_x, 336)
+        self.assertEqual(result.origin_z, 16)
+        self.assertEqual(result.focus_region_title, "Broken Ridge")
+        self.assertEqual(result.focus_anchor_id, "ridge-vista")
+        self.assertEqual(manifest["sampleWindow"]["focusAnchor"], "ridge-vista")
+
     def test_anvil_region_spike_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output_dir = Path(directory) / "anvil-spike"

@@ -101,6 +101,14 @@ class ProjectFirstMapTests(unittest.TestCase):
             '--focus-region "Harbor Town"',
             manifest["minecraftHandoff"]["testWorld"]["focusRegionCommands"][0]["command"],
         )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["focusAnchorCommands"][0]["anchorLabel"],
+            "Harbor Town / arrival",
+        )
+        self.assertIn(
+            '--focus-anchor "arrival"',
+            manifest["minecraftHandoff"]["testWorld"]["focusAnchorCommands"][0]["command"],
+        )
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["outputDir"], "minecraft-test-world")
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedMaxSide"], 128)
         self.assertEqual(
@@ -136,6 +144,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
         self.assertIn("Optional test-world shell", root_review_html)
+        self.assertIn("Anchor-focused shell starts", root_review_html)
+        self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
         self.assertIn("first-map-test-world", root_review_html)
         self.assertIn("--max-side 128", root_review_html)
         self.assertIn("verification-checklist.txt", root_review_html)
@@ -186,6 +196,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
         self.assertEqual(result.test_world_focus_commands[0][0], "Harbor Town")
         self.assertIn('--focus-region "Harbor Town"', result.test_world_focus_commands[0][1])
+        self.assertEqual(result.test_world_focus_anchor_commands[0][0], "Harbor Town / arrival")
+        self.assertIn('--focus-anchor "arrival"', result.test_world_focus_anchor_commands[0][1])
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
@@ -198,6 +210,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
         self.assertIn("- focus samples:", summary)
         self.assertIn('--focus-region "Harbor Town"', summary)
+        self.assertIn("- focus anchors:", summary)
+        self.assertIn('--focus-anchor "arrival"', summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
         self.assertIn('install extra first: py -3.11 -m pip install -e .[donor-spikes]', summary)
         self.assertIn("Command hints:", summary)
@@ -329,6 +343,33 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["focusRegion"], "Broken Ridge")
         self.assertIn(
             '--focus-region "Broken Ridge"',
+            manifest["sampleGrowth"]["rerunCurrentCommand"],
+        )
+
+    def test_write_project_first_map_test_world_can_focus_named_anchor(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "anchor-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Anchor Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Broken Ridge",
+                focus_anchor_id="ridge-vista",
+                anvil_module=_FakeAnvilModule,
+            )
+            manifest = json.loads((result.output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(manifest["sampleWindow"]["focusAnchor"], "ridge-vista")
+        self.assertIn(
+            '--focus-anchor "ridge-vista"',
             manifest["sampleGrowth"]["rerunCurrentCommand"],
         )
 

@@ -156,6 +156,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--focus-region",
         help="Optional story-region title from the first-map project. Recenters the sampled test-world window around that region.",
     )
+    first_map_test_world_parser.add_argument(
+        "--focus-anchor",
+        help="Optional anchor id inside the focused region, such as arrival, center, shoreline, or ridge-vista.",
+    )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -217,6 +221,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--focus-region",
         help="Optional region title from titanforge.toml. Recenters the sampled window around that story region.",
     )
+    anvil_region_spike_parser.add_argument(
+        "--focus-anchor",
+        help="Optional anchor id inside the focused region, such as arrival, center, shoreline, or ridge-vista.",
+    )
 
     anvil_save_shell_parser = subparsers.add_parser(
         "anvil-save-shell",
@@ -246,6 +254,10 @@ def build_parser() -> argparse.ArgumentParser:
     anvil_test_world_parser.add_argument(
         "--focus-region",
         help="Optional region title from titanforge.toml. Recenters the sampled window around that story region.",
+    )
+    anvil_test_world_parser.add_argument(
+        "--focus-anchor",
+        help="Optional anchor id inside the focused region, such as arrival, center, shoreline, or ridge-vista.",
     )
 
     anvil_test_world_verify_parser = subparsers.add_parser(
@@ -484,6 +496,7 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             output_dir=args.output_dir,
             max_side=args.max_side,
             focus_region_title=args.focus_region,
+            focus_anchor_id=args.focus_anchor,
         )
         print(format_anvil_test_world_result(result))
         return 0
@@ -530,6 +543,7 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             args.output_dir,
             max_side=args.max_side,
             focus_region_title=args.focus_region,
+            focus_anchor_id=args.focus_anchor,
         )
         print(format_anvil_region_spike_result(result))
         return 0
@@ -557,11 +571,14 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         rerun_template = f'py -3.11 -m titanforge anvil-test-world "{args.config}" "{args.output_dir}" --max-side {{max_side}}'
         if args.focus_region:
             rerun_template += f' --focus-region "{args.focus_region}"'
+        if args.focus_anchor:
+            rerun_template += f' --focus-anchor "{args.focus_anchor}"'
         result = write_anvil_test_world(
             config,
             args.output_dir,
             max_side=args.max_side,
             focus_region_title=args.focus_region,
+            focus_anchor_id=args.focus_anchor,
             rerun_command_template=rerun_template,
         )
         print(format_anvil_test_world_result(result))

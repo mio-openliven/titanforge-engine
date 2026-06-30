@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-069` `P1` Add anchor-focused sampled test-world handoff.
 - `TF-068` `P1` Add region-focused sampled test-world handoff.
 - `TF-067` `P1` Add decision handoff after manual sample verification.
 - `TF-066` `P1` Add post-verification sample growth guidance for test-world handoff.

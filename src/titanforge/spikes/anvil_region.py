@@ -51,6 +51,7 @@ class AnvilSampleWindow:
     sampled_length: int
     cropped: bool
     focus_region_title: str | None
+    focus_anchor_id: str | None
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,7 @@ class AnvilRegionSpikeResult:
     sampled_length: int
     cropped: bool
     focus_region_title: str | None
+    focus_anchor_id: str | None
     warnings: tuple[str, ...]
     verification_samples: tuple[AnvilBlockSample, ...]
 
@@ -77,6 +79,7 @@ def write_anvil_region_spike(
     *,
     max_side: int = DEFAULT_SPIKE_MAX_SIDE,
     focus_region_title: str | None = None,
+    focus_anchor_id: str | None = None,
     anvil_module: Any | None = None,
 ) -> AnvilRegionSpikeResult:
     if not MIN_SPIKE_SIDE <= max_side <= MAX_SPIKE_SIDE:
@@ -109,7 +112,12 @@ def write_anvil_region_spike(
             f"No supported 1.21.11 block fixture is available for requested target {config.target_version}."
         )
 
-    sample_window = _build_sample_window(world_plan, max_side=max_side, focus_region_title=focus_region_title)
+    sample_window = _build_sample_window(
+        world_plan,
+        max_side=max_side,
+        focus_region_title=focus_region_title,
+        focus_anchor_id=focus_anchor_id,
+    )
     sampled_cuboids = _clip_fixture_to_window(
         fixture.cuboids,
         origin_x=sample_window.origin_x,
@@ -129,6 +137,10 @@ def write_anvil_region_spike(
     if sample_window.focus_region_title:
         warnings.append(
             f'The sampled window was recentered around the "{sample_window.focus_region_title}" story region instead of staying at world origin.'
+        )
+    if sample_window.focus_anchor_id:
+        warnings.append(
+            f'The sampled window specifically targets the "{sample_window.focus_anchor_id}" anchor inside that region.'
         )
 
     sampled_block_count = sum(
@@ -169,6 +181,7 @@ def write_anvil_region_spike(
             "size": {"width": sample_window.sampled_width, "length": sample_window.sampled_length},
             "cropped": sample_window.cropped,
             "focusRegion": sample_window.focus_region_title,
+            "focusAnchor": sample_window.focus_anchor_id,
         },
         "export": {
             "sampledCuboids": len(sampled_cuboids),
@@ -209,6 +222,7 @@ def write_anvil_region_spike(
         sampled_length=sample_window.sampled_length,
         cropped=sample_window.cropped,
         focus_region_title=sample_window.focus_region_title,
+        focus_anchor_id=sample_window.focus_anchor_id,
         warnings=tuple(warnings),
         verification_samples=verification_samples,
     )
@@ -228,6 +242,8 @@ def format_anvil_region_spike_result(result: AnvilRegionSpikeResult) -> str:
     ]
     if result.focus_region_title:
         lines.append(f"- focus region: {result.focus_region_title}")
+    if result.focus_anchor_id:
+        lines.append(f"- focus anchor: {result.focus_anchor_id}")
     for warning in result.warnings:
         lines.append(f"Warning: {warning}")
     return "\n".join(lines)
@@ -248,6 +264,11 @@ def _build_readme_lines(
         if sample_window.focus_region_title
         else "- Focus region: world origin sample"
     )
+    anchor_line = (
+        f'- Focus anchor: "{sample_window.focus_anchor_id}"'
+        if sample_window.focus_anchor_id
+        else "- Focus anchor: region default anchor"
+    )
     return (
         "TitanForge donor-backed Anvil region spike",
         "",
@@ -266,6 +287,7 @@ def _build_readme_lines(
         f"- Sample window: {sample_window.sampled_width} x {sample_window.sampled_length} blocks",
         f"- Sample origin inside the logical world: x={sample_window.origin_x}, z={sample_window.origin_z}",
         focus_line,
+        anchor_line,
         f"- {crop_line}",
         "",
         "Limits:",
@@ -419,11 +441,12 @@ def _build_sample_window(
     *,
     max_side: int,
     focus_region_title: str | None,
+    focus_anchor_id: str | None,
 ) -> AnvilSampleWindow:
     sampled_width = min(world_plan.width, max_side)
     sampled_length = min(world_plan.length, max_side)
     cropped = world_plan.width > sampled_width or world_plan.length > sampled_length
-    focus_region = _resolve_focus_region(world_plan, focus_region_title)
+    focus_region = _resolve_focus_region(world_plan, focus_region_title, focus_anchor_id)
     if focus_region is None:
         return AnvilSampleWindow(
             origin_x=0,
@@ -432,9 +455,10 @@ def _build_sample_window(
             sampled_length=sampled_length,
             cropped=cropped,
             focus_region_title=None,
+            focus_anchor_id=None,
         )
 
-    focus_anchor = _pick_focus_anchor(focus_region)
+    focus_anchor = _pick_focus_anchor(focus_region, focus_anchor_id)
     origin_x = _align_sample_origin(focus_anchor.x - sampled_width // 2, world_plan.width, sampled_width)
     origin_z = _align_sample_origin(focus_anchor.z - sampled_length // 2, world_plan.length, sampled_length)
     return AnvilSampleWindow(
@@ -444,11 +468,18 @@ def _build_sample_window(
         sampled_length=sampled_length,
         cropped=cropped,
         focus_region_title=focus_region.title,
+        focus_anchor_id=focus_anchor.id if focus_anchor_id is not None else None,
     )
 
 
-def _resolve_focus_region(world_plan: WorldPlan, focus_region_title: str | None) -> WorldPlanRegion | None:
+def _resolve_focus_region(
+    world_plan: WorldPlan,
+    focus_region_title: str | None,
+    focus_anchor_id: str | None,
+) -> WorldPlanRegion | None:
     if focus_region_title is None:
+        if focus_anchor_id is not None:
+            raise AnvilRegionSpikeError("--focus-anchor requires --focus-region.")
         return None
     normalized = focus_region_title.strip().casefold()
     for region in world_plan.regions:
@@ -460,7 +491,16 @@ def _resolve_focus_region(world_plan: WorldPlan, focus_region_title: str | None)
     )
 
 
-def _pick_focus_anchor(region: WorldPlanRegion) -> WorldPlanAnchor:
+def _pick_focus_anchor(region: WorldPlanRegion, focus_anchor_id: str | None) -> WorldPlanAnchor:
+    if focus_anchor_id is not None:
+        normalized = focus_anchor_id.strip().casefold()
+        for anchor in region.anchors:
+            if anchor.id.casefold() == normalized:
+                return anchor
+        available = ", ".join(anchor.id for anchor in region.anchors) or "<none>"
+        raise AnvilRegionSpikeError(
+            f'Unknown --focus-anchor "{focus_anchor_id}" for region "{region.title}". Choose one of: {available}.'
+        )
     preferred_anchor_ids = ("arrival", "center", "focus", "shoreline", "forest-core", "ridge-vista", "entry")
     for anchor_id in preferred_anchor_ids:
         for anchor in region.anchors:
