@@ -10,6 +10,7 @@ from titanforge.core.project import load_project_config
 from titanforge.core.project_location import ProjectLocationResult, write_project_location
 from titanforge.core.project_first_map_review import write_project_first_map_review_page
 from titanforge.core.project_template import ProjectTemplateResult, describe_world_scale, write_project_template
+from titanforge.core.route_plan import build_route_plan
 from titanforge.core.world_plan import build_world_plan
 from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE
 from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil_test_world
@@ -31,6 +32,19 @@ class ProjectFirstMapResult:
 
 
 @dataclass(frozen=True)
+class ProjectFirstMapRouteHandoff:
+    route_id: str
+    kind: str
+    summary: str
+    start_command: str
+    start_output_dir: str
+    start_status_command: str
+    end_command: str
+    end_output_dir: str
+    end_status_command: str
+
+
+@dataclass(frozen=True)
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
@@ -38,6 +52,8 @@ class ProjectFirstMapStatusResult:
     review_page_path: Path
     location_review_path: Path
     draft_review_path: Path
+    route_plan_path: Path
+    route_preview_path: Path
     fixture_summary_path: Path
     fixture_commands_path: Path
     datapack_fixture_zip_path: Path
@@ -49,6 +65,7 @@ class ProjectFirstMapStatusResult:
     test_world_strategy_reason: str
     test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
+    route_handoffs: tuple[ProjectFirstMapRouteHandoff, ...]
     preset_name: str
     world_width: int
     world_length: int
@@ -84,6 +101,28 @@ def build_first_map_test_world_output_dir(
     return project_dir / f"{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}-{suffix}"
 
 
+def _build_first_map_shell_command(
+    project_dir: Path,
+    output_dir_name: str,
+    recommended_max_side: int,
+    *,
+    focus_region_title: str,
+    focus_anchor_id: str | None = None,
+) -> str:
+    command = (
+        f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
+        f'--output-dir "{output_dir_name}" --max-side {recommended_max_side} '
+        f'--focus-region "{focus_region_title}"'
+    )
+    if focus_anchor_id is not None:
+        command += f' --focus-anchor "{focus_anchor_id}"'
+    return command
+
+
+def _build_first_map_shell_status_command(output_dir_name: str) -> str:
+    return f'py -3.11 -m titanforge anvil-test-world-status "{output_dir_name}"'
+
+
 def build_first_map_focus_region_commands(
     project_dir: Path,
     region_titles: tuple[str, ...],
@@ -92,15 +131,15 @@ def build_first_map_focus_region_commands(
     return tuple(
         (
             region_title,
-            (
-                f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
-                f'--output-dir "{build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name}" '
-                f'--max-side {recommended_max_side} --focus-region "{region_title}"'
+            _build_first_map_shell_command(
+                project_dir,
+                build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name,
+                recommended_max_side,
+                focus_region_title=region_title,
             ),
             build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name,
-            (
-                f'py -3.11 -m titanforge anvil-test-world-status '
-                f'"{build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name}"'
+            _build_first_map_shell_status_command(
+                build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name
             ),
         )
         for region_title in region_titles
@@ -124,16 +163,68 @@ def build_first_map_focus_anchor_commands(
             commands.append(
                 (
                     f"{region.title} / {anchor.id}",
-                    (
-                        f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
-                        f'--output-dir "{output_dir}" --max-side {recommended_max_side} '
-                        f'--focus-region "{region.title}" --focus-anchor "{anchor.id}"'
+                    _build_first_map_shell_command(
+                        project_dir,
+                        output_dir,
+                        recommended_max_side,
+                        focus_region_title=region.title,
+                        focus_anchor_id=anchor.id,
                     ),
                     output_dir,
-                    f'py -3.11 -m titanforge anvil-test-world-status "{output_dir}"',
+                    _build_first_map_shell_status_command(output_dir),
                 )
             )
     return tuple(commands)
+
+
+def build_first_map_route_handoffs(
+    project_dir: Path,
+    config,
+    recommended_max_side: int,
+) -> tuple[ProjectFirstMapRouteHandoff, ...]:
+    world_plan = build_world_plan(config)
+    route_plan = build_route_plan(world_plan)
+    handoffs: list[ProjectFirstMapRouteHandoff] = []
+    for route in route_plan.routes:
+        start_output_dir = build_first_map_test_world_output_dir(
+            project_dir,
+            focus_region_title=route.from_point.region_title,
+            focus_anchor_id=route.from_point.anchor_id,
+        ).name
+        end_output_dir = build_first_map_test_world_output_dir(
+            project_dir,
+            focus_region_title=route.to_point.region_title,
+            focus_anchor_id=route.to_point.anchor_id,
+        ).name
+        handoffs.append(
+            ProjectFirstMapRouteHandoff(
+                route_id=route.id,
+                kind=route.kind,
+                summary=(
+                    f"{route.from_point.region_title} / {route.from_point.anchor_id} -> "
+                    f"{route.to_point.region_title} / {route.to_point.anchor_id}"
+                ),
+                start_command=_build_first_map_shell_command(
+                    project_dir,
+                    start_output_dir,
+                    recommended_max_side,
+                    focus_region_title=route.from_point.region_title,
+                    focus_anchor_id=route.from_point.anchor_id,
+                ),
+                start_output_dir=start_output_dir,
+                start_status_command=_build_first_map_shell_status_command(start_output_dir),
+                end_command=_build_first_map_shell_command(
+                    project_dir,
+                    end_output_dir,
+                    recommended_max_side,
+                    focus_region_title=route.to_point.region_title,
+                    focus_anchor_id=route.to_point.anchor_id,
+                ),
+                end_output_dir=end_output_dir,
+                end_status_command=_build_first_map_shell_status_command(end_output_dir),
+            )
+        )
+    return tuple(handoffs)
 
 
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
@@ -227,6 +318,11 @@ def write_project_first_map(
         template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
     )
+    route_handoffs = build_first_map_route_handoffs(
+        project_dir,
+        template_result.config,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
 
     manifest = {
         "schema": PROJECT_FIRST_MAP_SCHEMA,
@@ -251,6 +347,24 @@ def write_project_first_map(
                 "story": template_result.config.premise,
                 "playerFeeling": template_result.config.player_experience,
                 "keyRegions": list(key_regions),
+            },
+            "storyRoutes": {
+                "routePlan": str(location_result.draft_result.route_plan_path.relative_to(project_dir)),
+                "routePreview": str(location_result.draft_result.route_preview_path.relative_to(project_dir)),
+                "routeSamples": [
+                    {
+                        "routeId": route.route_id,
+                        "kind": route.kind,
+                        "summary": route.summary,
+                        "startCommand": route.start_command,
+                        "startOutputDir": route.start_output_dir,
+                        "startStatusCommand": route.start_status_command,
+                        "endCommand": route.end_command,
+                        "endOutputDir": route.end_output_dir,
+                        "endStatusCommand": route.end_status_command,
+                    }
+                    for route in route_handoffs
+                ],
             },
             "actionPlan": {
                 "openSequence": [
@@ -371,6 +485,8 @@ def write_project_first_map(
             "locationReviewPage": str(location_result.location_result.review_page_path.relative_to(project_dir)),
             "bridgeManifest": str(location_result.manifest_path.relative_to(project_dir)),
             "draftMask": str(location_result.draft_result.draft_mask_path.relative_to(project_dir)),
+            "routePlan": str(location_result.draft_result.route_plan_path.relative_to(project_dir)),
+            "routePreview": str(location_result.draft_result.route_preview_path.relative_to(project_dir)),
             "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
             "fixtureSummary": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
             "datapackFixtureZip": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
@@ -495,6 +611,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     action_plan = dict(guidance.get("actionPlan", {}))
     world_scale = dict(guidance.get("worldScale", {}))
     preset = dict(guidance.get("preset", {}))
+    story_routes = dict(guidance.get("storyRoutes", {}))
     commands = dict(manifest.get("commands", {}))
     artifacts = dict(manifest.get("artifacts", {}))
     minecraft_handoff = dict(manifest.get("minecraftHandoff", {}))
@@ -518,6 +635,20 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
             str(item.get("statusCommand", "")),
         )
         for item in test_world.get("focusAnchorCommands", [])
+    )
+    route_handoffs = tuple(
+        ProjectFirstMapRouteHandoff(
+            route_id=str(item.get("routeId", "")),
+            kind=str(item.get("kind", "")),
+            summary=str(item.get("summary", "")),
+            start_command=str(item.get("startCommand", "")),
+            start_output_dir=str(item.get("startOutputDir", "")),
+            start_status_command=str(item.get("startStatusCommand", "")),
+            end_command=str(item.get("endCommand", "")),
+            end_output_dir=str(item.get("endOutputDir", "")),
+            end_status_command=str(item.get("endStatusCommand", "")),
+        )
+        for item in story_routes.get("routeSamples", [])
     )
 
     open_sequence = tuple(
@@ -558,6 +689,8 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         review_page_path=project_dir / str(artifacts.get("rootReviewPage", "review.html")),
         location_review_path=project_dir / str(artifacts.get("locationReviewPage", Path("first-map") / "location" / "review.html")),
         draft_review_path=project_dir / str(next((path for item_id, path in open_sequence if item_id == "draft-review"), Path("first-map") / "draft" / "review.html")),
+        route_plan_path=project_dir / str(story_routes.get("routePlan", artifacts.get("routePlan", Path("first-map") / "draft" / "route-plan.json"))),
+        route_preview_path=project_dir / str(story_routes.get("routePreview", artifacts.get("routePreview", Path("first-map") / "draft" / "route-preview.png"))),
         fixture_summary_path=fixture_summary_path,
         fixture_commands_path=project_dir / str(handoff_artifacts.get("fixtureCommands", Path("first-map") / "draft" / "fixture-commands.txt")),
         datapack_fixture_zip_path=project_dir / str(handoff_artifacts.get("datapackFixtureZip", Path("first-map") / "draft" / "datapack-fixture.zip")),
@@ -569,6 +702,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
         test_world_focus_commands=test_world_focus_commands,
         test_world_focus_anchor_commands=test_world_focus_anchor_commands,
+        route_handoffs=route_handoffs,
         preset_name=str(project.get("preset", "unknown")),
         world_width=int(world.get("width", 0)),
         world_length=int(world.get("length", 0)),
@@ -604,6 +738,8 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
         f"- root review: {result.review_page_path.relative_to(result.project_dir)}",
         f"- location review: {result.location_review_path.relative_to(result.project_dir)}",
         f"- draft review: {result.draft_review_path.relative_to(result.project_dir)}",
+        f"- route preview: {result.route_preview_path.relative_to(result.project_dir)}",
+        f"- route plan: {result.route_plan_path.relative_to(result.project_dir)}",
         f"- fixture summary: {result.fixture_summary_path.relative_to(result.project_dir)}",
         f"- fixture commands: {result.fixture_commands_path.relative_to(result.project_dir)}",
         f"- datapack zip: {result.datapack_fixture_zip_path.relative_to(result.project_dir)}",
@@ -631,6 +767,18 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
                 lines.append(f"- {item_id}: {summary} ({item_path})")
             else:
                 lines.append(f"- {item_id}: {item_path}")
+    if result.route_handoffs:
+        lines.append("Story routes:")
+        lines.append(f"- route-preview: {result.route_preview_path.relative_to(result.project_dir)}")
+        lines.append(f"- route-plan: {result.route_plan_path.relative_to(result.project_dir)}")
+        for route in result.route_handoffs:
+            lines.append(f"- {route.route_id} [{route.kind}]: {route.summary}")
+            lines.append(
+                f"- start shell: {route.start_command} (folder: {route.start_output_dir}; status: {route.start_status_command})"
+            )
+            lines.append(
+                f"- end shell: {route.end_command} (folder: {route.end_output_dir}; status: {route.end_status_command})"
+            )
     if result.next_actions:
         lines.append("If you need changes:")
         for item_id, summary, detail in result.next_actions:

@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-071` `P1` Add route-focused first-map handoff.
 - `TF-070` `P1` Prevent focused test-world handoff from overwriting sibling samples.
 - `TF-069` `P1` Add anchor-focused sampled test-world handoff.
 - `TF-068` `P1` Add region-focused sampled test-world handoff.

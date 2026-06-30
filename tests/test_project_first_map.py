@@ -60,6 +60,42 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["preset"]["keyRegions"][:3],
             ["Harbor Town", "Salt Coast", "Old Pine Forest"],
         )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routePreview"],
+            "first-map\\draft\\route-preview.png",
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routePlan"],
+            "first-map\\draft\\route-plan.json",
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["routeId"],
+            "region-00",
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["kind"],
+            "intra-region",
+        )
+        self.assertIn(
+            "Harbor Town / arrival -> Harbor Town / center",
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["summary"],
+        )
+        self.assertIn(
+            '--focus-anchor "arrival"',
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["startCommand"],
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["startOutputDir"],
+            "minecraft-test-world-harbor-town-arrival",
+        )
+        self.assertIn(
+            '--focus-anchor "center"',
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["endCommand"],
+        )
+        self.assertEqual(
+            manifest["guidance"]["storyRoutes"]["routeSamples"][0]["endOutputDir"],
+            "minecraft-test-world-harbor-town-center",
+        )
         self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["id"], "root-review")
         self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["path"], "review.html")
         self.assertEqual(
@@ -135,11 +171,14 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")
         self.assertEqual(manifest["artifacts"]["bridgeManifest"], "first-map\\project-location-manifest.json")
+        self.assertEqual(manifest["artifacts"]["routePlan"], "first-map\\draft\\route-plan.json")
+        self.assertEqual(manifest["artifacts"]["routePreview"], "first-map\\draft\\route-preview.png")
         self.assertEqual(manifest["raster"]["blocksPerPixel"], 8)
         self.assertEqual(manifest["terrain"]["cleanupApplied"], True)
         self.assertEqual(bridge_manifest["schema"], "titanforge.project-location")
         self.assertIn("How Size Works", root_review_html)
         self.assertIn("Preset Intent", root_review_html)
+        self.assertIn("Story Routes", root_review_html)
         self.assertIn("Preset story", root_review_html)
         self.assertIn("Harbor Town, Salt Coast, Old Pine Forest, +2 more", root_review_html)
         self.assertIn("Logical world size", root_review_html)
@@ -149,8 +188,13 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Change <code>width</code> or <code>length</code>", root_review_html)
         self.assertIn('href="first-map/location/review.html"', root_review_html)
         self.assertIn('href="first-map/draft/review.html"', root_review_html)
+        self.assertIn('href="first-map/draft/route-preview.png"', root_review_html)
+        self.assertIn('href="first-map/draft/route-plan.json"', root_review_html)
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
+        self.assertIn("Route-focused shell starts", root_review_html)
+        self.assertIn("region-00", root_review_html)
+        self.assertIn("minecraft-test-world-harbor-town-center", root_review_html)
         self.assertIn("Optional test-world shell", root_review_html)
         self.assertIn("Anchor-focused shell starts", root_review_html)
         self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
@@ -191,6 +235,15 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
+        self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
+        self.assertEqual(result.route_plan_path, project_dir / "first-map" / "draft" / "route-plan.json")
+        self.assertEqual(result.route_handoffs[0].route_id, "region-00")
+        self.assertEqual(result.route_handoffs[0].kind, "intra-region")
+        self.assertIn("Harbor Town / arrival -> Harbor Town / center", result.route_handoffs[0].summary)
+        self.assertIn('--focus-anchor "arrival"', result.route_handoffs[0].start_command)
+        self.assertEqual(result.route_handoffs[0].start_output_dir, "minecraft-test-world-harbor-town-arrival")
+        self.assertIn('--focus-anchor "center"', result.route_handoffs[0].end_command)
+        self.assertEqual(result.route_handoffs[0].end_output_dir, "minecraft-test-world-harbor-town-center")
         self.assertEqual(
             result.next_actions[0],
             (
@@ -217,6 +270,12 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Preset intent:", summary)
         self.assertIn("Size guidance:", summary)
         self.assertIn("Review now:", summary)
+        self.assertIn("Story routes:", summary)
+        self.assertIn("- route-preview: first-map\\draft\\route-preview.png", summary)
+        self.assertIn("- route-plan: first-map\\draft\\route-plan.json", summary)
+        self.assertIn("- region-00 [intra-region]: Harbor Town / arrival -> Harbor Town / center", summary)
+        self.assertIn("- start shell: py -3.11 -m titanforge first-map-test-world", summary)
+        self.assertIn("minecraft-test-world-harbor-town-center", summary)
         self.assertIn("If you need changes:", summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)

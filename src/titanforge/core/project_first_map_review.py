@@ -23,6 +23,8 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     config_path = result.template_result.config_path.relative_to(project_dir)
     location_review = result.location_result.location_result.review_page_path.relative_to(project_dir)
     draft_review = result.location_result.draft_result.review_page_path.relative_to(project_dir)
+    route_plan = result.location_result.draft_result.route_plan_path.relative_to(project_dir)
+    route_preview = result.location_result.draft_result.route_preview_path.relative_to(project_dir)
     fixture_summary = result.location_result.draft_result.fixture_summary_path.relative_to(project_dir)
     fixture_commands = result.location_result.draft_result.fixture_commands_path.relative_to(project_dir)
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
@@ -30,11 +32,17 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     test_world_dir = Path("minecraft-test-world")
     from titanforge.core.project_first_map import build_first_map_test_world_strategy
     from titanforge.core.project_first_map import build_first_map_focus_anchor_commands
+    from titanforge.core.project_first_map import build_first_map_route_handoffs
     test_world_strategy = build_first_map_test_world_strategy(
         result.template_result.config.width,
         result.template_result.config.length,
     )
     focus_anchor_commands = build_first_map_focus_anchor_commands(
+        result.project_dir,
+        result.template_result.config,
+        int(test_world_strategy["recommendedMaxSide"]),
+    )
+    route_handoffs = build_first_map_route_handoffs(
         result.project_dir,
         result.template_result.config,
         int(test_world_strategy["recommendedMaxSide"]),
@@ -47,6 +55,16 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     focus_anchor_preview = "<br>".join(
         f'{escape(command)}<br><small>status: {escape(status_command)}</small>'
         for _, command, _, status_command in focus_anchor_commands[:4]
+    )
+    route_handoff_preview = "<br><br>".join(
+        (
+            f'<strong>{escape(route.route_id)} [{escape(route.kind)}]</strong>: {escape(route.summary)}<br>'
+            f'<small>start:</small> {escape(route.start_command)}<br>'
+            f'<small>status:</small> {escape(route.start_status_command)}<br>'
+            f'<small>end:</small> {escape(route.end_command)}<br>'
+            f'<small>status:</small> {escape(route.end_status_command)}'
+        )
+        for route in route_handoffs[:3]
     )
     warning_items = "\n".join(f"<li>{escape(warning)}</li>" for warning in result.location_result.warnings) or "<li>No workflow warnings for this pass.</li>"
     region_lineup = ", ".join(region.title for region in result.template_result.config.regions[:3])
@@ -271,6 +289,24 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <div class="badge">3</div>
           <h3><a href="{escape(config_path.as_posix())}">titanforge.toml</a></h3>
           <p>Edit this when the world brief, size, or story regions still need adjustment before another generation pass.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Story Routes</h2>
+      <div class="links">
+        <article class="card">
+          <h3><a href="{escape(route_preview.as_posix())}">route-preview.png</a></h3>
+          <p>Use this when you want the shortest visual read of player movement and reveal lines between the named regions.</p>
+        </article>
+        <article class="card">
+          <h3><a href="{escape(route_plan.as_posix())}">route-plan.json</a></h3>
+          <p>Use this when you need the exact route ids and anchor pairs behind the preview.</p>
+        </article>
+        <article class="card">
+          <h3>Route-focused shell starts</h3>
+          <p>When the story beat is more about travel than one static point, sample both ends of a route before trusting the larger world. Typical pairs look like:<br><code>{route_handoff_preview}</code></p>
         </article>
       </div>
     </section>

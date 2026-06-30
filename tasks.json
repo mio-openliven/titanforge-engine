@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-071",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add route-focused first-map handoff",
+      "acceptance": [
+        "first-map-manifest.json records route preview artifacts and route-focused sample guidance built from the current route plan",
+        "first-map-status surfaces short route summaries plus exact anchor-focused shell commands for both ends of each route",
+        "root first-map review page links the route artifacts and shows example route-focused shell starts",
+        "tests cover the new route-focused manifest, status, and review guidance"
+      ]
+    },
+    {
       "id": "TF-070",
       "status": "done",
       "priority": "P1",
