@@ -115,7 +115,7 @@ review.html
 manifest.json
 ```
 
-Open `review.html` in a browser to inspect the first local TitanForge review page for that pack. It now includes coastline smoothing and terrain color drafts before the grayscale heightmap.
+Open `review.html` in a browser to inspect the first local TitanForge review page for that pack. It now starts with a short "how to read this pack" handoff, then shows coastline smoothing and terrain color drafts before the grayscale heightmap.
 
 The `project-draft` command creates:
 
@@ -160,7 +160,8 @@ project-location-manifest.json
 
 Use it when you want one command from `titanforge.toml` to an inspectable location pack. The bridge manifest keeps `blocksPerPixel` visible so the draft raster is not confused with the logical world size, and it now points at the draft material, export-request, datapack zip, transition, route, placement, road, and settlement artifacts too.
 When the location pack came from `project-location`, its `location/review.html` now also links back to the key draft-side files like `fixture-summary.json`, `fixture-commands.txt`, and `datapack-fixture.zip`.
-That same location review page now also shows the draft fixture command count and footprint inline, so a tester can judge scope without opening the JSON separately.
+That same location review page now also starts with a short beginner review order, so a scenario writer can see what to inspect first before digging into raw files.
+It now also shows the draft fixture command count and footprint inline, so a tester can judge scope without opening the JSON separately.
 It now also shows the exact next Minecraft test commands inline, so the tester does not need to leave the review page to find `/reload` or `/function` calls.
 
 The `first-map` command creates:

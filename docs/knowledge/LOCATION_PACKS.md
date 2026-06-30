@@ -86,6 +86,7 @@ Current warnings include:
 `mask-cleanup-preview.png` can optionally be used for `terrain-color-preview.png` and `heightmap-preview.png`, but it does not replace `mask.png`.
 
 `review.html` is a static local review page for the pack. Open it in a browser to inspect the five preview images, validation status, raw file links, and the full text report without building a GUI or starting a server.
+It now starts with a short "what to inspect first" handoff, and reminds the reader that final world-size edits belong in the higher-level `first-map` or `project-location` flow rather than inside the location pack itself.
 
 ## Product Meaning
 

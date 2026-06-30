@@ -21,6 +21,65 @@ def write_location_review_page(
     review_page_path = output_dir / "review.html"
     status = "ERROR" if validation_errors else "OK"
     cleanup_text = "yes" if cleanup_applied else "no"
+    draft_artifact_map = {label: path for label, path in draft_artifacts}
+    beginner_steps = [
+        (
+            "Start with terrain-color-preview.png",
+            'This is the fastest readable overview of water, land, forest, roads, ports, and mountains in one image.',
+        ),
+        (
+            "Then open heightmap-preview.png",
+            "Use it to judge the big terrain shape, slopes, and shoreline silhouette before you read raw JSON files.",
+        ),
+        (
+            "Then read report.txt",
+            "Use the report when something looks wrong or you need the exact warning and validation notes.",
+        ),
+    ]
+    draft_review_path = draft_artifact_map.get("draft/review.html")
+    draft_fixture_summary_path = draft_artifact_map.get("draft/fixture-summary.json")
+    draft_fixture_commands_path = draft_artifact_map.get("draft/fixture-commands.txt")
+    if draft_review_path:
+        beginner_steps.append(
+            (
+                "Need world size or story context?",
+                f'Open <a href="{escape(draft_review_path)}">draft/review.html</a> for the bigger plan: world size, story regions, routes, and linked Minecraft planning artifacts.',
+            )
+        )
+    if draft_fixture_summary_path or draft_fixture_commands_path:
+        minecraft_links = []
+        if draft_fixture_summary_path:
+            minecraft_links.append(
+                f'<a href="{escape(draft_fixture_summary_path)}">fixture-summary.json</a>'
+            )
+        if draft_fixture_commands_path:
+            minecraft_links.append(
+                f'<a href="{escape(draft_fixture_commands_path)}">fixture-commands.txt</a>'
+            )
+        beginner_steps.append(
+            (
+                "Need the first Minecraft test handoff?",
+                "Check "
+                + " and ".join(minecraft_links)
+                + " after the visual review so command size and exact next steps stay visible.",
+            )
+        )
+    beginner_step_items = "\n".join(
+        f"""          <li>
+            <strong>{escape(title)}</strong>
+            <p>{description}</p>
+          </li>"""
+        for title, description in beginner_steps
+    )
+    beginner_handoff_html = f"""
+    <section class="panel">
+      <h2>How To Read This Pack</h2>
+      <p>This page helps you inspect one generated location pack. It is not where you change final world size or story layout.</p>
+      <ol class="step-list">
+{beginner_step_items}
+      </ol>
+    </section>
+"""
     draft_links_html = ""
     if draft_artifacts:
         draft_link_items = "\n".join(
@@ -276,6 +335,23 @@ def write_location_review_page(
       padding-left: 18px;
     }}
 
+    ol.step-list {{
+      margin: 0;
+      padding-left: 22px;
+    }}
+
+    .step-list li + li {{
+      margin-top: 12px;
+    }}
+
+    .step-list strong {{
+      color: var(--ink);
+    }}
+
+    .step-list p {{
+      margin: 4px 0 0;
+    }}
+
     a {{
       color: var(--accent);
       text-decoration: none;
@@ -322,6 +398,8 @@ def write_location_review_page(
         </div>
       </div>
     </section>
+
+{beginner_handoff_html}
 
     <section class="preview-grid">
       <article class="card">

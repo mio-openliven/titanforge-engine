@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-075",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add beginner review order to location review page",
+      "acceptance": [
+        "location review.html starts with a short beginner handoff that explains what to inspect first and why",
+        "project-location review.html adapts that handoff to mention the linked draft-side planning files when they exist",
+        "plain build-location review.html stays short and does not expose draft-only wording",
+        "tests cover the new review-order guidance"
+      ]
+    },
+    {
       "id": "TF-074",
       "status": "done",
       "priority": "P1",
