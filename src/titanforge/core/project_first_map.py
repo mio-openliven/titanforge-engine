@@ -1020,6 +1020,9 @@ def refresh_project_first_map(
         project_dir / "first-map",
         max_draft_side=resolved_max_draft_side,
         use_cleanup_for_heightmap=resolved_cleanup,
+        project_root_artifacts=(
+            (DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME, f"../{DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}"),
+        ),
     )
     template_result = ProjectTemplateResult(
         project_dir=project_dir,
@@ -1141,6 +1144,9 @@ def write_project_first_map(
         template_result.suggested_output_dir,
         max_draft_side=max_draft_side,
         use_cleanup_for_heightmap=use_cleanup_for_heightmap,
+        project_root_artifacts=(
+            (DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME, f"../{DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}"),
+        ),
     )
     return _finalize_project_first_map(
         project_dir,

@@ -30,6 +30,7 @@ def write_project_location(
     *,
     max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE,
     use_cleanup_for_heightmap: bool = False,
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
 ) -> ProjectLocationResult:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -55,6 +56,7 @@ def write_project_location(
         use_cleanup_for_heightmap=use_cleanup_for_heightmap,
         source_mode_override="project-draft",
         draft_artifacts=draft_review_links,
+        project_root_artifacts=project_root_artifacts,
         draft_fixture_summary=fixture_summary,
         draft_fixture_commands=fixture_commands,
     )

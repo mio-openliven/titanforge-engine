@@ -45,6 +45,7 @@ def build_location_pack(
     use_cleanup_for_heightmap: bool = False,
     source_mode_override: str | None = None,
     draft_artifacts: tuple[tuple[str, str], ...] = (),
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
     draft_fixture_summary: dict[str, object] | None = None,
     draft_fixture_commands: tuple[str, ...] = (),
 ) -> LocationBuildResult:
@@ -131,6 +132,7 @@ def build_location_pack(
         heightmap_source=heightmap_source_path.name,
         report_text=report_text,
         draft_artifacts=draft_artifacts,
+        project_root_artifacts=project_root_artifacts,
         draft_fixture_summary=draft_fixture_summary,
         draft_fixture_commands=draft_fixture_commands,
     )

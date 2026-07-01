@@ -18,7 +18,13 @@ class ProjectLocationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             output_dir = Path(directory) / "project-location"
-            result = write_project_location(config, output_dir, max_draft_side=256, use_cleanup_for_heightmap=True)
+            result = write_project_location(
+                config,
+                output_dir,
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+                project_root_artifacts=(("minecraft-first-pass.txt", "../minecraft-first-pass.txt"),),
+            )
             manifest = json.loads((output_dir / "project-location-manifest.json").read_text(encoding="utf-8"))
             location_manifest = json.loads((output_dir / "location" / "manifest.json").read_text(encoding="utf-8"))
             location_review_html = (output_dir / "location" / "review.html").read_text(encoding="utf-8")
@@ -61,8 +67,10 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn("It is not where you change final world size or story layout.", location_review_html)
         self.assertIn("Need world size or story context?", location_review_html)
         self.assertIn("world size, story regions, routes", location_review_html)
+        self.assertIn("Overview already looks right?", location_review_html)
         self.assertIn("Need the first Minecraft test handoff?", location_review_html)
         self.assertIn("Project-Draft Links", location_review_html)
+        self.assertIn("Project Root Shortcuts", location_review_html)
         self.assertIn("Draft Fixture Summary", location_review_html)
         self.assertIn("Starter Test Verdict", location_review_html)
         self.assertIn("safe", location_review_html)
@@ -76,6 +84,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn('../draft/fixture-summary.json', location_review_html)
         self.assertIn('../draft/fixture-commands.txt', location_review_html)
         self.assertIn('../draft/datapack-fixture.zip', location_review_html)
+        self.assertIn('../minecraft-first-pass.txt', location_review_html)
 
     def test_project_location_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

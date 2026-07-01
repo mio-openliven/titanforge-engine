@@ -64,7 +64,9 @@ class LocationBuilderTests(unittest.TestCase):
         self.assertIn("TitanForge Layout Report", review_html)
         self.assertIn("report.txt", review_html)
         self.assertNotIn("Project-Draft Links", review_html)
+        self.assertNotIn("Project Root Shortcuts", review_html)
         self.assertNotIn("Need world size or story context?", review_html)
+        self.assertNotIn("Overview already looks right?", review_html)
         self.assertNotIn("Draft Fixture Summary", review_html)
         self.assertNotIn("Next Minecraft Test", review_html)
 

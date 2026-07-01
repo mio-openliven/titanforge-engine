@@ -3,6 +3,17 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-091",
+      "status": "done",
+      "priority": "P1",
+      "title": "Link root minecraft-first-pass from location review",
+      "acceptance": [
+        "first-map location/review.html points directly to ../minecraft-first-pass.txt after the visual review",
+        "plain build-location review.html stays unchanged when no root-level handoff exists",
+        "tests cover both the surfaced root shortcut and the unchanged plain location review"
+      ]
+    },
+    {
       "id": "TF-090",
       "status": "done",
       "priority": "P1",

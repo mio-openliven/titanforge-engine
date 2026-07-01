@@ -15,6 +15,7 @@ def write_location_review_page(
     heightmap_source: str,
     report_text: str,
     draft_artifacts: tuple[tuple[str, str], ...] = (),
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
     draft_fixture_summary: dict[str, object] | None = None,
     draft_fixture_commands: tuple[str, ...] = (),
 ) -> Path:
@@ -22,6 +23,7 @@ def write_location_review_page(
     status = "ERROR" if validation_errors else "OK"
     cleanup_text = "yes" if cleanup_applied else "no"
     draft_artifact_map = {label: path for label, path in draft_artifacts}
+    project_root_artifact_map = {label: path for label, path in project_root_artifacts}
     beginner_steps = [
         (
             "Start with terrain-color-preview.png",
@@ -39,11 +41,19 @@ def write_location_review_page(
     draft_review_path = draft_artifact_map.get("draft/review.html")
     draft_fixture_summary_path = draft_artifact_map.get("draft/fixture-summary.json")
     draft_fixture_commands_path = draft_artifact_map.get("draft/fixture-commands.txt")
+    minecraft_first_pass_path = project_root_artifact_map.get("minecraft-first-pass.txt")
     if draft_review_path:
         beginner_steps.append(
             (
                 "Need world size or story context?",
                 f'Open <a href="{escape(draft_review_path)}">draft/review.html</a> for the bigger plan: world size, story regions, routes, and linked Minecraft planning artifacts.',
+            )
+        )
+    if minecraft_first_pass_path:
+        beginner_steps.append(
+            (
+                "Overview already looks right?",
+                f'Open <a href="{escape(minecraft_first_pass_path)}">minecraft-first-pass.txt</a> for the shortest root-level datapack handoff into Minecraft 1.21.11.',
             )
         )
     if draft_fixture_summary_path or draft_fixture_commands_path:
@@ -93,6 +103,25 @@ def write_location_review_page(
         <div>
           <ul>
 {draft_link_items}
+          </ul>
+        </div>
+      </div>
+    </section>
+"""
+    project_root_links_html = ""
+    if project_root_artifacts:
+        project_root_link_items = "\n".join(
+            f'            <li><a href="{escape(path)}">{escape(label)}</a></li>'
+            for label, path in project_root_artifacts
+        )
+        project_root_links_html = f"""
+    <section class="panel">
+      <h2>Project Root Shortcuts</h2>
+      <p>Open these when this location pack belongs to a bigger first-map project and you want the root-side handoff instead of only draft internals.</p>
+      <div class="raw-grid">
+        <div>
+          <ul>
+{project_root_link_items}
           </ul>
         </div>
       </div>
@@ -451,6 +480,7 @@ def write_location_review_page(
       </div>
     </section>
 {draft_links_html}
+{project_root_links_html}
 {draft_summary_html}
 {draft_commands_html}
 
