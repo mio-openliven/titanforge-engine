@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-078",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map refresh and resize maintenance commands",
+      "acceptance": [
+        "CLI can refresh an existing first-map project from the current titanforge.toml without asking the user to delete and recreate the folder",
+        "CLI can change width and length for an existing first-map project and then rebuild the first-map artifacts in one safe pass",
+        "first-map handoff guidance stops suggesting rerun commands that fail on an existing project folder and points to the maintenance commands instead",
+        "tests cover refresh, resize, and the surfaced handoff command updates"
+      ]
+    },
+    {
       "id": "TF-077",
       "status": "done",
       "priority": "P1",

@@ -13,6 +13,9 @@ from titanforge.core.project import load_project_config
 from titanforge.core.project_first_map import (
     build_first_map_test_world_strategy,
     format_project_first_map_result,
+    format_project_first_map_resize_result,
+    refresh_project_first_map,
+    resize_project_first_map,
     format_project_first_map_status_result,
     suggest_first_map_test_world_max_side,
     summarize_project_first_map_status,
@@ -163,18 +166,32 @@ class ProjectFirstMapTests(unittest.TestCase):
             "first-map\\location\\review.html",
         )
         self.assertIn(
-            "project-location",
+            "first-map-refresh",
             manifest["guidance"]["actionPlan"]["nextActions"][0]["commandHint"],
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["nextActions"][1]["path"],
+            manifest["guidance"]["actionPlan"]["nextActions"][2]["path"],
             "first-map\\draft\\fixture-summary.json",
         )
         self.assertEqual(manifest["commands"]["presetCatalog"], "py -3.11 -m titanforge preset-catalog")
         self.assertEqual(manifest["commands"]["presetCatalogJson"], "py -3.11 -m titanforge preset-catalog --json")
-        self.assertIn("py -3.11 -m titanforge first-map", manifest["commands"]["rerunFirstMap"])
-        self.assertIn("--preset coastal-valley", manifest["commands"]["rerunFirstMap"])
+        self.assertEqual(
+            manifest["commands"]["refreshFirstMap"],
+            'py -3.11 -m titanforge first-map-refresh "first-world"',
+        )
+        self.assertEqual(
+            manifest["commands"]["resizeFirstMap"],
+            'py -3.11 -m titanforge first-map-resize "first-world" --width <blocks> --length <blocks>',
+        )
         self.assertIn("py -3.11 -m titanforge project-location", manifest["commands"]["rerunProjectLocation"])
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["recommendedCommand"],
+            'py -3.11 -m titanforge first-map-resize "first-world" --width <blocks> --length <blocks>',
+        )
+        self.assertEqual(
+            manifest["guidance"]["worldSizeEdits"]["examples"][0]["rerunCommand"],
+            'py -3.11 -m titanforge first-map-resize "first-world" --width 256 --length 192',
+        )
         self.assertEqual(manifest["commands"]["buildTestWorld"], 'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128')
         self.assertEqual(manifest["commands"]["testWorldStatus"], 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
         self.assertEqual(
@@ -282,9 +299,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Change size safely", root_review_html)
         self.assertIn("64 .. 32000", root_review_html)
         self.assertIn("Smaller test map", root_review_html)
+        self.assertIn("first-map-resize", root_review_html)
         self.assertIn("--width 16000 --length 12000", root_review_html)
         self.assertIn("Local district", root_review_html)
-        self.assertIn("Change <code>width</code> or <code>length</code>", root_review_html)
+        self.assertIn("Use <code>first-map-resize</code>", root_review_html)
         self.assertIn('href="first-map/location/review.html"', root_review_html)
         self.assertIn('href="first-map/draft/review.html"', root_review_html)
         self.assertIn('href="first-map/draft/route-preview.png"', root_review_html)
@@ -316,6 +334,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Preset story: A cinematic coast-to-mountain story space", summary)
         self.assertIn("Key regions: Harbor Town, Salt Coast, Old Pine Forest, +2 more", summary)
         self.assertIn("Scale bridge: 1 px = 8 blocks", summary)
+        self.assertIn('first-map-resize "first-world"', summary)
+        self.assertIn('first-map-refresh "first-world"', summary)
         self.assertIn("Open first: review.html", summary)
 
     def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
@@ -344,9 +364,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.size_edit_options[0].width, 256)
         self.assertEqual(result.size_edit_options[0].length, 192)
         self.assertEqual(result.size_edit_options[1].scale_label, "Local district")
-        self.assertIn('--width 16000 --length 12000', result.size_edit_options[-1].rerun_command)
+        self.assertIn('first-map-resize "status-world"', result.size_edit_options[-1].rerun_command)
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
+        self.assertIn(("refreshFirstMap", 'py -3.11 -m titanforge first-map-refresh "status-world"'), result.commands)
+        self.assertIn(("resizeFirstMap", 'py -3.11 -m titanforge first-map-resize "status-world" --width <blocks> --length <blocks>'), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
         self.assertEqual(result.route_plan_path, project_dir / "first-map" / "draft" / "route-plan.json")
@@ -367,9 +389,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(
             result.next_actions[0],
             (
-                "rerun-project-location",
-                "After editing the config, rerun project-location to refresh the first map outputs.",
-                'py -3.11 -m titanforge project-location "titanforge.toml" "first-map" --use-cleanup-for-heightmap',
+                "refresh-first-map",
+                "After editing the config, rerun first-map-refresh so the root handoff and first-map outputs stay in sync.",
+                'py -3.11 -m titanforge first-map-refresh "status-world"',
             ),
         )
         self.assertEqual(result.minecraft_review_order[0][0], "fixture-summary")
@@ -408,7 +430,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- edit titanforge.toml: width and length must stay between 64 and 32000 blocks.", summary)
         self.assertIn("- Smaller test map: 256 x 192", summary)
         self.assertIn("- Regional map: 8192 x 6144", summary)
-        self.assertIn("- rerun example: py -3.11 -m titanforge first-map", summary)
+        self.assertIn("- rerun example: py -3.11 -m titanforge first-map-resize", summary)
         self.assertIn("Review now:", summary)
         self.assertIn("Story routes:", summary)
         self.assertIn("- route-preview: first-map\\draft\\route-preview.png", summary)
@@ -419,6 +441,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("minecraft-test-world-harbor-town-arrival", summary)
         self.assertIn("full route sample pairs", summary)
         self.assertIn("If you need changes:", summary)
+        self.assertIn('first-map-refresh "status-world"', summary)
+        self.assertIn('first-map-resize "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
         self.assertIn("- recommended first manual-open:", summary)
@@ -512,6 +536,115 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("starter-test-verdict:", stdout.getvalue())
         self.assertIn("Command hints:", stdout.getvalue())
         self.assertIn("buildTestWorld", stdout.getvalue())
+
+    def test_refresh_project_first_map_rebuilds_existing_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "refresh-world"
+            write_project_first_map(
+                project_dir,
+                "Refresh World",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            config_path = project_dir / "titanforge.toml"
+            original_text = config_path.read_text(encoding="utf-8")
+            updated_text = original_text.replace("width = 1024", "width = 1536").replace("length = 768", "length = 1152")
+            config_path.write_text(updated_text, encoding="utf-8")
+
+            result = refresh_project_first_map(project_dir)
+            manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
+            bridge_manifest = json.loads((project_dir / "first-map" / "project-location-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(result.template_result.config.width, 1536)
+        self.assertEqual(result.template_result.config.length, 1152)
+        self.assertEqual(manifest["world"]["width"], 1536)
+        self.assertEqual(manifest["world"]["length"], 1152)
+        self.assertEqual(bridge_manifest["world"]["width"], 1536)
+        self.assertEqual(bridge_manifest["world"]["length"], 1152)
+
+    def test_resize_project_first_map_updates_config_and_refreshes_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "resize-world"
+            write_project_first_map(
+                project_dir,
+                "Resize World",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+
+            result = resize_project_first_map(project_dir, width=2048, length=1536)
+            manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
+            config = load_project_config(project_dir / "titanforge.toml")
+            summary = format_project_first_map_resize_result(result)
+
+        self.assertEqual(result.old_width, 1024)
+        self.assertEqual(result.old_length, 768)
+        self.assertEqual(result.new_width, 2048)
+        self.assertEqual(result.new_length, 1536)
+        self.assertEqual(config.width, 2048)
+        self.assertEqual(config.length, 1536)
+        self.assertEqual(manifest["world"]["width"], 2048)
+        self.assertEqual(manifest["world"]["length"], 1536)
+        self.assertIn("First-map resize:", summary)
+        self.assertIn("- old size: 1024 x 768", summary)
+        self.assertIn("- new size: 2048 x 1536", summary)
+
+    def test_first_map_refresh_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "refresh-cli"
+            write_project_first_map(
+                project_dir,
+                "Refresh CLI",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            config_path = project_dir / "titanforge.toml"
+            config_path.write_text(
+                config_path.read_text(encoding="utf-8").replace("width = 1024", "width = 1536").replace("length = 768", "length = 1152"),
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["first-map-refresh", str(project_dir)])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("First map:", stdout.getvalue())
+        self.assertIn("Logical world size: 1536 x 1152", stdout.getvalue())
+
+    def test_first_map_resize_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "resize-cli"
+            write_project_first_map(
+                project_dir,
+                "Resize CLI",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["first-map-resize", str(project_dir), "--width", "2048", "--length", "1536"])
+
+            config = load_project_config(project_dir / "titanforge.toml")
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(config.width, 2048)
+        self.assertEqual(config.length, 1536)
+        self.assertIn("First-map resize:", stdout.getvalue())
+        self.assertIn("- new size: 2048 x 1536", stdout.getvalue())
 
     def test_write_project_first_map_test_world_uses_manifest_config(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

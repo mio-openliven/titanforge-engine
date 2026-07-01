@@ -14,6 +14,7 @@ from titanforge.core.project_template import (
     PROJECT_TEMPLATE_MIN_SIDE,
     ProjectTemplateResult,
     describe_world_scale,
+    rewrite_project_template_world_size,
     write_project_template,
 )
 from titanforge.core.route_plan import build_route_plan
@@ -36,6 +37,17 @@ class ProjectFirstMapResult:
     max_draft_side: int
     template_result: ProjectTemplateResult
     location_result: ProjectLocationResult
+
+
+@dataclass(frozen=True)
+class ProjectFirstMapResizeResult:
+    project_dir: Path
+    config_path: Path
+    old_width: int
+    old_length: int
+    new_width: int
+    new_length: int
+    refreshed_result: ProjectFirstMapResult
 
 
 @dataclass(frozen=True)
@@ -350,12 +362,8 @@ def build_first_map_story_walkthrough(
 
 def build_first_map_size_options(
     project_dir: Path,
-    project_name: str,
-    preset_name: str,
     width: int,
     length: int,
-    *,
-    max_draft_side: int,
 ) -> tuple[ProjectFirstMapSizeOption, ...]:
     options: list[ProjectFirstMapSizeOption] = []
     seen_sizes: set[tuple[int, int]] = set()
@@ -380,9 +388,8 @@ def build_first_map_size_options(
                 scale_label=scale.label,
                 summary=scale.summary,
                 rerun_command=(
-                    f'py -3.11 -m titanforge first-map "{project_dir.name}" '
-                    f'--name "{project_name}" --width {option_width} --length {option_length} '
-                    f'--preset {preset_name} --max-draft-side {max_draft_side}'
+                    f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" '
+                    f'--width {option_width} --length {option_length}'
                 ),
             )
         )
@@ -506,43 +513,36 @@ def build_first_map_test_world_strategy(width: int, length: int) -> dict[str, ob
     }
 
 
-def write_project_first_map(
+def _read_first_map_refresh_settings(project_dir: Path) -> tuple[str, int, bool]:
+    manifest_path = project_dir / "first-map-manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Missing first-map manifest: {manifest_path}")
+
+    manifest = read_project_first_map_manifest(manifest_path)
+    project = dict(manifest.get("project", {}))
+    terrain = dict(manifest.get("terrain", {}))
+    draft_manifest_path = project_dir / "first-map" / "draft" / "draft-manifest.json"
+    max_draft_side = DEFAULT_MAX_DRAFT_SIDE
+    if draft_manifest_path.exists():
+        draft_manifest = json.loads(draft_manifest_path.read_text(encoding="utf-8"))
+        max_draft_side = int(dict(draft_manifest.get("raster", {})).get("maxDraftSide", DEFAULT_MAX_DRAFT_SIDE))
+    return (
+        str(project.get("preset", "unknown")),
+        max_draft_side,
+        bool(terrain.get("cleanupApplied", True)),
+    )
+
+
+def _finalize_project_first_map(
     project_dir: Path,
-    project_name: str | None,
-    width: int,
-    length: int,
-    preset_name: str,
     *,
-    target_version: str = "1.21.11",
-    max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE,
-    use_cleanup_for_heightmap: bool = True,
+    template_result: ProjectTemplateResult,
+    location_result: ProjectLocationResult,
+    max_draft_side: int,
+    use_cleanup_for_heightmap: bool,
 ) -> ProjectFirstMapResult:
     manifest_path = project_dir / "first-map-manifest.json"
     review_page_path = project_dir / "review.html"
-    suggested_output_dir = project_dir / "first-map"
-    if manifest_path.exists():
-        raise FileExistsError(f"First-map manifest already exists: {manifest_path}")
-    if review_page_path.exists():
-        raise FileExistsError(f"First-map review page already exists: {review_page_path}")
-    if suggested_output_dir.exists():
-        raise FileExistsError(f"First map output already exists: {suggested_output_dir}")
-
-    template_result = write_project_template(
-        project_dir,
-        project_name,
-        width,
-        length,
-        preset_name,
-        target_version=target_version,
-    )
-
-    location_result = write_project_location(
-        template_result.config,
-        template_result.suggested_output_dir,
-        max_draft_side=max_draft_side,
-        use_cleanup_for_heightmap=use_cleanup_for_heightmap,
-    )
-
     provisional_result = ProjectFirstMapResult(
         project_dir=project_dir,
         manifest_path=manifest_path,
@@ -581,11 +581,8 @@ def write_project_first_map(
     )
     size_options = build_first_map_size_options(
         project_dir,
-        template_result.config.name,
-        template_result.preset_name,
         template_result.config.width,
         template_result.config.length,
-        max_draft_side=max_draft_side,
     )
 
     manifest = {
@@ -619,6 +616,7 @@ def write_project_first_map(
                     "minBlocks": PROJECT_TEMPLATE_MIN_SIDE,
                     "maxBlocks": PROJECT_TEMPLATE_MAX_SIDE,
                 },
+                "recommendedCommand": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
                 "examples": [
                     {
                         "id": option.option_id,
@@ -681,17 +679,19 @@ def write_project_first_map(
                     {
                         "id": "project-config",
                         "path": template_result.config_path.name,
-                        "summary": "Edit this when world size, premise, or regions need another generation pass.",
+                        "summary": "Edit this when premise, regions, or other story settings need another generation pass.",
                     },
                 ],
                 "nextActions": [
                     {
-                        "id": "rerun-project-location",
-                        "summary": "After editing the config, rerun project-location to refresh the first map outputs.",
-                        "commandHint": (
-                            f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
-                            f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
-                        ),
+                        "id": "refresh-first-map",
+                        "summary": "After editing the config, rerun first-map-refresh so the root handoff and first-map outputs stay in sync.",
+                        "commandHint": f'py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
+                    },
+                    {
+                        "id": "resize-first-map",
+                        "summary": "Use first-map-resize when only width or length should change without hand-editing titanforge.toml.",
+                        "commandHint": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
                     },
                     {
                         "id": "inspect-fixture-summary",
@@ -704,12 +704,8 @@ def write_project_first_map(
         "commands": {
             "presetCatalog": "py -3.11 -m titanforge preset-catalog",
             "presetCatalogJson": "py -3.11 -m titanforge preset-catalog --json",
-            "rerunFirstMap": (
-                f'py -3.11 -m titanforge first-map "{project_dir.name}" '
-                f'--name "{template_result.config.name}" --width {template_result.config.width} '
-                f'--length {template_result.config.length} --preset {template_result.preset_name} '
-                f'--max-draft-side {max_draft_side}'
-            ),
+            "refreshFirstMap": f'py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
+            "resizeFirstMap": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
             "rerunProjectLocation": (
                 f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
@@ -810,14 +806,100 @@ def write_project_first_map(
         },
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return provisional_result
 
-    return ProjectFirstMapResult(
+
+def refresh_project_first_map(
+    project_dir: Path,
+    *,
+    max_draft_side: int | None = None,
+    use_cleanup_for_heightmap: bool | None = None,
+) -> ProjectFirstMapResult:
+    preset_name, stored_max_draft_side, stored_cleanup_flag = _read_first_map_refresh_settings(project_dir)
+    config_path = project_dir / "titanforge.toml"
+    config = load_project_config(config_path)
+    resolved_max_draft_side = stored_max_draft_side if max_draft_side is None else max_draft_side
+    resolved_cleanup = stored_cleanup_flag if use_cleanup_for_heightmap is None else use_cleanup_for_heightmap
+    location_result = write_project_location(
+        config,
+        project_dir / "first-map",
+        max_draft_side=resolved_max_draft_side,
+        use_cleanup_for_heightmap=resolved_cleanup,
+    )
+    template_result = ProjectTemplateResult(
         project_dir=project_dir,
-        manifest_path=manifest_path,
-        review_page_path=review_page_path,
-        max_draft_side=max_draft_side,
+        config_path=config_path,
+        suggested_output_dir=project_dir / "first-map",
+        preset_name=preset_name,
+        config=config,
+    )
+    return _finalize_project_first_map(
+        project_dir,
         template_result=template_result,
         location_result=location_result,
+        max_draft_side=resolved_max_draft_side,
+        use_cleanup_for_heightmap=resolved_cleanup,
+    )
+
+
+def resize_project_first_map(project_dir: Path, *, width: int, length: int) -> ProjectFirstMapResizeResult:
+    config_path = project_dir / "titanforge.toml"
+    current_config = load_project_config(config_path)
+    updated_config = rewrite_project_template_world_size(config_path, width, length)
+    refreshed_result = refresh_project_first_map(project_dir)
+    return ProjectFirstMapResizeResult(
+        project_dir=project_dir,
+        config_path=config_path,
+        old_width=current_config.width,
+        old_length=current_config.length,
+        new_width=updated_config.width,
+        new_length=updated_config.length,
+        refreshed_result=refreshed_result,
+    )
+
+
+def write_project_first_map(
+    project_dir: Path,
+    project_name: str | None,
+    width: int,
+    length: int,
+    preset_name: str,
+    *,
+    target_version: str = "1.21.11",
+    max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE,
+    use_cleanup_for_heightmap: bool = True,
+) -> ProjectFirstMapResult:
+    manifest_path = project_dir / "first-map-manifest.json"
+    review_page_path = project_dir / "review.html"
+    suggested_output_dir = project_dir / "first-map"
+    if manifest_path.exists():
+        raise FileExistsError(f"First-map manifest already exists: {manifest_path}")
+    if review_page_path.exists():
+        raise FileExistsError(f"First-map review page already exists: {review_page_path}")
+    if suggested_output_dir.exists():
+        raise FileExistsError(f"First map output already exists: {suggested_output_dir}")
+
+    template_result = write_project_template(
+        project_dir,
+        project_name,
+        width,
+        length,
+        preset_name,
+        target_version=target_version,
+    )
+
+    location_result = write_project_location(
+        template_result.config,
+        template_result.suggested_output_dir,
+        max_draft_side=max_draft_side,
+        use_cleanup_for_heightmap=use_cleanup_for_heightmap,
+    )
+    return _finalize_project_first_map(
+        project_dir,
+        template_result=template_result,
+        location_result=location_result,
+        max_draft_side=max_draft_side,
+        use_cleanup_for_heightmap=use_cleanup_for_heightmap,
     )
 
 
@@ -842,12 +924,28 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Key regions: {region_lineup}",
             f"Draft raster: {result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}",
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
-            "Change world size later: edit width and length in titanforge.toml, then rerun generation.",
+            f'Change world size later: py -3.11 -m titanforge first-map-resize "{result.project_dir.name}" --width <blocks> --length <blocks>',
             scale.planning_note,
+            f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
             f"Open first: {result.review_page_path.name}",
+        )
+    )
+
+
+def format_project_first_map_resize_result(result: ProjectFirstMapResizeResult) -> str:
+    return "\n".join(
+        (
+            f"First-map resize: {result.project_dir}",
+            f"- config: {result.config_path.name}",
+            f"- old size: {result.old_width} x {result.old_length}",
+            f"- new size: {result.new_width} x {result.new_length}",
+            f"- refreshed review: {result.refreshed_result.review_page_path.name}",
+            f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
+            f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",
+            f"Open first: {result.refreshed_result.review_page_path.name}",
         )
     )
 

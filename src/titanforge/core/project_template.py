@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from titanforge.core.project import ProjectConfig, ProjectRegion
+from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 
 PROJECT_TEMPLATE_MIN_SIDE = 64
 PROJECT_TEMPLATE_MAX_SIDE = 32000
@@ -294,6 +294,11 @@ def build_project_template_config(
     )
 
 
+def validate_project_world_size(width: int, length: int) -> None:
+    _validate_project_side("width", width)
+    _validate_project_side("length", length)
+
+
 def write_project_template(
     project_dir: Path,
     project_name: str | None,
@@ -324,6 +329,39 @@ def write_project_template(
         preset_name=preset_name,
         config=config,
     )
+
+
+def rewrite_project_template_world_size(config_path: Path, width: int, length: int) -> ProjectConfig:
+    validate_project_world_size(width, length)
+
+    original_text = config_path.read_text(encoding="utf-8")
+    lines = original_text.splitlines()
+    updated_lines: list[str] = []
+    in_world_block = False
+    width_updated = False
+    length_updated = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_world_block = stripped == "[world]"
+            updated_lines.append(line)
+            continue
+        if in_world_block and stripped.startswith("width"):
+            updated_lines.append(f"width = {width}")
+            width_updated = True
+            continue
+        if in_world_block and stripped.startswith("length"):
+            updated_lines.append(f"length = {length}")
+            length_updated = True
+            continue
+        updated_lines.append(line)
+
+    if not width_updated or not length_updated:
+        raise ProjectTemplateError(f"Could not update width/length in [world] block: {config_path}")
+
+    config_path.write_text("\n".join(updated_lines) + "\n", encoding="utf-8")
+    return load_project_config(config_path)
 
 
 def format_project_template_result(result: ProjectTemplateResult) -> str:

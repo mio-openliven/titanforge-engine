@@ -57,11 +57,8 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     )
     size_options = build_first_map_size_options(
         result.project_dir,
-        result.template_result.config.name,
-        result.template_result.preset_name,
         result.template_result.config.width,
         result.template_result.config.length,
-        max_draft_side=result.max_draft_side,
     )
     recommended_manual_start = build_first_map_recommended_manual_start(
         result.project_dir,
@@ -275,7 +272,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
       <div class="links">
         <article class="card">
           <h3>Logical world size</h3>
-          <p><code>{result.template_result.config.width} x {result.template_result.config.length}</code> is the intended Minecraft footprint in blocks. Change <code>width</code> or <code>length</code> in <code>titanforge.toml</code> when the story needs a bigger or smaller world.</p>
+          <p><code>{result.template_result.config.width} x {result.template_result.config.length}</code> is the intended Minecraft footprint in blocks. Use <code>first-map-resize</code> when the story needs a bigger or smaller world without hand-editing the config.</p>
         </article>
         <article class="card">
           <h3>Draft raster</h3>
@@ -291,7 +288,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         </article>
         <article class="card">
           <h3>Change size safely</h3>
-          <p>Edit <code>width</code> and <code>length</code> in <code>titanforge.toml</code>. TitanForge accepts <code>64 .. 32000</code> blocks on each side. Starter examples:<br><code>{size_options_preview}</code></p>
+          <p>Run <code>py -3.11 -m titanforge first-map-resize "{escape(result.project_dir.name)}" --width &lt;blocks&gt; --length &lt;blocks&gt;</code>. TitanForge accepts <code>64 .. 32000</code> blocks on each side. Starter examples:<br><code>{size_options_preview}</code></p>
         </article>
       </div>
     </section>
@@ -330,7 +327,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <div class="badge">3</div>
           <h3><a href="{escape(config_path.as_posix())}">titanforge.toml</a></h3>
-          <p>Edit this when the world brief, size, or story regions still need adjustment before another generation pass.</p>
+          <p>Edit this when the world brief or story regions still need adjustment, then run <code>py -3.11 -m titanforge first-map-refresh "{escape(result.project_dir.name)}"</code> to rebuild the handoff.</p>
         </article>
       </div>
     </section>

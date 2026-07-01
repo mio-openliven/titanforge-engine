@@ -9,7 +9,10 @@ import tomllib
 from titanforge import __version__
 from titanforge.core.project_first_map import (
     format_project_first_map_result,
+    format_project_first_map_resize_result,
     format_project_first_map_status_result,
+    refresh_project_first_map,
+    resize_project_first_map,
     summarize_project_first_map_status,
     write_project_first_map,
     write_project_first_map_test_world,
@@ -138,6 +141,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Read the current handoff status of an existing first-map project without rebuilding it.",
     )
     first_map_status_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_refresh_parser = subparsers.add_parser(
+        "first-map-refresh",
+        help="Refresh an existing first-map project after editing titanforge.toml.",
+    )
+    first_map_refresh_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_resize_parser = subparsers.add_parser(
+        "first-map-resize",
+        help="Change width and length for an existing first-map project and rebuild its first-map outputs.",
+    )
+    first_map_resize_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_resize_parser.add_argument("--width", type=int, required=True, help="New logical world width in blocks.")
+    first_map_resize_parser.add_argument("--length", type=int, required=True, help="New logical world length in blocks.")
     first_map_test_world_parser = subparsers.add_parser(
         "first-map-test-world",
         help="Write one experimental minimal test-world candidate directly from an existing first-map project.",
@@ -483,6 +498,20 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "first-map-status":
         result = summarize_project_first_map_status(args.project_dir)
         print(format_project_first_map_status_result(result))
+        return 0
+
+    if args.command == "first-map-refresh":
+        result = refresh_project_first_map(args.project_dir)
+        print(format_project_first_map_result(result))
+        return 0
+
+    if args.command == "first-map-resize":
+        result = resize_project_first_map(
+            args.project_dir,
+            width=args.width,
+            length=args.length,
+        )
+        print(format_project_first_map_resize_result(result))
         return 0
 
     if args.command == "first-map-test-world":

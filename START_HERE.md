@@ -89,6 +89,20 @@ previews\my-first-world\review.html
 
 That root page explains one important thing up front: it shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. It now also shows a few exact starter size examples and rerun commands, so changing from a small test map to a very large cinematic world does not require guessing. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
 
+If you change premise, regions, or other story text later inside `titanforge.toml`, rebuild the existing handoff with:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-refresh previews\my-first-world
+```
+
+If you only want another map size and do not want to edit TOML by hand, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-resize previews\my-first-world --width 8192 --length 6144
+```
+
 If you come back to that folder later and only need the current handoff again, do not rebuild it. Run:
 
 ```powershell
