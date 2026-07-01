@@ -64,9 +64,29 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         result.project_dir,
         recommended_max_side=int(test_world_strategy["recommendedMaxSide"]),
     )
+    refresh_command = f'py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"'
+    resize_command = (
+        f'py -3.11 -m titanforge first-map-resize "{result.project_dir.name}" '
+        "--width <blocks> --length <blocks>"
+    )
+    retheme_command = f'py -3.11 -m titanforge first-map-retheme "{result.project_dir.name}" --preset <preset-name>'
+    set_story_command = (
+        f'py -3.11 -m titanforge first-map-set-story "{result.project_dir.name}" '
+        '--premise "<story text>" --player-feeling "<player feeling>"'
+    )
+    set_regions_command = (
+        f'py -3.11 -m titanforge first-map-set-regions "{result.project_dir.name}" '
+        '--region "<title>|<kind>|<story role>|<mood>|<coverage>"'
+    )
+    first_map_status_command = f'py -3.11 -m titanforge first-map-status "{result.project_dir.name}"'
     build_test_world_command = (
         f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
         f'--max-side {test_world_strategy["recommendedMaxSide"]}'
+    )
+    grow_test_world_command = f'py -3.11 -m titanforge first-map-test-world-grow "{result.project_dir.name}"'
+    verify_test_world_command = (
+        f'py -3.11 -m titanforge first-map-test-world-verify "{result.project_dir.name}" '
+        "--check minecraft-open --check-status passed"
     )
     test_world_status_command = (
         f'py -3.11 -m titanforge first-map-test-world-status "{result.project_dir.name}" '
@@ -266,6 +286,32 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="stat">
           <p class="stat-label">Blocks per pixel</p>
           <p class="stat-value">{result.location_result.draft_result.blocks_per_pixel}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Quick Path</h2>
+      <div class="links">
+        <article class="card">
+          <div class="badge">1</div>
+          <h3>Set size first</h3>
+          <p>If the world should be smaller or larger, run <code>{escape(resize_command)}</code>. Safe planning range stays <code>64 .. 32000</code> blocks per side.</p>
+        </article>
+        <article class="card">
+          <div class="badge">2</div>
+          <h3>Shape the story</h3>
+          <p>Switch the starter theme with <code>{escape(retheme_command)}</code>, rewrite the premise with <code>{escape(set_story_command)}</code>, or replace the region lineup with <code>{escape(set_regions_command)}</code>.</p>
+        </article>
+        <article class="card">
+          <div class="badge">3</div>
+          <h3>Refresh and reread</h3>
+          <p>After edits, rebuild with <code>{escape(refresh_command)}</code>. If you only need the current handoff again, run <code>{escape(first_map_status_command)}</code>.</p>
+        </article>
+        <article class="card">
+          <div class="badge">4</div>
+          <h3>Try one Minecraft sample</h3>
+          <p>When the overview still feels right, run <code>{escape(build_test_world_command)}</code>, open <code>{escape(recommended_manual_start.checklist_path)}</code>, reread status with <code>{escape(test_world_status_command)}</code>, record the result with <code>{escape(verify_test_world_command)}</code>, and only then grow with <code>{escape(grow_test_world_command)}</code>.</p>
         </article>
       </div>
     </section>

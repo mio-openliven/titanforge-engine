@@ -87,7 +87,7 @@ Then open:
 previews\my-first-world\review.html
 ```
 
-That root page explains one important thing up front: it shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. It now also shows a few exact starter size examples and rerun commands, so changing from a small test map to a very large cinematic world does not require guessing. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
+That root page now starts with a short do-this-next path for scenario writers: set size, adjust story/theme/regions, refresh or reread the handoff, then try one safe Minecraft sample only after the overview still looks right. It also shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. It also shows a few exact starter size examples and rerun commands, so changing from a small test map to a very large cinematic world does not require guessing. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
 
 If you change premise, regions, or other story text later inside `titanforge.toml`, rebuild the existing handoff with:
 

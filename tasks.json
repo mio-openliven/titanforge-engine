@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-086",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add beginner action path to first-map root review",
+      "acceptance": [
+        "root first-map review.html shows a short do-this-next path for scenario writers instead of only reference sections",
+        "the page surfaces exact commands for changing size, changing story/theme/regions, re-reading handoff, and starting the first Minecraft sample",
+        "the new guidance stays derived from the current project folder and existing wrapper commands",
+        "tests cover the new root review action-path text and command hints"
+      ]
+    },
+    {
       "id": "TF-085",
       "status": "done",
       "priority": "P1",
