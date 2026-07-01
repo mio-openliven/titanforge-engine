@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-077` `P1` Surface multi-region sample scope in first-map handoff.
 - `TF-076` `P1` Expand donor-backed sampled test worlds beyond one region file.
 - `TF-075` `P1` Add beginner review order to location review page.
 - `TF-074` `P1` Add recommended first manual-open handoff.

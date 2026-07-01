@@ -382,6 +382,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <p>TitanForge recommends <code>--max-side {escape(str(test_world_strategy["recommendedMaxSide"]))}</code> here because {escape(str(test_world_strategy["reason"]))}</p>
         </article>
         <article class="card">
+          <h3>Sample file scope</h3>
+          <p>{escape(str(test_world_strategy["regionFileSummary"]))}</p>
+          <p>{escape(str(test_world_strategy["multiRegionSummary"]))}</p>
+        </article>
+        <article class="card">
           <h3>Anchor-focused shell starts</h3>
           <p>When the first shell should target a specific reveal point instead of the region default, reuse the anchor commands from <code>first-map-status</code>. Typical starts look like:<br><code>{focus_anchor_preview}</code></p>
         </article>

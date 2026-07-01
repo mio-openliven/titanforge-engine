@@ -235,6 +235,21 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["outputDir"], "minecraft-test-world")
         self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedMaxSide"], 128)
+        self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["recommendedRegionFileCount"], 1)
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["strategy"]["regionFileSummary"],
+            "The starter sample should write 1 sampled .mca file under test-world\\region\\.",
+        )
+        self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["firstMultiRegionMaxSide"], 1024)
+        self.assertEqual(manifest["minecraftHandoff"]["testWorld"]["strategy"]["firstMultiRegionRegionFileCount"], 4)
+        self.assertIn(
+            "--max-side 1024",
+            manifest["minecraftHandoff"]["testWorld"]["strategy"]["multiRegionSummary"],
+        )
+        self.assertIn(
+            "4 sampled .mca files",
+            manifest["minecraftHandoff"]["testWorld"]["strategy"]["multiRegionSummary"],
+        )
         self.assertEqual(
             manifest["minecraftHandoff"]["reviewOrder"][0]["id"],
             "fixture-summary",
@@ -283,6 +298,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("minecraft-test-world-harbor-town-center", root_review_html)
         self.assertIn("Recommended first manual-open path", root_review_html)
         self.assertIn("Why this sample size", root_review_html)
+        self.assertIn("Sample file scope", root_review_html)
+        self.assertIn("1 sampled .mca file under test-world\\region\\", root_review_html)
+        self.assertIn("--max-side 1024", root_review_html)
+        self.assertIn("4 sampled .mca files", root_review_html)
         self.assertIn("minecraft-test-world\\verification-checklist.txt", root_review_html)
         self.assertIn("Anchor-focused shell starts", root_review_html)
         self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
@@ -357,6 +376,15 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
         self.assertEqual(result.test_world_recommended_max_side, 128)
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
+        self.assertEqual(result.test_world_recommended_region_file_count, 1)
+        self.assertEqual(
+            result.test_world_region_file_summary,
+            "The starter sample should write 1 sampled .mca file under test-world\\region\\.",
+        )
+        self.assertEqual(result.test_world_first_multi_region_max_side, 1024)
+        self.assertEqual(result.test_world_first_multi_region_file_count, 4)
+        self.assertIn("--max-side 1024", result.test_world_multi_region_summary)
+        self.assertIn("4 sampled .mca files", result.test_world_multi_region_summary)
         self.assertIn("disposable centered sample", result.recommended_manual_start.summary)
         self.assertEqual(result.recommended_manual_start.install_extra_command, "py -3.11 -m pip install -e .[donor-spikes]")
         self.assertEqual(result.recommended_manual_start.build_command, 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128')
@@ -397,6 +425,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- summary: Start with one disposable centered sample before trying focused regions or larger manual-open passes.", summary)
         self.assertIn("- open next: minecraft-test-world\\verification-checklist.txt", summary)
         self.assertIn("sampled-test-strategy: start with --max-side 128", summary)
+        self.assertIn("- starter sample scope: The starter sample should write 1 sampled .mca file under test-world\\region\\.", summary)
+        self.assertIn("- growth scope: The first multi-file growth is --max-side 1024, which should write 4 sampled .mca files.", summary)
         self.assertIn("- focus samples:", summary)
         self.assertIn('--focus-region "Harbor Town"', summary)
         self.assertIn("folder: minecraft-test-world-harbor-town", summary)
@@ -711,3 +741,12 @@ class ProjectFirstMapTests(unittest.TestCase):
         strategy = build_first_map_test_world_strategy(2048, 1536)
         self.assertEqual(strategy["recommendedMaxSide"], 128)
         self.assertIn("128 x 128 sampled window", strategy["summary"])
+        self.assertEqual(strategy["recommendedRegionFileCount"], 1)
+        self.assertEqual(strategy["firstMultiRegionMaxSide"], 1024)
+        self.assertEqual(strategy["firstMultiRegionRegionFileCount"], 4)
+        self.assertIn("1 sampled .mca file", strategy["regionFileSummary"])
+        self.assertIn("4 sampled .mca files", strategy["multiRegionSummary"])
+        small_strategy = build_first_map_test_world_strategy(192, 128)
+        self.assertEqual(small_strategy["recommendedRegionFileCount"], 1)
+        self.assertIsNone(small_strategy["firstMultiRegionMaxSide"])
+        self.assertIn("one sampled .mca file", small_strategy["multiRegionSummary"])

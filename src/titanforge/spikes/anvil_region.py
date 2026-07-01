@@ -482,6 +482,12 @@ def _parse_region_file_name(file_name: str) -> tuple[int, int]:
     return int(stem_parts[1]), int(stem_parts[2])
 
 
+def count_sampled_region_files(sampled_width: int, sampled_length: int) -> int:
+    width_regions = max(1, (sampled_width + REGION_SIDE_BLOCKS - 1) // REGION_SIDE_BLOCKS)
+    length_regions = max(1, (sampled_length + REGION_SIDE_BLOCKS - 1) // REGION_SIDE_BLOCKS)
+    return width_regions * length_regions
+
+
 def _block_from_name(anvil_module: Any, block_name: str) -> Any:
     namespace, block_id, properties = _parse_block_state(block_name)
     return anvil_module.Block(namespace, block_id, properties)

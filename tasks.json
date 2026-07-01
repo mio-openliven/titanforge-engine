@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-077",
+      "status": "done",
+      "priority": "P1",
+      "title": "Surface multi-region sample scope in first-map handoff",
+      "acceptance": [
+        "first-map-manifest.json records how many sampled .mca files the recommended starter sample is expected to write",
+        "first-map-status and root review page explain when a starter or grown sample stays in one region file versus several files",
+        "the guidance stays derived from current size strategy instead of duplicated hard-coded prose",
+        "tests cover manifest, status, and review output for both single-region and multi-region sample guidance"
+      ]
+    },
+    {
       "id": "TF-076",
       "status": "done",
       "priority": "P1",

@@ -18,7 +18,7 @@ from titanforge.core.project_template import (
 )
 from titanforge.core.route_plan import build_route_plan
 from titanforge.core.world_plan import build_world_plan
-from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE
+from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE, MAX_SPIKE_SIDE, count_sampled_region_files
 from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil_test_world
 
 
@@ -101,6 +101,11 @@ class ProjectFirstMapStatusResult:
     test_world_recommended_max_side: int
     test_world_strategy_summary: str
     test_world_strategy_reason: str
+    test_world_recommended_region_file_count: int
+    test_world_region_file_summary: str
+    test_world_first_multi_region_max_side: int | None
+    test_world_first_multi_region_file_count: int | None
+    test_world_multi_region_summary: str
     recommended_manual_start: ProjectFirstMapRecommendedManualStart
     test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
@@ -416,6 +421,33 @@ def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     return MIN_FIRST_MAP_TEST_WORLD_SIDE
 
 
+def _align_chunk_side(side: int) -> int:
+    aligned = side - (side % 16)
+    return aligned if aligned >= 16 else 16
+
+
+def _format_sampled_region_file_count(region_file_count: int) -> str:
+    unit = "file" if region_file_count == 1 else "files"
+    return f"{region_file_count} sampled .mca {unit}"
+
+
+def _build_first_map_test_world_growth_sides(
+    width: int,
+    length: int,
+    recommended_max_side: int,
+) -> tuple[int, ...]:
+    logical_limit = min(MAX_SPIKE_SIDE, max(width, length))
+    logical_limit = _align_chunk_side(logical_limit)
+    sides = [_align_chunk_side(recommended_max_side)]
+    while True:
+        next_side = min(MAX_SPIKE_SIDE, sides[-1] * 2, logical_limit)
+        next_side = _align_chunk_side(next_side)
+        if next_side <= sides[-1]:
+            break
+        sides.append(next_side)
+    return tuple(sides)
+
+
 def build_first_map_test_world_strategy(width: int, length: int) -> dict[str, object]:
     recommended_max_side = suggest_first_map_test_world_max_side(width, length)
     logical_max_side = max(width, length)
@@ -431,10 +463,46 @@ def build_first_map_test_world_strategy(width: int, length: int) -> dict[str, ob
     else:
         summary = "Start with a 64 x 64 sampled window before trying larger manual Minecraft passes."
         reason = "This world is too large for a comfortable first manual Minecraft pass, so begin with a very small disposable slice."
+    sampled_width = min(width, recommended_max_side)
+    sampled_length = min(length, recommended_max_side)
+    recommended_region_file_count = count_sampled_region_files(sampled_width, sampled_length)
+    growth_sides = _build_first_map_test_world_growth_sides(width, length, recommended_max_side)
+    first_multi_region_max_side = next(
+        (
+            side
+            for side in growth_sides
+            if count_sampled_region_files(min(width, side), min(length, side)) > 1
+        ),
+        None,
+    )
+    first_multi_region_file_count = (
+        count_sampled_region_files(min(width, first_multi_region_max_side), min(length, first_multi_region_max_side))
+        if first_multi_region_max_side is not None
+        else None
+    )
+    region_file_summary = (
+        f"The starter sample should write {_format_sampled_region_file_count(recommended_region_file_count)} under test-world\\region\\."
+    )
+    if first_multi_region_max_side is None:
+        multi_region_summary = "Even the largest safe sampled growth here should stay inside one sampled .mca file."
+    elif first_multi_region_max_side == recommended_max_side:
+        multi_region_summary = (
+            f"This starter sample already spans {_format_sampled_region_file_count(recommended_region_file_count)}."
+        )
+    else:
+        multi_region_summary = (
+            f"The first multi-file growth is --max-side {first_multi_region_max_side}, which should write "
+            f"{_format_sampled_region_file_count(first_multi_region_file_count or 1)}."
+        )
     return {
         "recommendedMaxSide": recommended_max_side,
         "summary": summary,
         "reason": reason,
+        "recommendedRegionFileCount": recommended_region_file_count,
+        "regionFileSummary": region_file_summary,
+        "firstMultiRegionMaxSide": first_multi_region_max_side,
+        "firstMultiRegionRegionFileCount": first_multi_region_file_count,
+        "multiRegionSummary": multi_region_summary,
     }
 
 
@@ -961,6 +1029,19 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
         test_world_recommended_max_side=int(test_world_strategy.get("recommendedMaxSide", DEFAULT_SPIKE_MAX_SIDE)),
         test_world_strategy_summary=str(test_world_strategy.get("summary", "")),
         test_world_strategy_reason=str(test_world_strategy.get("reason", "")),
+        test_world_recommended_region_file_count=int(test_world_strategy.get("recommendedRegionFileCount", 1)),
+        test_world_region_file_summary=str(test_world_strategy.get("regionFileSummary", "")),
+        test_world_first_multi_region_max_side=(
+            int(test_world_strategy["firstMultiRegionMaxSide"])
+            if test_world_strategy.get("firstMultiRegionMaxSide") is not None
+            else None
+        ),
+        test_world_first_multi_region_file_count=(
+            int(test_world_strategy["firstMultiRegionRegionFileCount"])
+            if test_world_strategy.get("firstMultiRegionRegionFileCount") is not None
+            else None
+        ),
+        test_world_multi_region_summary=str(test_world_strategy.get("multiRegionSummary", "")),
         recommended_manual_start=ProjectFirstMapRecommendedManualStart(
             summary=str(recommended_manual_start_data.get("summary", "")),
             install_extra_command=str(recommended_manual_start_data.get("installExtraCommand", "")),
@@ -1097,6 +1178,10 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             )
         if result.test_world_strategy_reason:
             lines.append(f"- strategy reason: {result.test_world_strategy_reason}")
+        if result.test_world_region_file_summary:
+            lines.append(f"- starter sample scope: {result.test_world_region_file_summary}")
+        if result.test_world_multi_region_summary:
+            lines.append(f"- growth scope: {result.test_world_multi_region_summary}")
         if result.test_world_focus_commands:
             lines.append("- focus samples:")
             for region_title, command, output_dir, status_command in result.test_world_focus_commands:
