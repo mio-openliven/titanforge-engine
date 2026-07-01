@@ -110,6 +110,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-retheme previews\my-first-world --preset island-kingdom
 ```
 
+If the world structure is fine but the story text should change, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-set-story previews\my-first-world --premise "A sea-border kingdom where the capital hides what waits inland." --player-feeling "The player should feel welcome at first, then increasingly suspicious and small."
+```
+
 If you want your own custom region lineup without editing `[[regions]]` by hand, use:
 
 ```powershell

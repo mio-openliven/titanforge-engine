@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-081` `P1` Add first-map story maintenance command.
 - `TF-080` `P1` Add first-map region-lineup maintenance command.
 - `TF-079` `P1` Add first-map preset retheme maintenance command.
 - `TF-078` `P1` Add first-map refresh and resize maintenance commands.

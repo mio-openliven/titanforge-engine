@@ -385,6 +385,29 @@ def rewrite_project_template_preset(config_path: Path, preset_name: str) -> Proj
     return refreshed_config
 
 
+def rewrite_project_template_story(config_path: Path, *, premise: str, player_experience: str) -> ProjectConfig:
+    cleaned_premise = premise.strip()
+    cleaned_player_experience = player_experience.strip()
+    if not cleaned_premise:
+        raise ProjectTemplateError("Premise must not be empty.")
+    if not cleaned_player_experience:
+        raise ProjectTemplateError("Player feeling must not be empty.")
+
+    current_config = load_project_config(config_path)
+    refreshed_config = ProjectConfig(
+        name=current_config.name,
+        target_version=current_config.target_version,
+        width=current_config.width,
+        length=current_config.length,
+        premise=cleaned_premise,
+        player_experience=cleaned_player_experience,
+        regions=current_config.regions,
+        pipeline=current_config.pipeline or DEFAULT_TEMPLATE_PIPELINE,
+    )
+    config_path.write_text(render_project_template_toml(refreshed_config), encoding="utf-8")
+    return refreshed_config
+
+
 def parse_project_region_spec(spec: str) -> ProjectRegion:
     parts = [part.strip() for part in spec.split("|")]
     if len(parts) not in (5, 6):

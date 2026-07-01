@@ -9,11 +9,13 @@ import tomllib
 from titanforge import __version__
 from titanforge.core.project_first_map import (
     format_project_first_map_result,
+    format_project_first_map_story_result,
     format_project_first_map_regions_result,
     format_project_first_map_resize_result,
     format_project_first_map_retheme_result,
     format_project_first_map_status_result,
     refresh_project_first_map,
+    set_project_first_map_story,
     replace_project_first_map_regions,
     retheme_project_first_map,
     resize_project_first_map,
@@ -167,6 +169,21 @@ def build_parser() -> argparse.ArgumentParser:
         choices=list_project_template_presets(),
         required=True,
         help="Starter preset that should replace the current story and region lineup.",
+    )
+    first_map_set_story_parser = subparsers.add_parser(
+        "first-map-set-story",
+        help="Replace the premise and player feeling of an existing first-map project and rebuild its first-map outputs.",
+    )
+    first_map_set_story_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_set_story_parser.add_argument(
+        "--premise",
+        required=True,
+        help="New story premise shown in reviews and manifests.",
+    )
+    first_map_set_story_parser.add_argument(
+        "--player-feeling",
+        required=True,
+        help="New player-facing feeling or emotional brief.",
     )
     first_map_set_regions_parser = subparsers.add_parser(
         "first-map-set-regions",
@@ -546,6 +563,15 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             preset_name=args.preset,
         )
         print(format_project_first_map_retheme_result(result))
+        return 0
+
+    if args.command == "first-map-set-story":
+        result = set_project_first_map_story(
+            args.project_dir,
+            premise=args.premise,
+            player_feeling=args.player_feeling,
+        )
+        print(format_project_first_map_story_result(result))
         return 0
 
     if args.command == "first-map-set-regions":

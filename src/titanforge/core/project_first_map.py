@@ -15,6 +15,7 @@ from titanforge.core.project_template import (
     ProjectTemplateResult,
     describe_world_scale,
     rewrite_project_template_preset,
+    rewrite_project_template_story,
     rewrite_project_template_regions,
     rewrite_project_template_world_size,
     write_project_template,
@@ -58,6 +59,17 @@ class ProjectFirstMapRethemeResult:
     config_path: Path
     old_preset_name: str
     new_preset_name: str
+    refreshed_result: ProjectFirstMapResult
+
+
+@dataclass(frozen=True)
+class ProjectFirstMapStoryResult:
+    project_dir: Path
+    config_path: Path
+    old_premise: str
+    old_player_feeling: str
+    new_premise: str
+    new_player_feeling: str
     refreshed_result: ProjectFirstMapResult
 
 
@@ -719,6 +731,14 @@ def _finalize_project_first_map(
                         "commandHint": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
                     },
                     {
+                        "id": "set-story-first-map",
+                        "summary": "Use first-map-set-story when the premise or player feeling should change without hand-editing [creative] in TOML.",
+                        "commandHint": (
+                            f'py -3.11 -m titanforge first-map-set-story "{project_dir.name}" '
+                            '--premise "<story text>" --player-feeling "<player feeling>"'
+                        ),
+                    },
+                    {
                         "id": "set-regions-first-map",
                         "summary": "Use first-map-set-regions when the map needs a custom region lineup without hand-editing [[regions]] in TOML.",
                         "commandHint": f'py -3.11 -m titanforge first-map-set-regions "{project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
@@ -737,6 +757,10 @@ def _finalize_project_first_map(
             "refreshFirstMap": f'py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
             "resizeFirstMap": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
             "rethemeFirstMap": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
+            "setStoryFirstMap": (
+                f'py -3.11 -m titanforge first-map-set-story "{project_dir.name}" '
+                '--premise "<story text>" --player-feeling "<player feeling>"'
+            ),
             "setRegionsFirstMap": f'py -3.11 -m titanforge first-map-set-regions "{project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             "rerunProjectLocation": (
                 f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
@@ -906,6 +930,31 @@ def retheme_project_first_map(project_dir: Path, *, preset_name: str) -> Project
     )
 
 
+def set_project_first_map_story(
+    project_dir: Path,
+    *,
+    premise: str,
+    player_feeling: str,
+) -> ProjectFirstMapStoryResult:
+    config_path = project_dir / "titanforge.toml"
+    current_config = load_project_config(config_path)
+    updated_config = rewrite_project_template_story(
+        config_path,
+        premise=premise,
+        player_experience=player_feeling,
+    )
+    refreshed_result = refresh_project_first_map(project_dir)
+    return ProjectFirstMapStoryResult(
+        project_dir=project_dir,
+        config_path=config_path,
+        old_premise=current_config.premise,
+        old_player_feeling=current_config.player_experience,
+        new_premise=updated_config.premise,
+        new_player_feeling=updated_config.player_experience,
+        refreshed_result=refreshed_result,
+    )
+
+
 def replace_project_first_map_regions(project_dir: Path, *, region_specs: tuple[str, ...]) -> ProjectFirstMapRegionsResult:
     config_path = project_dir / "titanforge.toml"
     current_config = load_project_config(config_path)
@@ -988,6 +1037,10 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             f'Change world size later: py -3.11 -m titanforge first-map-resize "{result.project_dir.name}" --width <blocks> --length <blocks>',
             f'Switch starter preset later: py -3.11 -m titanforge first-map-retheme "{result.project_dir.name}" --preset <preset-name>',
+            (
+                f'Change story later: py -3.11 -m titanforge first-map-set-story "{result.project_dir.name}" '
+                '--premise "<story text>" --player-feeling "<player feeling>"'
+            ),
             f'Set custom regions later: py -3.11 -m titanforge first-map-set-regions "{result.project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             scale.planning_note,
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
@@ -1021,6 +1074,23 @@ def format_project_first_map_retheme_result(result: ProjectFirstMapRethemeResult
             f"- config: {result.config_path.name}",
             f"- old preset: {result.old_preset_name}",
             f"- new preset: {result.new_preset_name}",
+            f"- refreshed review: {result.refreshed_result.review_page_path.name}",
+            f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
+            f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",
+            f"Open first: {result.refreshed_result.review_page_path.name}",
+        )
+    )
+
+
+def format_project_first_map_story_result(result: ProjectFirstMapStoryResult) -> str:
+    return "\n".join(
+        (
+            f"First-map story: {result.project_dir}",
+            f"- config: {result.config_path.name}",
+            f"- old premise: {result.old_premise}",
+            f"- new premise: {result.new_premise}",
+            f"- old player feeling: {result.old_player_feeling}",
+            f"- new player feeling: {result.new_player_feeling}",
             f"- refreshed review: {result.refreshed_result.review_page_path.name}",
             f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
             f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",

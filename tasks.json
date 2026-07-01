@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-081",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map story maintenance command",
+      "acceptance": [
+        "CLI can replace the premise and player feeling of an existing first-map project without asking the user to hand-edit [creative] in TOML",
+        "the story replacement refreshes the current first-map outputs in one safe pass",
+        "first-map handoff guidance surfaces the story maintenance command alongside refresh, resize, retheme, and region-lineup maintenance",
+        "tests cover the story replacement writer, CLI entry point, and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-080",
       "status": "done",
       "priority": "P1",

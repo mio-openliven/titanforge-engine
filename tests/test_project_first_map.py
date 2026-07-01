@@ -12,11 +12,13 @@ from titanforge.cli import main
 from titanforge.core.project import load_project_config
 from titanforge.core.project_first_map import (
     build_first_map_test_world_strategy,
+    format_project_first_map_story_result,
     format_project_first_map_regions_result,
     format_project_first_map_result,
     format_project_first_map_resize_result,
     format_project_first_map_retheme_result,
     refresh_project_first_map,
+    set_project_first_map_story,
     replace_project_first_map_regions,
     retheme_project_first_map,
     resize_project_first_map,
@@ -174,7 +176,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["actionPlan"]["nextActions"][0]["commandHint"],
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["nextActions"][4]["path"],
+            manifest["guidance"]["actionPlan"]["nextActions"][5]["path"],
             "first-map\\draft\\fixture-summary.json",
         )
         self.assertEqual(manifest["commands"]["presetCatalog"], "py -3.11 -m titanforge preset-catalog")
@@ -190,6 +192,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(
             manifest["commands"]["rethemeFirstMap"],
             'py -3.11 -m titanforge first-map-retheme "first-world" --preset <preset-name>',
+        )
+        self.assertEqual(
+            manifest["commands"]["setStoryFirstMap"],
+            'py -3.11 -m titanforge first-map-set-story "first-world" --premise "<story text>" --player-feeling "<player feeling>"',
         )
         self.assertEqual(
             manifest["commands"]["setRegionsFirstMap"],
@@ -313,6 +319,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Smaller test map", root_review_html)
         self.assertIn("first-map-resize", root_review_html)
         self.assertIn("first-map-retheme", root_review_html)
+        self.assertIn("first-map-set-story", root_review_html)
         self.assertIn("first-map-set-regions", root_review_html)
         self.assertIn("--width 16000 --length 12000", root_review_html)
         self.assertIn("Local district", root_review_html)
@@ -351,6 +358,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-resize "first-world"', summary)
         self.assertIn('first-map-refresh "first-world"', summary)
         self.assertIn('first-map-retheme "first-world"', summary)
+        self.assertIn('first-map-set-story "first-world"', summary)
         self.assertIn('first-map-set-regions "first-world"', summary)
         self.assertIn("Open first: review.html", summary)
 
@@ -386,6 +394,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn(("refreshFirstMap", 'py -3.11 -m titanforge first-map-refresh "status-world"'), result.commands)
         self.assertIn(("resizeFirstMap", 'py -3.11 -m titanforge first-map-resize "status-world" --width <blocks> --length <blocks>'), result.commands)
         self.assertIn(("rethemeFirstMap", 'py -3.11 -m titanforge first-map-retheme "status-world" --preset <preset-name>'), result.commands)
+        self.assertIn(("setStoryFirstMap", 'py -3.11 -m titanforge first-map-set-story "status-world" --premise "<story text>" --player-feeling "<player feeling>"'), result.commands)
         self.assertIn(("setRegionsFirstMap", 'py -3.11 -m titanforge first-map-set-regions "status-world" --region "<title>|<kind>|<story role>|<mood>|<coverage>"'), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
@@ -422,6 +431,14 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(
             result.next_actions[3],
+            (
+                "set-story-first-map",
+                "Use first-map-set-story when the premise or player feeling should change without hand-editing [creative] in TOML.",
+                'py -3.11 -m titanforge first-map-set-story "status-world" --premise "<story text>" --player-feeling "<player feeling>"',
+            ),
+        )
+        self.assertEqual(
+            result.next_actions[4],
             (
                 "set-regions-first-map",
                 "Use first-map-set-regions when the map needs a custom region lineup without hand-editing [[regions]] in TOML.",
@@ -478,6 +495,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-refresh "status-world"', summary)
         self.assertIn('first-map-resize "status-world"', summary)
         self.assertIn('first-map-retheme "status-world"', summary)
+        self.assertIn('first-map-set-story "status-world"', summary)
         self.assertIn('first-map-set-regions "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
@@ -693,6 +711,47 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- old region count: 5", summary)
         self.assertIn("- new region count: 3", summary)
 
+    def test_set_project_first_map_story_updates_config_and_refreshes_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "story-world"
+            write_project_first_map(
+                project_dir,
+                "Story World",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+
+            result = set_project_first_map_story(
+                project_dir,
+                premise="A sea-border kingdom where the capital hides what waits inland.",
+                player_feeling="The player should feel welcome at first, then increasingly suspicious and small.",
+            )
+            manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
+            config = load_project_config(project_dir / "titanforge.toml")
+            summary = format_project_first_map_story_result(result)
+
+        self.assertIn("frontier survival story", result.old_premise)
+        self.assertIn("civilization is trying to hold the land together", result.old_player_feeling)
+        self.assertEqual(config.premise, "A sea-border kingdom where the capital hides what waits inland.")
+        self.assertEqual(
+            config.player_experience,
+            "The player should feel welcome at first, then increasingly suspicious and small.",
+        )
+        self.assertEqual(
+            manifest["guidance"]["preset"]["story"],
+            "A sea-border kingdom where the capital hides what waits inland.",
+        )
+        self.assertEqual(
+            manifest["guidance"]["preset"]["playerFeeling"],
+            "The player should feel welcome at first, then increasingly suspicious and small.",
+        )
+        self.assertIn("First-map story:", summary)
+        self.assertIn("- new premise: A sea-border kingdom where the capital hides what waits inland.", summary)
+        self.assertIn("- new player feeling: The player should feel welcome at first, then increasingly suspicious and small.", summary)
+
     def test_first_map_refresh_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project_dir = Path(directory) / "refresh-cli"
@@ -803,6 +862,43 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(config.regions[0].title, "Port Meridian")
         self.assertIn("First-map regions:", stdout.getvalue())
         self.assertIn("- new region count: 3", stdout.getvalue())
+
+    def test_first_map_set_story_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "story-cli"
+            write_project_first_map(
+                project_dir,
+                "Story CLI",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "first-map-set-story",
+                        str(project_dir),
+                        "--premise",
+                        "A sea-border kingdom where the capital hides what waits inland.",
+                        "--player-feeling",
+                        "The player should feel welcome at first, then increasingly suspicious and small.",
+                    ]
+                )
+
+            config = load_project_config(project_dir / "titanforge.toml")
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(config.premise, "A sea-border kingdom where the capital hides what waits inland.")
+        self.assertEqual(
+            config.player_experience,
+            "The player should feel welcome at first, then increasingly suspicious and small.",
+        )
+        self.assertIn("First-map story:", stdout.getvalue())
+        self.assertIn("- new premise: A sea-border kingdom where the capital hides what waits inland.", stdout.getvalue())
 
     def test_write_project_first_map_test_world_uses_manifest_config(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
