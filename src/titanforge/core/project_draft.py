@@ -103,7 +103,13 @@ class ProjectDraftResult:
     warnings: tuple[str, ...]
 
 
-def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE) -> ProjectDraftResult:
+def write_project_draft(
+    config: ProjectConfig,
+    output_dir: Path,
+    *,
+    max_draft_side: int = DEFAULT_MAX_DRAFT_SIDE,
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
+) -> ProjectDraftResult:
     if not MIN_DRAFT_SIDE <= max_draft_side <= MAX_DRAFT_SIDE:
         raise ValueError(
             f"max_draft_side must be between {MIN_DRAFT_SIDE} and {MAX_DRAFT_SIDE}, got {max_draft_side}."
@@ -139,7 +145,7 @@ def write_project_draft(config: ProjectConfig, output_dir: Path, *, max_draft_si
     manifest_path = output_dir / "draft-manifest.json"
 
     world_plan = build_world_plan(config)
-    write_project_review_page(config, review_page_path)
+    write_project_review_page(config, review_page_path, project_root_artifacts=project_root_artifacts)
     write_world_plan(config, world_plan_path)
     transition_plan = build_transition_plan(world_plan)
     route_plan = build_route_plan(world_plan)

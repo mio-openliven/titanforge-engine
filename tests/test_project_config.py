@@ -49,6 +49,7 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertIn("fixture-summary.json", html)
         self.assertIn("fixture-commands.txt", html)
         self.assertIn("datapack-fixture.zip", html)
+        self.assertNotIn("Project Root Shortcuts", html)
 
     def test_build_world_plan_assigns_region_bounds(self) -> None:
         config = load_project_config(Path("examples/tiny_project/titanforge.toml"))

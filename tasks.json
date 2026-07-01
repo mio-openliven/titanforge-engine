@@ -3,6 +3,17 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-093",
+      "status": "done",
+      "priority": "P1",
+      "title": "Link root handoff from draft review",
+      "acceptance": [
+        "first-map draft/review.html points directly to root review and root minecraft handoff artifacts when they exist",
+        "project-location forwards those root shortcuts into the draft review layer for first-map output",
+        "plain project-review and project-draft output stay unchanged when no root shortcuts exist"
+      ]
+    },
+    {
       "id": "TF-092",
       "status": "done",
       "priority": "P1",

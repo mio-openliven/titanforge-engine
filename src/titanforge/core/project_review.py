@@ -6,20 +6,52 @@ from pathlib import Path
 from titanforge.core.project import ProjectConfig, ProjectRegion
 
 
-def write_project_review_page(config: ProjectConfig, output_path: Path) -> Path:
+def write_project_review_page(
+    config: ProjectConfig,
+    output_path: Path,
+    *,
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
+) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    html = _format_project_review_html(config)
+    html = _format_project_review_html(config, project_root_artifacts=project_root_artifacts)
     output_path.write_text(html, encoding="utf-8")
     return output_path
 
 
-def _format_project_review_html(config: ProjectConfig) -> str:
+def _format_project_review_html(
+    config: ProjectConfig,
+    *,
+    project_root_artifacts: tuple[tuple[str, str], ...] = (),
+) -> str:
     region_cards = "\n".join(_format_region_card(region) for region in config.regions) or """
       <article class="card muted-card">
         <h3>No regions yet</h3>
         <p>Add <code>[[regions]]</code> blocks to the project file so this world starts feeling like a real place.</p>
       </article>
     """
+    project_root_artifact_map = {label: path for label, path in project_root_artifacts}
+    root_review_path = project_root_artifact_map.get("review.html")
+    root_review_step = ""
+    if root_review_path:
+        root_review_step = (
+            f'<li>If this draft came from <code>first-map</code>, open '
+            f'<a href="{escape(root_review_path)}">review.html</a> for the root size, story, preset, and refresh handoff.</li>'
+        )
+    root_shortcuts_html = ""
+    if project_root_artifacts:
+        shortcut_items = "\n".join(
+            f'            <li><a href="{escape(path)}">{escape(label)}</a></li>'
+            for label, path in project_root_artifacts
+        )
+        root_shortcuts_html = f"""
+    <section class="panel">
+      <h2>Project Root Shortcuts</h2>
+      <p>Open these when this draft belongs to a bigger first-map project and you want the root scenario-writer handoff instead of only the draft brief.</p>
+      <ul>
+{shortcut_items}
+      </ul>
+    </section>
+"""
 
     return f"""<!doctype html>
 <html lang="en">
@@ -188,9 +220,12 @@ def _format_project_review_html(config: ProjectConfig) -> str:
         <li>Edit <code>titanforge.toml</code> with the world size, premise, and region list.</li>
         <li>Open this page to review whether the world concept already feels like a place with a story.</li>
         <li>Run <code>py -3.11 -m titanforge project-draft path\to\titanforge.toml out\my-world</code> to get the first draft pack.</li>
+        {root_review_step}
         <li>Large worlds are scaled into a smaller draft mask on purpose, so planning stays readable before later terrain and export passes.</li>
       </ul>
     </section>
+
+{root_shortcuts_html}
 
     <section class="panel">
       <h2>What To Open After Project-Draft</h2>

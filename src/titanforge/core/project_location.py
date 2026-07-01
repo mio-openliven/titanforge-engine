@@ -38,7 +38,12 @@ def write_project_location(
     location_dir = output_dir / "location"
     manifest_path = output_dir / "project-location-manifest.json"
 
-    draft_result = write_project_draft(config, draft_dir, max_draft_side=max_draft_side)
+    draft_result = write_project_draft(
+        config,
+        draft_dir,
+        max_draft_side=max_draft_side,
+        project_root_artifacts=project_root_artifacts,
+    )
     fixture_summary = json.loads(draft_result.fixture_summary_path.read_text(encoding="utf-8"))
     fixture_commands = tuple(
         line for line in draft_result.fixture_commands_path.read_text(encoding="utf-8").splitlines() if line.strip()
