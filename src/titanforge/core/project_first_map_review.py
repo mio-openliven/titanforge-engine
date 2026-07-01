@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from html import escape
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -30,8 +31,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
     manifest_path = result.manifest_path.relative_to(project_dir)
     test_world_dir = Path("minecraft-test-world")
+    fixture_summary_data = json.loads(result.location_result.draft_result.fixture_summary_path.read_text(encoding="utf-8"))
+    fixture_starter_test = dict(fixture_summary_data.get("starterTest", {}))
     from titanforge.core.project_first_map import build_first_map_test_world_strategy
     from titanforge.core.project_first_map import build_first_map_focus_anchor_commands
+    from titanforge.core.project_first_map import build_first_map_datapack_start
     from titanforge.core.project_first_map import build_first_map_route_handoffs
     from titanforge.core.project_first_map import build_first_map_story_walkthrough
     from titanforge.core.project_first_map import build_first_map_size_options
@@ -63,6 +67,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     recommended_manual_start = build_first_map_recommended_manual_start(
         result.project_dir,
         recommended_max_side=int(test_world_strategy["recommendedMaxSide"]),
+    )
+    datapack_start = build_first_map_datapack_start(
+        result.project_dir,
+        datapack_zip_path=result.location_result.draft_result.datapack_fixture_zip_path,
+        fixture_summary_path=result.location_result.draft_result.fixture_summary_path,
     )
     refresh_command = f'py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"'
     resize_command = (
@@ -429,6 +438,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         <article class="card">
           <h3><a href="{escape(datapack_zip.as_posix())}">datapack-fixture.zip</a></h3>
           <p>Use this only after the summary looks safe and the draft still matches the story you wanted.</p>
+        </article>
+        <article class="card">
+          <h3>First in-world datapack pass</h3>
+          <p>{escape(datapack_start.summary)} Starter verdict: <strong>{escape(str(fixture_starter_test.get("verdict", "unknown")))}</strong>.</p>
+          <p>Copy <code>{escape(datapack_start.datapack_zip_path)}</code> into a throwaway world <code>datapacks</code> folder, then run <code>{escape(datapack_start.reload_command)}</code>, <code>{escape(datapack_start.place_command)}</code>, and later <code>{escape(datapack_start.clear_command)}</code>.</p>
         </article>
         <article class="card">
           <h3>Recommended first manual-open path</h3>

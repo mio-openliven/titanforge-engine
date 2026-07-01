@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-087` `P1` Add first in-world datapack handoff to first-map workflow.
 - `TF-086` `P1` Add beginner action path to first-map root review.
 - `TF-085` `P1` Remove low-level test-world commands from first-map handoff.
 - `TF-084` `P1` Add first-map test-world status and verify wrappers.

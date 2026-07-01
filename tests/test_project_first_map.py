@@ -254,6 +254,26 @@ class ProjectFirstMapTests(unittest.TestCase):
             "minecraft-test-world",
         )
         self.assertEqual(
+            manifest["minecraftHandoff"]["datapackStart"]["datapackZipPath"],
+            "first-map\\draft\\datapack-fixture.zip",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["datapackStart"]["reloadCommand"],
+            "/reload",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["datapackStart"]["placeCommand"],
+            "/function titanforge:place_fixture",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["datapackStart"]["clearCommand"],
+            "/function titanforge:clear_fixture",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["datapackStart"]["starterVerdict"],
+            "caution",
+        )
+        self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["recommendedStart"]["checklistPath"],
             "minecraft-test-world\\verification-checklist.txt",
         )
@@ -355,6 +375,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("region-00", root_review_html)
         self.assertIn("minecraft-test-world-harbor-town-center", root_review_html)
         self.assertIn("Recommended first manual-open path", root_review_html)
+        self.assertIn("First in-world datapack pass", root_review_html)
+        self.assertIn("/reload", root_review_html)
+        self.assertIn("/function titanforge:place_fixture", root_review_html)
+        self.assertIn("/function titanforge:clear_fixture", root_review_html)
         self.assertIn("Why this sample size", root_review_html)
         self.assertIn("Sample file scope", root_review_html)
         self.assertIn("1 sampled .mca file under test-world\\region\\", root_review_html)
@@ -510,6 +534,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
+        self.assertEqual(result.datapack_start.datapack_zip_path, "first-map\\draft\\datapack-fixture.zip")
+        self.assertEqual(result.datapack_start.reload_command, "/reload")
+        self.assertEqual(result.datapack_start.place_command, "/function titanforge:place_fixture")
+        self.assertEqual(result.datapack_start.clear_command, "/function titanforge:clear_fixture")
+        self.assertEqual(result.datapack_start.starter_verdict, "caution")
         self.assertIn("- location review: first-map\\location\\review.html", summary)
         self.assertIn("Preset intent:", summary)
         self.assertIn("Size guidance:", summary)
@@ -538,6 +567,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-test-world-verify "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
+        self.assertIn("- first in-world datapack pass:", summary)
+        self.assertIn("- copy zip into world datapacks: first-map\\draft\\datapack-fixture.zip", summary)
+        self.assertIn("- then run in Minecraft: /reload", summary)
+        self.assertIn("- place fixture: /function titanforge:place_fixture", summary)
+        self.assertIn("- clear fixture: /function titanforge:clear_fixture", summary)
         self.assertIn("- recommended first manual-open:", summary)
         self.assertIn("- summary: Start with one disposable centered sample before trying focused regions or larger manual-open passes.", summary)
         self.assertIn("- open next: minecraft-test-world\\verification-checklist.txt", summary)

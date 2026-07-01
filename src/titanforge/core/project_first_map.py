@@ -136,6 +136,16 @@ class ProjectFirstMapRecommendedManualStart:
 
 
 @dataclass(frozen=True)
+class ProjectFirstMapDatapackStart:
+    summary: str
+    datapack_zip_path: str
+    reload_command: str
+    place_command: str
+    clear_command: str
+    starter_verdict: str
+
+
+@dataclass(frozen=True)
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
@@ -159,6 +169,7 @@ class ProjectFirstMapStatusResult:
     test_world_first_multi_region_max_side: int | None
     test_world_first_multi_region_file_count: int | None
     test_world_multi_region_summary: str
+    datapack_start: ProjectFirstMapDatapackStart
     recommended_manual_start: ProjectFirstMapRecommendedManualStart
     test_world_focus_commands: tuple[tuple[str, str, str, str], ...]
     test_world_focus_anchor_commands: tuple[tuple[str, str, str, str], ...]
@@ -465,6 +476,32 @@ def build_first_map_recommended_manual_start(
     )
 
 
+def build_first_map_datapack_start(
+    project_dir: Path,
+    *,
+    datapack_zip_path: Path,
+    fixture_summary_path: Path,
+) -> ProjectFirstMapDatapackStart:
+    summary = json.loads(fixture_summary_path.read_text(encoding="utf-8"))
+    function_ids = dict(summary.get("functionIds", {}))
+    starter_test = dict(summary.get("starterTest", {}))
+    place_function_id = str(function_ids.get("place", "titanforge:place_fixture"))
+    clear_function_id = str(function_ids.get("clear", "titanforge:clear_fixture"))
+    starter_verdict = str(starter_test.get("verdict", "unknown"))
+    datapack_relative_path = str(datapack_zip_path.relative_to(project_dir))
+    return ProjectFirstMapDatapackStart(
+        summary=(
+            "For the first world-side Minecraft 1.21.11 pass, copy the datapack zip into a backed-up throwaway "
+            "world datapacks folder, run /reload, then place the fixture once."
+        ),
+        datapack_zip_path=datapack_relative_path,
+        reload_command="/reload",
+        place_command=f"/function {place_function_id}",
+        clear_command=f"/function {clear_function_id}",
+        starter_verdict=starter_verdict,
+    )
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -626,6 +663,11 @@ def _finalize_project_first_map(
     recommended_manual_start = build_first_map_recommended_manual_start(
         project_dir,
         recommended_max_side=int(test_world_strategy["recommendedMaxSide"]),
+    )
+    datapack_start = build_first_map_datapack_start(
+        project_dir,
+        datapack_zip_path=location_result.draft_result.datapack_fixture_zip_path,
+        fixture_summary_path=location_result.draft_result.fixture_summary_path,
     )
     size_options = build_first_map_size_options(
         project_dir,
@@ -802,6 +844,14 @@ def _finalize_project_first_map(
                 "fixtureSummary": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
                 "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
                 "datapackFixtureZip": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
+            },
+            "datapackStart": {
+                "summary": datapack_start.summary,
+                "datapackZipPath": datapack_start.datapack_zip_path,
+                "reloadCommand": datapack_start.reload_command,
+                "placeCommand": datapack_start.place_command,
+                "clearCommand": datapack_start.clear_command,
+                "starterVerdict": datapack_start.starter_verdict,
             },
             "testWorld": {
                 "requiresOptionalExtra": "py -3.11 -m pip install -e .[donor-spikes]",
@@ -1286,6 +1336,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     minecraft_handoff = dict(manifest.get("minecraftHandoff", {}))
     handoff_artifacts = dict(minecraft_handoff.get("artifacts", {}))
     test_world = dict(minecraft_handoff.get("testWorld", {}))
+    datapack_start_data = dict(minecraft_handoff.get("datapackStart", {}))
     test_world_strategy = dict(test_world.get("strategy", {}))
     recommended_manual_start_data = dict(test_world.get("recommendedStart", {}))
     test_world_focus_commands = tuple(
@@ -1406,6 +1457,14 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
             else None
         ),
         test_world_multi_region_summary=str(test_world_strategy.get("multiRegionSummary", "")),
+        datapack_start=ProjectFirstMapDatapackStart(
+            summary=str(datapack_start_data.get("summary", "")),
+            datapack_zip_path=str(datapack_start_data.get("datapackZipPath", handoff_artifacts.get("datapackFixtureZip", Path("first-map") / "draft" / "datapack-fixture.zip"))),
+            reload_command=str(datapack_start_data.get("reloadCommand", "/reload")),
+            place_command=str(datapack_start_data.get("placeCommand", "/function titanforge:place_fixture")),
+            clear_command=str(datapack_start_data.get("clearCommand", "/function titanforge:clear_fixture")),
+            starter_verdict=str(datapack_start_data.get("starterVerdict", starter_test.get("verdict", "unknown"))),
+        ),
         recommended_manual_start=ProjectFirstMapRecommendedManualStart(
             summary=str(recommended_manual_start_data.get("summary", "")),
             install_extra_command=str(recommended_manual_start_data.get("installExtraCommand", "")),
@@ -1523,6 +1582,14 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
             )
             if result.starter_test_world_advice:
                 lines.append(f"- world advice: {result.starter_test_world_advice}")
+        if result.datapack_start.summary:
+            lines.append("- first in-world datapack pass:")
+            lines.append(f"- summary: {result.datapack_start.summary}")
+            lines.append(f"- starter verdict: {result.datapack_start.starter_verdict}")
+            lines.append(f"- copy zip into world datapacks: {result.datapack_start.datapack_zip_path}")
+            lines.append(f"- then run in Minecraft: {result.datapack_start.reload_command}")
+            lines.append(f"- place fixture: {result.datapack_start.place_command}")
+            lines.append(f"- clear fixture: {result.datapack_start.clear_command}")
         if result.recommended_manual_start.summary:
             lines.append("- recommended first manual-open:")
             lines.append(f"- summary: {result.recommended_manual_start.summary}")

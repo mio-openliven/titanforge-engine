@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-087",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first in-world datapack handoff to first-map workflow",
+      "acceptance": [
+        "first-map root review and status surface one short in-world datapack path from existing draft artifacts",
+        "the handoff uses the current datapack zip path plus exact /reload, place, and clear commands",
+        "the guidance stays derived from fixture-summary.json and existing first-map artifacts instead of a separate hard-coded flow",
+        "tests cover the surfaced datapack handoff"
+      ]
+    },
+    {
       "id": "TF-086",
       "status": "done",
       "priority": "P1",
