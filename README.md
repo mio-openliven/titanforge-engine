@@ -62,6 +62,11 @@ Not implemented yet:
 
 Use Python 3.11 or newer.
 
+Automation note:
+
+- run `first-map` and its immediate follow-up checks sequentially, not in parallel;
+- otherwise a smoke script can ask for `first-map-status` before `first-map-manifest.json` is fully written and report a false failure.
+
 ```powershell
 $env:PYTHONPATH = "src"
 python -m titanforge info

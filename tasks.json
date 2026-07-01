@@ -3,6 +3,17 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-088",
+      "status": "done",
+      "priority": "P1",
+      "title": "Record sequential first-map smoke protocol for automation",
+      "acceptance": [
+        "repo docs warn that first-map and follow-up status/test-world smoke commands must run sequentially, not in parallel",
+        "the note explains this is an automation false-failure risk, not a TitanForge generation bug",
+        "new windows can find the rule in the normal startup and handoff docs"
+      ]
+    },
+    {
       "id": "TF-087",
       "status": "done",
       "priority": "P1",

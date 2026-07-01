@@ -67,6 +67,11 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map previews\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley --max-draft-side 256
 ```
 
+Automation note:
+
+- run `first-map` and follow-up checks like `first-map-status`, `first-map-test-world`, and `first-map-test-world-status` sequentially, not in parallel;
+- otherwise automation can read `first-map-manifest.json` before the build finishes and produce a false failure that is not a TitanForge generation bug.
+
 If you are unsure which starter world to pick, inspect them first:
 
 ```powershell

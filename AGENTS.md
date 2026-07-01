@@ -17,6 +17,7 @@ Windows note:
 
 - if `python --version` prints only `Python`, use `py -3.11` instead of `python`;
 - do not run `unittest` and `compileall` in parallel on Windows, because `__pycache__` writes can produce false permission errors.
+- do not run `first-map` and its follow-up smoke commands such as `first-map-status`, `first-map-test-world`, or `first-map-test-world-status` in parallel; those checks depend on the project manifest and output folders being fully written first.
 
 Read these files before changing behavior:
 
