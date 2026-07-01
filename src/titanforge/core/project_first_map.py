@@ -15,6 +15,7 @@ from titanforge.core.project_template import (
     ProjectTemplateResult,
     describe_world_scale,
     rewrite_project_template_preset,
+    rewrite_project_template_regions,
     rewrite_project_template_world_size,
     write_project_template,
 )
@@ -57,6 +58,15 @@ class ProjectFirstMapRethemeResult:
     config_path: Path
     old_preset_name: str
     new_preset_name: str
+    refreshed_result: ProjectFirstMapResult
+
+
+@dataclass(frozen=True)
+class ProjectFirstMapRegionsResult:
+    project_dir: Path
+    config_path: Path
+    old_region_count: int
+    new_region_count: int
     refreshed_result: ProjectFirstMapResult
 
 
@@ -709,6 +719,11 @@ def _finalize_project_first_map(
                         "commandHint": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
                     },
                     {
+                        "id": "set-regions-first-map",
+                        "summary": "Use first-map-set-regions when the map needs a custom region lineup without hand-editing [[regions]] in TOML.",
+                        "commandHint": f'py -3.11 -m titanforge first-map-set-regions "{project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
+                    },
+                    {
                         "id": "inspect-fixture-summary",
                         "summary": "Check fixture scope and warnings before any Minecraft-side testing.",
                         "path": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
@@ -722,6 +737,7 @@ def _finalize_project_first_map(
             "refreshFirstMap": f'py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
             "resizeFirstMap": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
             "rethemeFirstMap": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
+            "setRegionsFirstMap": f'py -3.11 -m titanforge first-map-set-regions "{project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             "rerunProjectLocation": (
                 f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
@@ -890,6 +906,20 @@ def retheme_project_first_map(project_dir: Path, *, preset_name: str) -> Project
     )
 
 
+def replace_project_first_map_regions(project_dir: Path, *, region_specs: tuple[str, ...]) -> ProjectFirstMapRegionsResult:
+    config_path = project_dir / "titanforge.toml"
+    current_config = load_project_config(config_path)
+    updated_config = rewrite_project_template_regions(config_path, region_specs)
+    refreshed_result = refresh_project_first_map(project_dir)
+    return ProjectFirstMapRegionsResult(
+        project_dir=project_dir,
+        config_path=config_path,
+        old_region_count=len(current_config.regions),
+        new_region_count=len(updated_config.regions),
+        refreshed_result=refreshed_result,
+    )
+
+
 def write_project_first_map(
     project_dir: Path,
     project_name: str | None,
@@ -958,6 +988,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             f'Change world size later: py -3.11 -m titanforge first-map-resize "{result.project_dir.name}" --width <blocks> --length <blocks>',
             f'Switch starter preset later: py -3.11 -m titanforge first-map-retheme "{result.project_dir.name}" --preset <preset-name>',
+            f'Set custom regions later: py -3.11 -m titanforge first-map-set-regions "{result.project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             scale.planning_note,
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
@@ -990,6 +1021,21 @@ def format_project_first_map_retheme_result(result: ProjectFirstMapRethemeResult
             f"- config: {result.config_path.name}",
             f"- old preset: {result.old_preset_name}",
             f"- new preset: {result.new_preset_name}",
+            f"- refreshed review: {result.refreshed_result.review_page_path.name}",
+            f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
+            f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",
+            f"Open first: {result.refreshed_result.review_page_path.name}",
+        )
+    )
+
+
+def format_project_first_map_regions_result(result: ProjectFirstMapRegionsResult) -> str:
+    return "\n".join(
+        (
+            f"First-map regions: {result.project_dir}",
+            f"- config: {result.config_path.name}",
+            f"- old region count: {result.old_region_count}",
+            f"- new region count: {result.new_region_count}",
             f"- refreshed review: {result.refreshed_result.review_page_path.name}",
             f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
             f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",

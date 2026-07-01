@@ -312,6 +312,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <h3>Switch starter theme</h3>
           <p>Run <code>py -3.11 -m titanforge first-map-retheme "{escape(result.project_dir.name)}" --preset &lt;preset-name&gt;</code> when you want another starter story and region lineup without hand-editing TOML.</p>
         </article>
+        <article class="card">
+          <h3>Set custom regions</h3>
+          <p>Run <code>py -3.11 -m titanforge first-map-set-regions "{escape(result.project_dir.name)}" --region "&lt;title&gt;|&lt;kind&gt;|&lt;story role&gt;|&lt;mood&gt;|&lt;coverage&gt;"</code> and repeat <code>--region</code> for every zone you want to keep.</p>
+        </article>
       </div>
     </section>
 

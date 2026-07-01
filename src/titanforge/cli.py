@@ -9,10 +9,12 @@ import tomllib
 from titanforge import __version__
 from titanforge.core.project_first_map import (
     format_project_first_map_result,
+    format_project_first_map_regions_result,
     format_project_first_map_resize_result,
     format_project_first_map_retheme_result,
     format_project_first_map_status_result,
     refresh_project_first_map,
+    replace_project_first_map_regions,
     retheme_project_first_map,
     resize_project_first_map,
     summarize_project_first_map_status,
@@ -165,6 +167,17 @@ def build_parser() -> argparse.ArgumentParser:
         choices=list_project_template_presets(),
         required=True,
         help="Starter preset that should replace the current story and region lineup.",
+    )
+    first_map_set_regions_parser = subparsers.add_parser(
+        "first-map-set-regions",
+        help="Replace the region lineup of an existing first-map project and rebuild its first-map outputs.",
+    )
+    first_map_set_regions_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_set_regions_parser.add_argument(
+        "--region",
+        action="append",
+        required=True,
+        help='Repeat for each region: "title|kind|story role|mood|coverage[%][|notes]".',
     )
     first_map_test_world_parser = subparsers.add_parser(
         "first-map-test-world",
@@ -533,6 +546,14 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             preset_name=args.preset,
         )
         print(format_project_first_map_retheme_result(result))
+        return 0
+
+    if args.command == "first-map-set-regions":
+        result = replace_project_first_map_regions(
+            args.project_dir,
+            region_specs=tuple(args.region),
+        )
+        print(format_project_first_map_regions_result(result))
         return 0
 
     if args.command == "first-map-test-world":

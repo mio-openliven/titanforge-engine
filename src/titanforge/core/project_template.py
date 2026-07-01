@@ -385,6 +385,59 @@ def rewrite_project_template_preset(config_path: Path, preset_name: str) -> Proj
     return refreshed_config
 
 
+def parse_project_region_spec(spec: str) -> ProjectRegion:
+    parts = [part.strip() for part in spec.split("|")]
+    if len(parts) not in (5, 6):
+        raise ProjectTemplateError(
+            "Region spec must use 5 or 6 pipe-separated fields: "
+            "title|kind|story_role|mood|coverage_hint[|notes]"
+        )
+
+    while len(parts) < 6:
+        parts.append("")
+
+    title, kind, story_role, mood, coverage_hint, notes = parts
+    required = {
+        "title": title,
+        "kind": kind,
+        "story_role": story_role,
+        "mood": mood,
+        "coverage_hint": coverage_hint,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        raise ProjectTemplateError(f"Region spec is missing required field(s): {', '.join(missing)}.")
+
+    return ProjectRegion(
+        title=title,
+        kind=kind,
+        story_role=story_role,
+        mood=mood,
+        coverage_hint=coverage_hint,
+        notes=notes or "No notes yet.",
+    )
+
+
+def rewrite_project_template_regions(config_path: Path, region_specs: tuple[str, ...]) -> ProjectConfig:
+    if not region_specs:
+        raise ProjectTemplateError("At least one --region spec is required.")
+
+    current_config = load_project_config(config_path)
+    regions = tuple(parse_project_region_spec(spec) for spec in region_specs)
+    refreshed_config = ProjectConfig(
+        name=current_config.name,
+        target_version=current_config.target_version,
+        width=current_config.width,
+        length=current_config.length,
+        premise=current_config.premise,
+        player_experience=current_config.player_experience,
+        regions=regions,
+        pipeline=current_config.pipeline or DEFAULT_TEMPLATE_PIPELINE,
+    )
+    config_path.write_text(render_project_template_toml(refreshed_config), encoding="utf-8")
+    return refreshed_config
+
+
 def format_project_template_result(result: ProjectTemplateResult) -> str:
     scale = describe_world_scale(result.config.width, result.config.length)
     region_lineup = _format_region_lineup(tuple(region.title for region in result.config.regions))

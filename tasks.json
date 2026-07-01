@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-080",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map region-lineup maintenance command",
+      "acceptance": [
+        "CLI can replace the region lineup of an existing first-map project without asking the user to hand-edit [[regions]] in TOML",
+        "the region replacement refreshes the current first-map outputs in one safe pass",
+        "first-map handoff guidance surfaces the region-lineup maintenance command alongside refresh, resize, and retheme",
+        "tests cover the region replacement writer, CLI entry point, and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-079",
       "status": "done",
       "priority": "P1",

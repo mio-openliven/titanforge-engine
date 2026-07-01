@@ -110,6 +110,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-retheme previews\my-first-world --preset island-kingdom
 ```
 
+If you want your own custom region lineup without editing `[[regions]]` by hand, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-set-regions previews\my-first-world --region "Harbor Town|city|arrival hub|busy, grounded|30%" --region "Salt Coast|sea|weather border|windy, cinematic|35%" --region "Old Pine Forest|forest|mystery corridor|dense, quiet, watchful|35%"
+```
+
 If you come back to that folder later and only need the current handoff again, do not rebuild it. Run:
 
 ```powershell
