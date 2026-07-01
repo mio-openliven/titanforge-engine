@@ -12,6 +12,8 @@ from titanforge.cli import main
 from titanforge.core.project import ProjectConfig, ProjectRegion, load_project_config
 from titanforge.spikes.anvil_test_world import (
     format_test_world_status_result,
+    format_test_world_growth_result,
+    grow_test_world,
     read_test_world_level_dat,
     read_test_world_verification_report,
     summarize_test_world_status,
@@ -22,6 +24,14 @@ from tests.test_anvil_region_spike import _FakeAnvilModule
 
 
 class AnvilTestWorldTests(unittest.TestCase):
+    def _mark_test_world_passed(self, report_path: Path) -> None:
+        for check_id in ("mca-selector-open", "minecraft-world-list", "minecraft-open", "spawn-sanity"):
+            update_test_world_verification_report(
+                report_path,
+                check_id=check_id,
+                check_status="passed",
+            )
+
     def test_write_anvil_test_world_creates_minimal_shell(self) -> None:
         config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
 
@@ -340,3 +350,81 @@ class AnvilTestWorldTests(unittest.TestCase):
         self.assertIn("- next sample command:", stdout.getvalue())
         self.assertIn("- decision: finish the current checklist before growing the sampled window.", stdout.getvalue())
         self.assertIn("Open next: verification-checklist.txt", stdout.getvalue())
+        self.assertIn("anvil-test-world-grow", stdout.getvalue())
+
+    def test_grow_test_world_builds_next_sample_in_safe_sibling_folder(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(
+                config,
+                output_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+                rerun_command_template=(
+                    f'py -3.11 -m titanforge anvil-test-world "{Path("examples") / "tiny_project" / "titanforge.toml"}" '
+                    f'"{output_dir}" --max-side {{max_side}}'
+                ),
+            )
+            self._mark_test_world_passed(output_dir / "verification-report.json")
+
+            result = grow_test_world(output_dir)
+            summary = format_test_world_growth_result(result)
+            grown_manifest = json.loads((result.target_output_dir / "anvil-test-world-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(result.target_output_dir.name, "test-world-256")
+        self.assertEqual(result.built_result.sampled_width, 256)
+        self.assertEqual(result.built_result.sampled_length, 256)
+        self.assertEqual(grown_manifest["sampleGrowth"]["currentMaxSide"], 256)
+        self.assertIn("Anvil test-world growth:", summary)
+        self.assertIn("- next sample size: 256 x 256", summary)
+        self.assertIn("Open next: verification-checklist.txt", summary)
+
+    def test_grow_test_world_rejects_unpassed_sample(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(
+                config,
+                output_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+                rerun_command_template=(
+                    f'py -3.11 -m titanforge anvil-test-world "{Path("examples") / "tiny_project" / "titanforge.toml"}" '
+                    f'"{output_dir}" --max-side {{max_side}}'
+                ),
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "requires a passed verification report"):
+                grow_test_world(output_dir)
+
+    def test_anvil_test_world_grow_cli_command(self) -> None:
+        config = load_project_config(Path("examples") / "tiny_project" / "titanforge.toml")
+
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory) / "test-world"
+            write_anvil_test_world(
+                config,
+                output_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+                rerun_command_template=(
+                    f'py -3.11 -m titanforge anvil-test-world "{Path("examples") / "tiny_project" / "titanforge.toml"}" '
+                    f'"{output_dir}" --max-side {{max_side}}'
+                ),
+            )
+            self._mark_test_world_passed(output_dir / "verification-report.json")
+            stdout = io.StringIO()
+
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["anvil-test-world-grow", str(output_dir)])
+
+            grown_manifest_exists = (output_dir.parent / "test-world-256" / "anvil-test-world-manifest.json").exists()
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(grown_manifest_exists)
+        self.assertIn("Anvil test-world growth:", stdout.getvalue())
+        self.assertIn("- next sample size: 256 x 256", stdout.getvalue())

@@ -104,7 +104,7 @@ Use `first-map-test-world` when you already have a `first-map` project and want 
 
 `fixture-summary.json` now also carries a plain `starterTest` verdict: `safe`, `caution`, or `blocked`. The same verdict is surfaced in `location/review.html` and `first-map-status`, so a scenario writer does not need to infer first-test risk from raw warning strings alone.
 
-`anvil-test-world-status` now also tells you the sampled source origin, the focused region/anchor when used, the next sampled window to try after a passed manual-open check, and on first-map wrapper runs it also tells you when to stop growth and go back to `first-map-status` after a failed manual sample.
+`anvil-test-world-status` now also tells you the sampled source origin, the focused region/anchor when used, the next sampled window to try after a passed manual-open check, a shorter `anvil-test-world-grow` wrapper command for that next step, and on first-map wrapper runs it also tells you when to stop growth and go back to `first-map-status` after a failed manual sample.
 
 Use `init-project` when you want a starter `titanforge.toml` without hand-writing the first world brief. The command writes a preset-backed config for a safe `64 .. 32000` block range, gives a plain-language world-scale label for the chosen size, surfaces the preset story intent and starter regions, reminds you that `width` and `length` can be changed later inside `titanforge.toml`, and prints the exact next `project-location` command to run.
 

@@ -56,10 +56,13 @@ from titanforge.spikes.anvil_region import (
 )
 from titanforge.spikes.anvil_save_shell import format_anvil_save_shell_result, write_anvil_save_shell
 from titanforge.spikes.anvil_test_world import (
+    AnvilTestWorldGrowthError,
     AnvilTestWorldVerificationError,
     format_anvil_test_world_result,
+    format_test_world_growth_result,
     format_test_world_status_result,
     format_test_world_verification_update_result,
+    grow_test_world,
     summarize_test_world_status,
     update_test_world_verification_report,
     write_anvil_test_world,
@@ -343,6 +346,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Read the current status of an existing test-world candidate without rebuilding it.",
     )
     anvil_test_world_status_parser.add_argument("output_dir", type=Path, help="Existing anvil-test-world output folder.")
+    anvil_test_world_grow_parser = subparsers.add_parser(
+        "anvil-test-world-grow",
+        help="Grow a passed test-world candidate to the next safe sampled window without rebuilding the next command by hand.",
+    )
+    anvil_test_world_grow_parser.add_argument("source_output_dir", type=Path, help="Existing passed anvil-test-world output folder.")
+    anvil_test_world_grow_parser.add_argument(
+        "--output-dir",
+        dest="target_output_dir",
+        type=Path,
+        help="Optional fresh output folder for the larger sample. Defaults to a safe sibling folder with the next sample size suffix.",
+    )
 
     inventory_parser = subparsers.add_parser(
         "inventory",
@@ -488,6 +502,7 @@ def main(argv: list[str] | None = None) -> int:
         return _dispatch(args, parser)
     except (
         AnvilRegionSpikeError,
+        AnvilTestWorldGrowthError,
         AnvilTestWorldVerificationError,
         PngError,
         ProjectTemplateError,
@@ -697,6 +712,11 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if args.command == "anvil-test-world-status":
         result = summarize_test_world_status(args.output_dir)
         print(format_test_world_status_result(result))
+        return 0
+
+    if args.command == "anvil-test-world-grow":
+        result = grow_test_world(args.source_output_dir, target_output_dir=args.target_output_dir)
+        print(format_test_world_growth_result(result))
         return 0
 
     if args.command == "inventory":

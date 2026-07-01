@@ -4,9 +4,10 @@ from dataclasses import dataclass
 import gzip
 import json
 from pathlib import Path
+import shlex
 from typing import Any
 
-from titanforge.core.project import ProjectConfig
+from titanforge.core.project import ProjectConfig, load_project_config
 from titanforge.exporters.minecraft_12111_structure_template import STRUCTURE_TEMPLATE_DATA_VERSION
 from titanforge.exporters.nbt_codec import NbtByte, NbtLong, read_nbt, write_nbt
 from titanforge.spikes.anvil_region import (
@@ -35,6 +36,10 @@ VALID_VERIFICATION_STATUSES = ("pending", "in_progress", "failed", "passed")
 
 class AnvilTestWorldVerificationError(RuntimeError):
     """Raised when a verification report update is invalid."""
+
+
+class AnvilTestWorldGrowthError(RuntimeError):
+    """Raised when a saved test-world sample cannot be safely grown."""
 
 
 @dataclass(frozen=True)
@@ -67,6 +72,15 @@ class AnvilTestWorldVerificationUpdateResult:
     status: str
     updated_check_id: str | None
     updated_check_status: str | None
+
+
+@dataclass(frozen=True)
+class AnvilTestWorldGrowthResult:
+    source_output_dir: Path
+    target_output_dir: Path
+    next_sample_max_side: int
+    growth_command: str
+    built_result: AnvilTestWorldResult
 
 
 @dataclass(frozen=True)
@@ -435,6 +449,55 @@ def format_test_world_verification_update_result(result: AnvilTestWorldVerificat
     return "\n".join(lines)
 
 
+def grow_test_world(output_dir: Path, *, target_output_dir: Path | None = None) -> AnvilTestWorldGrowthResult:
+    status = summarize_test_world_status(output_dir)
+    if status.verification_status != "passed":
+        raise AnvilTestWorldGrowthError(
+            f"Test-world growth requires a passed verification report first, got {status.verification_status}."
+        )
+    if status.next_sample_max_side is None or not status.next_sample_command:
+        raise AnvilTestWorldGrowthError(
+            "This sample does not have a larger safe growth step. Return to the project handoff instead."
+        )
+
+    resolved_target_output_dir = (
+        target_output_dir
+        if target_output_dir is not None
+        else output_dir.with_name(f"{output_dir.name}-{status.next_sample_max_side}")
+    )
+    if resolved_target_output_dir.exists():
+        raise FileExistsError(f"Growth target already exists: {resolved_target_output_dir}")
+
+    command_argv = _split_titanforge_command(status.next_sample_command)
+    built_result = _run_saved_growth_command(command_argv, resolved_target_output_dir)
+    return AnvilTestWorldGrowthResult(
+        source_output_dir=output_dir,
+        target_output_dir=resolved_target_output_dir,
+        next_sample_max_side=status.next_sample_max_side,
+        growth_command=status.next_sample_command,
+        built_result=built_result,
+    )
+
+
+def format_test_world_growth_result(result: AnvilTestWorldGrowthResult) -> str:
+    lines = [
+        f"Anvil test-world growth: {result.source_output_dir}",
+        f"- next sample size: {result.next_sample_max_side} x {result.next_sample_max_side}",
+        f"- new output dir: {result.target_output_dir}",
+        f"- region files: {result.built_result.region_file_count}",
+        f"- sampled window: {result.built_result.sampled_width} x {result.built_result.sampled_length}",
+        f"- sampled origin: x={result.built_result.origin_x} z={result.built_result.origin_z}",
+        f"- manifest: {result.built_result.manifest_path.name}",
+        f"- checklist: {result.built_result.checklist_path.name}",
+        "Open next: verification-checklist.txt",
+    ]
+    if result.built_result.focus_region_title:
+        lines.append(f"- focus region: {result.built_result.focus_region_title}")
+    if result.built_result.focus_anchor_id:
+        lines.append(f"- focus anchor: {result.built_result.focus_anchor_id}")
+    return "\n".join(lines)
+
+
 def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
     failed_checks = tuple(check_id for check_id, check_status in result.checks if check_status == "failed")
     lines = [
@@ -463,6 +526,7 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
         lines.append(f"- next sample: {result.next_sample_summary}")
     if result.next_sample_command:
         lines.append(f"- next sample command: {result.next_sample_command}")
+        lines.append(f'- grow wrapper: py -3.11 -m titanforge anvil-test-world-grow "{result.output_dir}"')
     if result.verification_status == "failed":
         lines.append("- decision: stop sample growth and fix the current map direction first.")
         if result.project_status_command:
@@ -491,6 +555,148 @@ def format_test_world_status_result(result: AnvilTestWorldStatusResult) -> str:
     for warning in result.warnings:
         lines.append(f"Warning: {warning}")
     return "\n".join(lines)
+
+
+def _split_titanforge_command(command: str) -> list[str]:
+    tokens = shlex.split(command, posix=False)
+    cleaned_tokens = [
+        token[1:-1] if len(token) >= 2 and token.startswith('"') and token.endswith('"') else token
+        for token in tokens
+    ]
+    try:
+        module_index = cleaned_tokens.index("titanforge")
+    except ValueError as exc:
+        raise AnvilTestWorldGrowthError(f"Unsupported saved growth command: {command}") from exc
+    command_tokens = cleaned_tokens[module_index + 1 :]
+    if not command_tokens:
+        raise AnvilTestWorldGrowthError(f"Saved growth command did not include a TitanForge subcommand: {command}")
+    return command_tokens
+
+
+def _run_saved_growth_command(command_argv: list[str], target_output_dir: Path) -> AnvilTestWorldResult:
+    subcommand = command_argv[0]
+    if subcommand == "anvil-test-world":
+        parsed = _parse_saved_anvil_test_world_command(command_argv)
+        config = load_project_config(parsed["config"])
+        rerun_template = _build_anvil_test_world_rerun_template(
+            parsed["config"],
+            target_output_dir,
+            parsed.get("focus_region"),
+            parsed.get("focus_anchor"),
+        )
+        return write_anvil_test_world(
+            config,
+            target_output_dir,
+            max_side=int(parsed["max_side"]),
+            focus_region_title=parsed.get("focus_region"),
+            focus_anchor_id=parsed.get("focus_anchor"),
+            rerun_command_template=rerun_template,
+        )
+    if subcommand == "first-map-test-world":
+        parsed = _parse_saved_first_map_test_world_command(command_argv)
+        from titanforge.core.project_first_map import write_project_first_map_test_world
+
+        return write_project_first_map_test_world(
+            Path(str(parsed["project_dir"])),
+            output_dir=target_output_dir,
+            max_side=int(parsed["max_side"]),
+            focus_region_title=parsed.get("focus_region"),
+            focus_anchor_id=parsed.get("focus_anchor"),
+        )
+    raise AnvilTestWorldGrowthError(
+        f"Saved growth command uses unsupported TitanForge subcommand: {subcommand}"
+    )
+
+
+def _parse_saved_anvil_test_world_command(command_argv: list[str]) -> dict[str, object]:
+    if len(command_argv) < 5:
+        raise AnvilTestWorldGrowthError(
+            f"Saved anvil-test-world command is incomplete: {' '.join(command_argv)}"
+        )
+    parsed: dict[str, object] = {
+        "config": Path(command_argv[1]),
+        "focus_region": None,
+        "focus_anchor": None,
+    }
+    index = 3
+    while index < len(command_argv):
+        token = command_argv[index]
+        if token == "--max-side":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved anvil-test-world command is missing a value after --max-side.")
+            parsed["max_side"] = int(command_argv[index + 1])
+            index += 2
+            continue
+        if token == "--focus-region":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved anvil-test-world command is missing a value after --focus-region.")
+            parsed["focus_region"] = command_argv[index + 1]
+            index += 2
+            continue
+        if token == "--focus-anchor":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved anvil-test-world command is missing a value after --focus-anchor.")
+            parsed["focus_anchor"] = command_argv[index + 1]
+            index += 2
+            continue
+        raise AnvilTestWorldGrowthError(f"Unsupported saved anvil-test-world argument: {token}")
+    if "max_side" not in parsed:
+        raise AnvilTestWorldGrowthError("Saved anvil-test-world command did not record --max-side.")
+    return parsed
+
+
+def _parse_saved_first_map_test_world_command(command_argv: list[str]) -> dict[str, object]:
+    if len(command_argv) < 4:
+        raise AnvilTestWorldGrowthError(
+            f"Saved first-map-test-world command is incomplete: {' '.join(command_argv)}"
+        )
+    parsed: dict[str, object] = {
+        "project_dir": Path(command_argv[1]),
+        "focus_region": None,
+        "focus_anchor": None,
+    }
+    index = 2
+    while index < len(command_argv):
+        token = command_argv[index]
+        if token == "--output-dir":
+            index += 2
+            continue
+        if token == "--max-side":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved first-map-test-world command is missing a value after --max-side.")
+            parsed["max_side"] = int(command_argv[index + 1])
+            index += 2
+            continue
+        if token == "--focus-region":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved first-map-test-world command is missing a value after --focus-region.")
+            parsed["focus_region"] = command_argv[index + 1]
+            index += 2
+            continue
+        if token == "--focus-anchor":
+            if index + 1 >= len(command_argv):
+                raise AnvilTestWorldGrowthError("Saved first-map-test-world command is missing a value after --focus-anchor.")
+            parsed["focus_anchor"] = command_argv[index + 1]
+            index += 2
+            continue
+        raise AnvilTestWorldGrowthError(f"Unsupported saved first-map-test-world argument: {token}")
+    if "max_side" not in parsed:
+        raise AnvilTestWorldGrowthError("Saved first-map-test-world command did not record --max-side.")
+    return parsed
+
+
+def _build_anvil_test_world_rerun_template(
+    config_path: Path,
+    output_dir: Path,
+    focus_region_title: str | None,
+    focus_anchor_id: str | None,
+) -> str:
+    rerun_template = f'py -3.11 -m titanforge anvil-test-world "{config_path}" "{output_dir}" --max-side {{max_side}}'
+    if focus_region_title:
+        rerun_template += f' --focus-region "{focus_region_title}"'
+    if focus_anchor_id:
+        rerun_template += f' --focus-anchor "{focus_anchor_id}"'
+    return rerun_template
 
 
 def _build_level_dat_bytes(world_name: str) -> bytes:

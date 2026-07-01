@@ -1088,7 +1088,47 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(manifest["sampleWindow"]["size"]["length"], 64)
         self.assertEqual(manifest["sampleGrowth"]["nextMaxSide"], 128)
         self.assertIn('py -3.11 -m titanforge first-map-test-world', manifest["sampleGrowth"]["nextSampleCommand"])
-        self.assertIn('py -3.11 -m titanforge first-map-status', manifest["originHandoff"]["projectStatusCommand"])
+
+    def test_anvil_test_world_grow_cli_supports_first_map_wrapper_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "grow-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Grow Wrapper",
+                1024,
+                768,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+            )
+            report_path = project_dir / "minecraft-test-world" / "verification-report.json"
+            for check_id in ("mca-selector-open", "minecraft-world-list", "minecraft-open", "spawn-sanity"):
+                update_test_world_verification_report(
+                    report_path,
+                    check_id=check_id,
+                    check_status="passed",
+                )
+
+            stdout = io.StringIO()
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["anvil-test-world-grow", str(project_dir / "minecraft-test-world")])
+
+            grown_manifest = json.loads(
+                (project_dir / "minecraft-test-world-256" / "anvil-test-world-manifest.json").read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(grown_manifest["sampleWindow"]["size"]["width"], 256)
+        self.assertEqual(grown_manifest["sampleWindow"]["size"]["length"], 256)
+        self.assertIn("Anvil test-world growth:", stdout.getvalue())
+        self.assertIn("- new output dir:", stdout.getvalue())
+        self.assertIn('py -3.11 -m titanforge first-map-status', grown_manifest["originHandoff"]["projectStatusCommand"])
 
     def test_first_map_test_world_failed_status_points_back_to_project_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-082",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add safe test-world growth wrapper command",
+      "acceptance": [
+        "CLI can grow an existing passed anvil-test-world sample to the next safe sampled window without asking the user to rebuild the next command by hand",
+        "the grow command chooses a safe fresh sibling output folder by default instead of silently overwriting the currently verified sample",
+        "test-world status and docs surface the grow wrapper alongside the raw next sample command",
+        "tests cover passed growth, pending rejection, and first-map wrapper compatibility"
+      ]
+    },
+    {
       "id": "TF-081",
       "status": "done",
       "priority": "P1",
