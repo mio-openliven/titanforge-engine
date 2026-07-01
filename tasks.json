@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-083",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map test-world growth wrapper command",
+      "acceptance": [
+        "CLI can grow a passed first-map test-world sample from the project root without asking the user to call anvil-test-world-grow on an internal folder path",
+        "the wrapper defaults to minecraft-test-world but can also target a named focused sample folder inside the first-map project",
+        "first-map handoff guidance surfaces the growth wrapper alongside the existing build and status commands",
+        "tests cover base-shell growth, focused-shell growth, and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-082",
       "status": "done",
       "priority": "P1",

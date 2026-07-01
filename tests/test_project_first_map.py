@@ -211,6 +211,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             'py -3.11 -m titanforge first-map-resize "first-world" --width 256 --length 192',
         )
         self.assertEqual(manifest["commands"]["buildTestWorld"], 'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128')
+        self.assertEqual(manifest["commands"]["growTestWorld"], 'py -3.11 -m titanforge first-map-test-world-grow "first-world"')
         self.assertEqual(manifest["commands"]["testWorldStatus"], 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
         self.assertEqual(
             manifest["minecraftHandoff"]["artifacts"]["fixtureSummary"],
@@ -223,6 +224,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["buildCommand"],
             'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128',
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["growCommand"],
+            'py -3.11 -m titanforge first-map-test-world-grow "first-world"',
         )
         self.assertIn(
             "disposable centered sample",
@@ -360,6 +365,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-retheme "first-world"', summary)
         self.assertIn('first-map-set-story "first-world"', summary)
         self.assertIn('first-map-set-regions "first-world"', summary)
+        self.assertIn('first-map-test-world-grow "first-world"', summary)
         self.assertIn("Open first: review.html", summary)
 
     def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
@@ -396,6 +402,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn(("rethemeFirstMap", 'py -3.11 -m titanforge first-map-retheme "status-world" --preset <preset-name>'), result.commands)
         self.assertIn(("setStoryFirstMap", 'py -3.11 -m titanforge first-map-set-story "status-world" --premise "<story text>" --player-feeling "<player feeling>"'), result.commands)
         self.assertIn(("setRegionsFirstMap", 'py -3.11 -m titanforge first-map-set-regions "status-world" --region "<title>|<kind>|<story role>|<mood>|<coverage>"'), result.commands)
+        self.assertIn(("growTestWorld", 'py -3.11 -m titanforge first-map-test-world-grow "status-world"'), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
         self.assertEqual(result.route_plan_path, project_dir / "first-map" / "draft" / "route-plan.json")
@@ -497,6 +504,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-retheme "status-world"', summary)
         self.assertIn('first-map-set-story "status-world"', summary)
         self.assertIn('first-map-set-regions "status-world"', summary)
+        self.assertIn('first-map-test-world-grow "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
         self.assertIn("- recommended first manual-open:", summary)
@@ -1129,6 +1137,90 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Anvil test-world growth:", stdout.getvalue())
         self.assertIn("- new output dir:", stdout.getvalue())
         self.assertIn('py -3.11 -m titanforge first-map-status', grown_manifest["originHandoff"]["projectStatusCommand"])
+
+    def test_first_map_test_world_grow_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "grow-wrapper-cli"
+            write_project_first_map(
+                project_dir,
+                "Grow Wrapper CLI",
+                1024,
+                768,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+            )
+            report_path = project_dir / "minecraft-test-world" / "verification-report.json"
+            for check_id in ("mca-selector-open", "minecraft-world-list", "minecraft-open", "spawn-sanity"):
+                update_test_world_verification_report(
+                    report_path,
+                    check_id=check_id,
+                    check_status="passed",
+                )
+
+            stdout = io.StringIO()
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["first-map-test-world-grow", str(project_dir)])
+
+            grown_manifest_exists = (project_dir / "minecraft-test-world-256" / "anvil-test-world-manifest.json").exists()
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(grown_manifest_exists)
+        self.assertIn("Anvil test-world growth:", stdout.getvalue())
+        self.assertIn("- next sample size: 256 x 256", stdout.getvalue())
+
+    def test_first_map_test_world_grow_cli_can_target_named_sample_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "grow-focused-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Grow Focused Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            focused_result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Harbor Town",
+                anvil_module=_FakeAnvilModule,
+            )
+            report_path = focused_result.output_dir / "verification-report.json"
+            for check_id in ("mca-selector-open", "minecraft-world-list", "minecraft-open", "spawn-sanity"):
+                update_test_world_verification_report(
+                    report_path,
+                    check_id=check_id,
+                    check_status="passed",
+                )
+
+            stdout = io.StringIO()
+            with mock.patch("titanforge.spikes.anvil_region._load_anvil_module", return_value=_FakeAnvilModule):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(
+                        [
+                            "first-map-test-world-grow",
+                            str(project_dir),
+                            "--sample-dir",
+                            "minecraft-test-world-harbor-town",
+                        ]
+                    )
+
+            grown_manifest = json.loads(
+                (project_dir / "minecraft-test-world-harbor-town-256" / "anvil-test-world-manifest.json").read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(grown_manifest["sampleWindow"]["focusRegion"], "Harbor Town")
+        self.assertEqual(grown_manifest["sampleWindow"]["size"]["width"], 256)
+        self.assertIn("minecraft-test-world-harbor-town-256", stdout.getvalue())
 
     def test_first_map_test_world_failed_status_points_back_to_project_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

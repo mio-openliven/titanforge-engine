@@ -14,6 +14,7 @@ from titanforge.core.project_first_map import (
     format_project_first_map_resize_result,
     format_project_first_map_retheme_result,
     format_project_first_map_status_result,
+    grow_project_first_map_test_world,
     refresh_project_first_map,
     set_project_first_map_story,
     replace_project_first_map_regions,
@@ -221,6 +222,21 @@ def build_parser() -> argparse.ArgumentParser:
     first_map_test_world_parser.add_argument(
         "--focus-anchor",
         help="Optional anchor id inside the focused region, such as arrival, center, shoreline, or ridge-vista.",
+    )
+    first_map_test_world_grow_parser = subparsers.add_parser(
+        "first-map-test-world-grow",
+        help="Grow a passed first-map test-world sample to the next safe sampled window from the project root.",
+    )
+    first_map_test_world_grow_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_test_world_grow_parser.add_argument(
+        "--sample-dir",
+        default="minecraft-test-world",
+        help="Existing sample folder name inside the project, for example minecraft-test-world or minecraft-test-world-harbor-town.",
+    )
+    first_map_test_world_grow_parser.add_argument(
+        "--output-dir",
+        dest="target_output_dir",
+        help="Optional fresh output folder name inside the project for the larger sample.",
     )
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
@@ -612,6 +628,15 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             focus_anchor_id=args.focus_anchor,
         )
         print(format_anvil_test_world_result(result))
+        return 0
+
+    if args.command == "first-map-test-world-grow":
+        result = grow_project_first_map_test_world(
+            args.project_dir,
+            sample_dir_name=args.sample_dir,
+            output_dir_name=args.target_output_dir,
+        )
+        print(format_test_world_growth_result(result))
         return 0
 
     if args.command == "plan":

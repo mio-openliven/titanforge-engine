@@ -23,7 +23,12 @@ from titanforge.core.project_template import (
 from titanforge.core.route_plan import build_route_plan
 from titanforge.core.world_plan import build_world_plan
 from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE, MAX_SPIKE_SIDE, count_sampled_region_files
-from titanforge.spikes.anvil_test_world import AnvilTestWorldResult, write_anvil_test_world
+from titanforge.spikes.anvil_test_world import (
+    AnvilTestWorldGrowthResult,
+    AnvilTestWorldResult,
+    grow_test_world,
+    write_anvil_test_world,
+)
 
 
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
@@ -770,6 +775,9 @@ def _finalize_project_first_map(
                 f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
                 f'--max-side {test_world_strategy["recommendedMaxSide"]}'
             ),
+            "growTestWorld": (
+                f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir.name}"'
+            ),
             "testWorldStatus": (
                 f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"'
             ),
@@ -786,6 +794,7 @@ def _finalize_project_first_map(
                     f'py -3.11 -m titanforge first-map-test-world "{project_dir.name}" '
                     f'--max-side {test_world_strategy["recommendedMaxSide"]}'
                 ),
+                "growCommand": f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir.name}"',
                 "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
                 "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
                 "recommendedStart": {
@@ -1045,6 +1054,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             scale.planning_note,
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
+            f'If a sample passes manual checks: py -3.11 -m titanforge first-map-test-world-grow "{result.project_dir.name}"',
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
             f"Open first: {result.review_page_path.name}",
@@ -1163,6 +1173,17 @@ def write_project_first_map_test_world(
         rerun_command_template=command,
         project_status_command=f'py -3.11 -m titanforge first-map-status "{project_dir}"',
     )
+
+
+def grow_project_first_map_test_world(
+    project_dir: Path,
+    *,
+    sample_dir_name: str = DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
+    output_dir_name: str | None = None,
+) -> AnvilTestWorldGrowthResult:
+    source_output_dir = project_dir / sample_dir_name
+    target_output_dir = project_dir / output_dir_name if output_dir_name is not None else None
+    return grow_test_world(source_output_dir, target_output_dir=target_output_dir)
 
 
 def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:
