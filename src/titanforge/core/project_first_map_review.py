@@ -29,6 +29,7 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     fixture_summary = result.location_result.draft_result.fixture_summary_path.relative_to(project_dir)
     fixture_commands = result.location_result.draft_result.fixture_commands_path.relative_to(project_dir)
     datapack_zip = result.location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)
+    minecraft_first_pass = Path("minecraft-first-pass.txt")
     manifest_path = result.manifest_path.relative_to(project_dir)
     test_world_dir = Path("minecraft-test-world")
     fixture_summary_data = json.loads(result.location_result.draft_result.fixture_summary_path.read_text(encoding="utf-8"))
@@ -427,6 +428,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
     <section class="panel">
       <h2>Minecraft Test Handoff</h2>
       <div class="links">
+        <article class="card">
+          <h3><a href="{escape(minecraft_first_pass.as_posix())}">minecraft-first-pass.txt</a></h3>
+          <p>Open this first when you want one short world-side datapack checklist without reading the longer review blocks.</p>
+        </article>
         <article class="card">
           <h3><a href="{escape(fixture_summary.as_posix())}">fixture-summary.json</a></h3>
           <p>Read this before using the datapack in a real world. It tells you footprint, fill-command count, and safety warnings.</p>

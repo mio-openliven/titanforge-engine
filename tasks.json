@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-089",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add root minecraft-first-pass artifact to first-map workflow",
+      "acceptance": [
+        "first-map writes one root-level minecraft-first-pass.txt artifact with the shortest in-world datapack path",
+        "the artifact stays derived from current datapack zip path, fixture verdict, and existing place/clear commands",
+        "root review, manifest, and first-map-status surface the new artifact path",
+        "tests cover the new artifact and surfaced links"
+      ]
+    },
+    {
       "id": "TF-088",
       "status": "done",
       "priority": "P1",

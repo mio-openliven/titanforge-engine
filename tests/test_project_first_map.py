@@ -49,6 +49,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
             bridge_manifest = json.loads((project_dir / "first-map" / "project-location-manifest.json").read_text(encoding="utf-8"))
             root_review_html = (project_dir / "review.html").read_text(encoding="utf-8")
+            minecraft_first_pass_text = (project_dir / "minecraft-first-pass.txt").read_text(encoding="utf-8")
             review_exists = (project_dir / "first-map" / "location" / "review.html").exists()
             summary = format_project_first_map_result(result)
 
@@ -222,6 +223,10 @@ class ProjectFirstMapTests(unittest.TestCase):
             "first-map\\draft\\fixture-summary.json",
         )
         self.assertEqual(
+            manifest["minecraftHandoff"]["artifacts"]["minecraftFirstPass"],
+            "minecraft-first-pass.txt",
+        )
+        self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["requiresOptionalExtra"],
             "py -3.11 -m pip install -e .[donor-spikes]",
         )
@@ -320,18 +325,27 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(
             manifest["minecraftHandoff"]["reviewOrder"][0]["id"],
+            "minecraft-first-pass",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["reviewOrder"][0]["path"],
+            "minecraft-first-pass.txt",
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["reviewOrder"][1]["id"],
             "fixture-summary",
         )
         self.assertEqual(
-            manifest["minecraftHandoff"]["reviewOrder"][1]["path"],
+            manifest["minecraftHandoff"]["reviewOrder"][2]["path"],
             "first-map\\draft\\fixture-commands.txt",
         )
         self.assertEqual(
-            manifest["minecraftHandoff"]["reviewOrder"][2]["path"],
+            manifest["minecraftHandoff"]["reviewOrder"][3]["path"],
             "first-map\\draft\\datapack-fixture.zip",
         )
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
+        self.assertEqual(manifest["artifacts"]["minecraftFirstPass"], "minecraft-first-pass.txt")
         self.assertEqual(manifest["artifacts"]["locationReviewPage"], "first-map\\location\\review.html")
         self.assertEqual(manifest["artifacts"]["bridgeManifest"], "first-map\\project-location-manifest.json")
         self.assertEqual(manifest["artifacts"]["routePlan"], "first-map\\draft\\route-plan.json")
@@ -369,6 +383,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="first-map/draft/route-plan.json"', root_review_html)
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
+        self.assertIn('href="minecraft-first-pass.txt"', root_review_html)
         self.assertIn("Recommended walkthrough", root_review_html)
         self.assertIn("Full route sample pairs", root_review_html)
         self.assertIn("step-01: Start here", root_review_html)
@@ -379,6 +394,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("/reload", root_review_html)
         self.assertIn("/function titanforge:place_fixture", root_review_html)
         self.assertIn("/function titanforge:clear_fixture", root_review_html)
+        self.assertIn("First in-world Minecraft 1.21.11 pass for: first-world", minecraft_first_pass_text)
+        self.assertIn("Copy first-map\\draft\\datapack-fixture.zip", minecraft_first_pass_text)
+        self.assertIn("/function titanforge:place_fixture", minecraft_first_pass_text)
+        self.assertIn("/function titanforge:clear_fixture", minecraft_first_pass_text)
         self.assertIn("Why this sample size", root_review_html)
         self.assertIn("Sample file scope", root_review_html)
         self.assertIn("1 sampled .mca file under test-world\\region\\", root_review_html)
@@ -427,6 +446,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             summary = format_project_first_map_status_result(result)
 
         self.assertEqual(result.preset_name, "coastal-valley")
+        self.assertEqual(result.minecraft_first_pass_path, project_dir / "minecraft-first-pass.txt")
         self.assertEqual(result.world_scale_label, "Local district")
         self.assertIn("Good for one town plus nearby coast", result.world_scale_summary)
         self.assertIn("comfortable for local travel beats", result.world_scale_planning_note)
@@ -496,7 +516,9 @@ class ProjectFirstMapTests(unittest.TestCase):
                 'py -3.11 -m titanforge first-map-set-regions "status-world" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             ),
         )
-        self.assertEqual(result.minecraft_review_order[0][0], "fixture-summary")
+        self.assertEqual(result.minecraft_review_order[0][0], "minecraft-first-pass")
+        self.assertEqual(result.minecraft_review_order[0][1], "minecraft-first-pass.txt")
+        self.assertEqual(result.minecraft_review_order[1][0], "fixture-summary")
         self.assertEqual(result.test_world_output_dir, "minecraft-test-world")
         self.assertEqual(result.test_world_recommended_max_side, 128)
         self.assertIn("128 x 128 sampled window", result.test_world_strategy_summary)
@@ -540,6 +562,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.datapack_start.clear_command, "/function titanforge:clear_fixture")
         self.assertEqual(result.datapack_start.starter_verdict, "caution")
         self.assertIn("- location review: first-map\\location\\review.html", summary)
+        self.assertIn("- minecraft first pass: minecraft-first-pass.txt", summary)
         self.assertIn("Preset intent:", summary)
         self.assertIn("Size guidance:", summary)
         self.assertIn("Change world size:", summary)

@@ -38,6 +38,7 @@ from titanforge.spikes.anvil_test_world import (
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
 PROJECT_FIRST_MAP_VERSION = 1
 DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME = "minecraft-test-world"
+DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME = "minecraft-first-pass.txt"
 MIN_FIRST_MAP_TEST_WORLD_SIDE = 64
 
 
@@ -149,6 +150,7 @@ class ProjectFirstMapDatapackStart:
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
+    minecraft_first_pass_path: Path
     config_path: Path
     review_page_path: Path
     location_review_path: Path
@@ -502,6 +504,38 @@ def build_first_map_datapack_start(
     )
 
 
+def format_project_first_map_datapack_start_text(
+    project_dir: Path,
+    datapack_start: ProjectFirstMapDatapackStart,
+    *,
+    starter_test_summary: str,
+    starter_test_world_advice: str,
+) -> str:
+    lines = [
+        f"First in-world Minecraft 1.21.11 pass for: {project_dir.name}",
+        "",
+        datapack_start.summary,
+        f"Starter verdict: {datapack_start.starter_verdict}",
+    ]
+    if starter_test_summary:
+        lines.append(f"Why: {starter_test_summary}")
+    if starter_test_world_advice:
+        lines.append(f"Advice: {starter_test_world_advice}")
+    lines.extend(
+        (
+            "",
+            "Do this in order:",
+            f"1. Copy {datapack_start.datapack_zip_path} into a backed-up throwaway world datapacks folder.",
+            f"2. Open that world and run {datapack_start.reload_command}.",
+            f"3. Place the first fixture with {datapack_start.place_command}.",
+            f"4. Remove the same fixture later with {datapack_start.clear_command}.",
+            "",
+            "If the draft no longer matches the story, go back to review.html before continuing.",
+        )
+    )
+    return "\n".join(lines)
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -668,6 +702,19 @@ def _finalize_project_first_map(
         project_dir,
         datapack_zip_path=location_result.draft_result.datapack_fixture_zip_path,
         fixture_summary_path=location_result.draft_result.fixture_summary_path,
+    )
+    fixture_summary = json.loads(location_result.draft_result.fixture_summary_path.read_text(encoding="utf-8"))
+    starter_test = dict(fixture_summary.get("starterTest", {}))
+    minecraft_first_pass_path = project_dir / DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME
+    minecraft_first_pass_path.write_text(
+        format_project_first_map_datapack_start_text(
+            project_dir,
+            datapack_start,
+            starter_test_summary=str(starter_test.get("summary", "")),
+            starter_test_world_advice=str(starter_test.get("worldAdvice", "")),
+        )
+        + "\n",
+        encoding="utf-8",
     )
     size_options = build_first_map_size_options(
         project_dir,
@@ -844,6 +891,7 @@ def _finalize_project_first_map(
                 "fixtureSummary": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
                 "fixtureCommands": str(location_result.draft_result.fixture_commands_path.relative_to(project_dir)),
                 "datapackFixtureZip": str(location_result.draft_result.datapack_fixture_zip_path.relative_to(project_dir)),
+                "minecraftFirstPass": minecraft_first_pass_path.name,
             },
             "datapackStart": {
                 "summary": datapack_start.summary,
@@ -896,6 +944,11 @@ def _finalize_project_first_map(
             },
             "reviewOrder": [
                 {
+                    "id": "minecraft-first-pass",
+                    "path": minecraft_first_pass_path.name,
+                    "summary": "Open this first for the shortest in-world datapack path before the longer shell workflow.",
+                },
+                {
                     "id": "fixture-summary",
                     "path": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
                     "summary": "Check footprint, fill-command count, and warnings before any world-side test.",
@@ -914,6 +967,7 @@ def _finalize_project_first_map(
         },
         "artifacts": {
             "rootReviewPage": review_page_path.name,
+            "minecraftFirstPass": minecraft_first_pass_path.name,
             "projectLocationDir": location_result.output_dir.name,
             "locationReviewPage": str(location_result.location_result.review_page_path.relative_to(project_dir)),
             "bridgeManifest": str(location_result.manifest_path.relative_to(project_dir)),
@@ -1429,6 +1483,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     return ProjectFirstMapStatusResult(
         project_dir=project_dir,
         manifest_path=manifest_path,
+        minecraft_first_pass_path=project_dir / str(artifacts.get("minecraftFirstPass", handoff_artifacts.get("minecraftFirstPass", DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME))),
         config_path=project_dir / str(project.get("configPath", "titanforge.toml")),
         review_page_path=project_dir / str(artifacts.get("rootReviewPage", "review.html")),
         location_review_path=project_dir / str(artifacts.get("locationReviewPage", Path("first-map") / "location" / "review.html")),
@@ -1507,6 +1562,7 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
     lines = [
         f"First-map status: {result.project_dir}",
         f"- manifest: {result.manifest_path.name}",
+        f"- minecraft first pass: {result.minecraft_first_pass_path.name}",
         f"- config: {result.config_path.name}",
         f"- preset: {result.preset_name}",
         f"- logical world size: {result.world_width} x {result.world_length}",

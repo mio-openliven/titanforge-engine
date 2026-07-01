@@ -138,7 +138,7 @@ py -3.11 -m titanforge first-map-status previews\my-first-world
 
 That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths. It now starts with a short recommended walkthrough built from the current route plan, explains whether the starter sample stays in one `.mca` file or later grows into several sampled region files, then keeps the fuller route-focused, region-focused, and anchor-focused sample commands available below when you need deeper inspection.
 
-The Minecraft handoff now also surfaces a plain starter-test verdict from `fixture-summary.json` such as `safe` or `caution`, and it now includes two short routes: one first in-world datapack pass from `datapack-fixture.zip` with exact `/reload` and `/function` commands, plus one recommended sampled test-world path with a sampled `.mca` file-scope note when you need the donor-backed manual-open shell instead.
+The Minecraft handoff now also surfaces a plain starter-test verdict from `fixture-summary.json` such as `safe` or `caution`, and it now includes two short routes: one root `minecraft-first-pass.txt` guide for the first in-world datapack pass from `datapack-fixture.zip` with exact `/reload` and `/function` commands, plus one recommended sampled test-world path with a sampled `.mca` file-scope note when you need the donor-backed manual-open shell instead.
 
 If you want the shortest current path from that `first-map` folder to one experimental Minecraft manual-open candidate, install the optional donor extra and run:
 
