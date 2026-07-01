@@ -172,6 +172,18 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["actionPlan"]["openSequence"][1]["path"],
             "first-map\\location\\review.html",
         )
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["openSequence"][3]["path"],
+            "titanforge.toml",
+        )
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["openSequence"][4]["id"],
+            "minecraft-first-pass",
+        )
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["openSequence"][4]["path"],
+            "minecraft-first-pass.txt",
+        )
         self.assertIn(
             "first-map-refresh",
             manifest["guidance"]["actionPlan"]["nextActions"][0]["commandHint"],
@@ -382,6 +394,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="first-map/draft/route-preview.png"', root_review_html)
         self.assertIn('href="first-map/draft/route-plan.json"', root_review_html)
         self.assertIn('href="titanforge.toml"', root_review_html)
+        self.assertIn('href="minecraft-first-pass.txt"', root_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
         self.assertIn('href="minecraft-first-pass.txt"', root_review_html)
         self.assertIn("Recommended walkthrough", root_review_html)
@@ -398,6 +411,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Copy first-map\\draft\\datapack-fixture.zip", minecraft_first_pass_text)
         self.assertIn("/function titanforge:place_fixture", minecraft_first_pass_text)
         self.assertIn("/function titanforge:clear_fixture", minecraft_first_pass_text)
+        self.assertIn("- minecraft first pass: minecraft-first-pass.txt", summary)
+        self.assertIn("If the overview already looks right: open minecraft-first-pass.txt", summary)
         self.assertIn("Why this sample size", root_review_html)
         self.assertIn("Sample file scope", root_review_html)
         self.assertIn("1 sampled .mca file under test-world\\region\\", root_review_html)
@@ -459,6 +474,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.size_edit_options[1].scale_label, "Local district")
         self.assertIn('first-map-resize "status-world"', result.size_edit_options[-1].rerun_command)
         self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
+        self.assertEqual(result.open_sequence[4], ("minecraft-first-pass", "minecraft-first-pass.txt"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(("refreshFirstMap", 'py -3.11 -m titanforge first-map-refresh "status-world"'), result.commands)
         self.assertIn(("resizeFirstMap", 'py -3.11 -m titanforge first-map-resize "status-world" --width <blocks> --length <blocks>'), result.commands)

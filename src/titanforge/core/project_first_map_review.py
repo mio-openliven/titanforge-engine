@@ -400,6 +400,11 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <h3><a href="{escape(config_path.as_posix())}">titanforge.toml</a></h3>
           <p>Edit this when the world brief or story regions still need adjustment, then run <code>py -3.11 -m titanforge first-map-refresh "{escape(result.project_dir.name)}"</code> to rebuild the handoff.</p>
         </article>
+        <article class="card">
+          <div class="badge">4</div>
+          <h3><a href="{escape(minecraft_first_pass.as_posix())}">minecraft-first-pass.txt</a></h3>
+          <p>Open this after the visual review when you want the shortest world-side datapack path into Minecraft 1.21.11.</p>
+        </article>
       </div>
     </section>
 

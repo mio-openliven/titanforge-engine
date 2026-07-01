@@ -818,6 +818,11 @@ def _finalize_project_first_map(
                         "path": template_result.config_path.name,
                         "summary": "Edit this when premise, regions, or other story settings need another generation pass.",
                     },
+                    {
+                        "id": "minecraft-first-pass",
+                        "path": minecraft_first_pass_path.name,
+                        "summary": "Use this when the visual review already looks right and you want the shortest in-world datapack path.",
+                    },
                 ],
                 "nextActions": [
                     {
@@ -1159,6 +1164,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"- project-location dir: {result.location_result.output_dir.name}",
             f"- root manifest: {result.manifest_path.name}",
             f"- root review: {result.review_page_path.name}",
+            f"- minecraft first pass: {DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}",
             f"Logical world size: {result.template_result.config.width} x {result.template_result.config.length}",
             f"World scale: {scale.label}",
             f"Scale use: {scale.summary}",
@@ -1176,6 +1182,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f'Set custom regions later: py -3.11 -m titanforge first-map-set-regions "{result.project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
             scale.planning_note,
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
+            "If the overview already looks right: open minecraft-first-pass.txt for the shortest in-world datapack path.",
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
             f'If a sample passes manual checks: py -3.11 -m titanforge first-map-test-world-grow "{result.project_dir.name}"',
             f'If you need to record manual checks: py -3.11 -m titanforge first-map-test-world-verify "{result.project_dir.name}" --check <check-id> --check-status <status>',

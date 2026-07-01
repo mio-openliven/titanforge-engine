@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-090` `P1` Surface minecraft-first-pass in primary first-map handoff.
 - `TF-089` `P1` Add root minecraft-first-pass artifact to first-map workflow.
 - `TF-088` `P1` Record sequential first-map smoke protocol for automation.
 - `TF-087` `P1` Add first in-world datapack handoff to first-map workflow.

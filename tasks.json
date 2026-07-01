@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-090",
+      "status": "done",
+      "priority": "P1",
+      "title": "Surface minecraft-first-pass in primary first-map handoff",
+      "acceptance": [
+        "first-map terminal summary mentions minecraft-first-pass.txt directly",
+        "root review open order includes minecraft-first-pass.txt as the Minecraft-side next step",
+        "manifest openSequence includes minecraft-first-pass.txt for future UI layers",
+        "tests cover the surfaced handoff updates"
+      ]
+    },
+    {
       "id": "TF-089",
       "status": "done",
       "priority": "P1",
