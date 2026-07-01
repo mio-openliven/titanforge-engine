@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-085` `P1` Remove low-level test-world commands from first-map handoff.
 - `TF-084` `P1` Add first-map test-world status and verify wrappers.
 - `TF-083` `P1` Add first-map test-world growth wrapper command.
 - `TF-082` `P1` Add safe test-world growth wrapper command.

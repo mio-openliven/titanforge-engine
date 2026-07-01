@@ -1239,7 +1239,13 @@ def format_project_first_map_test_world_status_result(
     sample_dir_name: str,
     result: AnvilTestWorldStatusResult,
 ) -> str:
-    lines = [format_test_world_status_result(result)]
+    status_text = format_test_world_status_result(result)
+    filtered_lines = [
+        line
+        for line in status_text.splitlines()
+        if not line.startswith("- grow wrapper:")
+    ]
+    lines = ["\n".join(filtered_lines)]
     status_command = f'py -3.11 -m titanforge first-map-test-world-status "{project_dir}"'
     grow_command = f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir}"'
     verify_command = (

@@ -68,7 +68,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
         f'py -3.11 -m titanforge first-map-test-world "{result.project_dir.name}" '
         f'--max-side {test_world_strategy["recommendedMaxSide"]}'
     )
-    test_world_status_command = f'py -3.11 -m titanforge anvil-test-world-status "{test_world_dir.as_posix()}"'
+    test_world_status_command = (
+        f'py -3.11 -m titanforge first-map-test-world-status "{result.project_dir.name}" '
+        f'--sample-dir "{test_world_dir.as_posix()}"'
+    )
     focus_anchor_preview = "<br>".join(
         f'{escape(command)}<br><small>status: {escape(status_command)}</small>'
         for _, command, _, status_command in focus_anchor_commands[:4]

@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-085",
+      "status": "done",
+      "priority": "P1",
+      "title": "Remove low-level test-world commands from first-map handoff",
+      "acceptance": [
+        "first-map review.html points scenario writers at first-map test-world wrappers instead of anvil-test-world-status for the normal project-root flow",
+        "first-map test-world status wrapper output no longer repeats the low-level anvil-test-world-grow hint when a first-map wrapper is available",
+        "START_HERE first-map guidance uses first-map status/grow/verify commands for the project-root flow",
+        "tests cover the updated review and wrapper output"
+      ]
+    },
+    {
       "id": "TF-084",
       "status": "done",
       "priority": "P1",

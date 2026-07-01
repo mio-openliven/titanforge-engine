@@ -359,6 +359,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('--focus-anchor &quot;arrival&quot;', root_review_html)
         self.assertIn("minecraft-test-world-harbor-town-arrival", root_review_html)
         self.assertIn("first-map-test-world", root_review_html)
+        self.assertIn("first-map-test-world-status", root_review_html)
+        self.assertNotIn("anvil-test-world-status", root_review_html)
         self.assertIn("--max-side 128", root_review_html)
         self.assertIn("verification-checklist.txt", root_review_html)
         self.assertIn("First map:", summary)
@@ -1270,7 +1272,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- verification status: pending", stdout.getvalue())
         self.assertIn("First-map wrappers:", stdout.getvalue())
         self.assertIn("first-map-test-world-status", stdout.getvalue())
+        self.assertIn("first-map-test-world-grow", stdout.getvalue())
         self.assertIn("first-map-test-world-verify", stdout.getvalue())
+        self.assertNotIn("anvil-test-world-grow", stdout.getvalue())
 
     def test_first_map_test_world_verify_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1377,7 +1381,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             stdout = io.StringIO()
 
             with contextlib.redirect_stdout(stdout):
-                status_exit_code = main(["anvil-test-world-status", str(project_dir / "minecraft-test-world")])
+                status_exit_code = main(["first-map-test-world-status", str(project_dir)])
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(status_exit_code, 0)
