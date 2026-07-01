@@ -364,6 +364,27 @@ def rewrite_project_template_world_size(config_path: Path, width: int, length: i
     return load_project_config(config_path)
 
 
+def rewrite_project_template_preset(config_path: Path, preset_name: str) -> ProjectConfig:
+    if preset_name not in PROJECT_TEMPLATE_PRESETS:
+        supported = ", ".join(list_project_template_presets())
+        raise ProjectTemplateError(f"Unknown preset '{preset_name}'. Choose one of: {supported}.")
+
+    current_config = load_project_config(config_path)
+    preset = PROJECT_TEMPLATE_PRESETS[preset_name]
+    refreshed_config = ProjectConfig(
+        name=current_config.name,
+        target_version=current_config.target_version,
+        width=current_config.width,
+        length=current_config.length,
+        premise=preset.premise,
+        player_experience=preset.player_experience,
+        regions=preset.regions,
+        pipeline=current_config.pipeline or DEFAULT_TEMPLATE_PIPELINE,
+    )
+    config_path.write_text(render_project_template_toml(refreshed_config), encoding="utf-8")
+    return refreshed_config
+
+
 def format_project_template_result(result: ProjectTemplateResult) -> str:
     scale = describe_world_scale(result.config.width, result.config.length)
     region_lineup = _format_region_lineup(tuple(region.title for region in result.config.regions))

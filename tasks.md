@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-079` `P1` Add first-map preset retheme maintenance command.
 - `TF-078` `P1` Add first-map refresh and resize maintenance commands.
 - `TF-077` `P1` Surface multi-region sample scope in first-map handoff.
 - `TF-076` `P1` Expand donor-backed sampled test worlds beyond one region file.

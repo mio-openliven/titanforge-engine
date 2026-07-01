@@ -308,6 +308,10 @@ def _format_project_first_map_review_html(result: "ProjectFirstMapResult") -> st
           <h3>Key regions</h3>
           <p>{escape(region_lineup)}</p>
         </article>
+        <article class="card">
+          <h3>Switch starter theme</h3>
+          <p>Run <code>py -3.11 -m titanforge first-map-retheme "{escape(result.project_dir.name)}" --preset &lt;preset-name&gt;</code> when you want another starter story and region lineup without hand-editing TOML.</p>
+        </article>
       </div>
     </section>
 

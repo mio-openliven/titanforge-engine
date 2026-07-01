@@ -10,8 +10,10 @@ from titanforge import __version__
 from titanforge.core.project_first_map import (
     format_project_first_map_result,
     format_project_first_map_resize_result,
+    format_project_first_map_retheme_result,
     format_project_first_map_status_result,
     refresh_project_first_map,
+    retheme_project_first_map,
     resize_project_first_map,
     summarize_project_first_map_status,
     write_project_first_map,
@@ -153,6 +155,17 @@ def build_parser() -> argparse.ArgumentParser:
     first_map_resize_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
     first_map_resize_parser.add_argument("--width", type=int, required=True, help="New logical world width in blocks.")
     first_map_resize_parser.add_argument("--length", type=int, required=True, help="New logical world length in blocks.")
+    first_map_retheme_parser = subparsers.add_parser(
+        "first-map-retheme",
+        help="Switch an existing first-map project to another starter preset and rebuild its first-map outputs.",
+    )
+    first_map_retheme_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_retheme_parser.add_argument(
+        "--preset",
+        choices=list_project_template_presets(),
+        required=True,
+        help="Starter preset that should replace the current story and region lineup.",
+    )
     first_map_test_world_parser = subparsers.add_parser(
         "first-map-test-world",
         help="Write one experimental minimal test-world candidate directly from an existing first-map project.",
@@ -512,6 +525,14 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             length=args.length,
         )
         print(format_project_first_map_resize_result(result))
+        return 0
+
+    if args.command == "first-map-retheme":
+        result = retheme_project_first_map(
+            args.project_dir,
+            preset_name=args.preset,
+        )
+        print(format_project_first_map_retheme_result(result))
         return 0
 
     if args.command == "first-map-test-world":

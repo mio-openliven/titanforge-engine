@@ -14,7 +14,9 @@ from titanforge.core.project_first_map import (
     build_first_map_test_world_strategy,
     format_project_first_map_result,
     format_project_first_map_resize_result,
+    format_project_first_map_retheme_result,
     refresh_project_first_map,
+    retheme_project_first_map,
     resize_project_first_map,
     format_project_first_map_status_result,
     suggest_first_map_test_world_max_side,
@@ -170,7 +172,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["actionPlan"]["nextActions"][0]["commandHint"],
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["nextActions"][2]["path"],
+            manifest["guidance"]["actionPlan"]["nextActions"][3]["path"],
             "first-map\\draft\\fixture-summary.json",
         )
         self.assertEqual(manifest["commands"]["presetCatalog"], "py -3.11 -m titanforge preset-catalog")
@@ -182,6 +184,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(
             manifest["commands"]["resizeFirstMap"],
             'py -3.11 -m titanforge first-map-resize "first-world" --width <blocks> --length <blocks>',
+        )
+        self.assertEqual(
+            manifest["commands"]["rethemeFirstMap"],
+            'py -3.11 -m titanforge first-map-retheme "first-world" --preset <preset-name>',
         )
         self.assertIn("py -3.11 -m titanforge project-location", manifest["commands"]["rerunProjectLocation"])
         self.assertEqual(
@@ -300,6 +306,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("64 .. 32000", root_review_html)
         self.assertIn("Smaller test map", root_review_html)
         self.assertIn("first-map-resize", root_review_html)
+        self.assertIn("first-map-retheme", root_review_html)
         self.assertIn("--width 16000 --length 12000", root_review_html)
         self.assertIn("Local district", root_review_html)
         self.assertIn("Use <code>first-map-resize</code>", root_review_html)
@@ -336,6 +343,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Scale bridge: 1 px = 8 blocks", summary)
         self.assertIn('first-map-resize "first-world"', summary)
         self.assertIn('first-map-refresh "first-world"', summary)
+        self.assertIn('first-map-retheme "first-world"', summary)
         self.assertIn("Open first: review.html", summary)
 
     def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
@@ -369,6 +377,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(("refreshFirstMap", 'py -3.11 -m titanforge first-map-refresh "status-world"'), result.commands)
         self.assertIn(("resizeFirstMap", 'py -3.11 -m titanforge first-map-resize "status-world" --width <blocks> --length <blocks>'), result.commands)
+        self.assertIn(("rethemeFirstMap", 'py -3.11 -m titanforge first-map-retheme "status-world" --preset <preset-name>'), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
         self.assertEqual(result.route_plan_path, project_dir / "first-map" / "draft" / "route-plan.json")
@@ -392,6 +401,14 @@ class ProjectFirstMapTests(unittest.TestCase):
                 "refresh-first-map",
                 "After editing the config, rerun first-map-refresh so the root handoff and first-map outputs stay in sync.",
                 'py -3.11 -m titanforge first-map-refresh "status-world"',
+            ),
+        )
+        self.assertEqual(
+            result.next_actions[2],
+            (
+                "retheme-first-map",
+                "Use first-map-retheme when the starter story and region lineup should switch to another preset without hand-editing TOML.",
+                'py -3.11 -m titanforge first-map-retheme "status-world" --preset <preset-name>',
             ),
         )
         self.assertEqual(result.minecraft_review_order[0][0], "fixture-summary")
@@ -443,6 +460,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("If you need changes:", summary)
         self.assertIn('first-map-refresh "status-world"', summary)
         self.assertIn('first-map-resize "status-world"', summary)
+        self.assertIn('first-map-retheme "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
         self.assertIn("- recommended first manual-open:", summary)
@@ -595,6 +613,33 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("- old size: 1024 x 768", summary)
         self.assertIn("- new size: 2048 x 1536", summary)
 
+    def test_retheme_project_first_map_updates_preset_and_refreshes_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "retheme-world"
+            write_project_first_map(
+                project_dir,
+                "Retheme World",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+
+            result = retheme_project_first_map(project_dir, preset_name="island-kingdom")
+            manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
+            config = load_project_config(project_dir / "titanforge.toml")
+            summary = format_project_first_map_retheme_result(result)
+
+        self.assertEqual(result.old_preset_name, "frontier-basin")
+        self.assertEqual(result.new_preset_name, "island-kingdom")
+        self.assertEqual(manifest["project"]["preset"], "island-kingdom")
+        self.assertEqual(config.premise.startswith("A layered island setting"), True)
+        self.assertEqual(config.regions[0].title, "Crown Harbor")
+        self.assertIn("First-map retheme:", summary)
+        self.assertIn("- old preset: frontier-basin", summary)
+        self.assertIn("- new preset: island-kingdom", summary)
+
     def test_first_map_refresh_cli_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project_dir = Path(directory) / "refresh-cli"
@@ -645,6 +690,30 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(config.length, 1536)
         self.assertIn("First-map resize:", stdout.getvalue())
         self.assertIn("- new size: 2048 x 1536", stdout.getvalue())
+
+    def test_first_map_retheme_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "retheme-cli"
+            write_project_first_map(
+                project_dir,
+                "Retheme CLI",
+                1024,
+                768,
+                "frontier-basin",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["first-map-retheme", str(project_dir), "--preset", "island-kingdom"])
+
+            config = load_project_config(project_dir / "titanforge.toml")
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(config.regions[0].title, "Crown Harbor")
+        self.assertIn("First-map retheme:", stdout.getvalue())
+        self.assertIn("- new preset: island-kingdom", stdout.getvalue())
 
     def test_write_project_first_map_test_world_uses_manifest_config(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-079",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map preset retheme maintenance command",
+      "acceptance": [
+        "CLI can switch an existing first-map project to another starter preset without asking the user to hand-edit regions or premise text",
+        "the preset switch updates titanforge.toml and refreshes the current first-map outputs in one safe pass",
+        "first-map handoff guidance surfaces the preset-switch maintenance command alongside refresh and resize",
+        "tests cover the retheme writer, CLI entry point, and surfaced handoff guidance"
+      ]
+    },
+    {
       "id": "TF-078",
       "status": "done",
       "priority": "P1",

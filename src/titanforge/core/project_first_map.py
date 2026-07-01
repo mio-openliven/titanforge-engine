@@ -14,6 +14,7 @@ from titanforge.core.project_template import (
     PROJECT_TEMPLATE_MIN_SIDE,
     ProjectTemplateResult,
     describe_world_scale,
+    rewrite_project_template_preset,
     rewrite_project_template_world_size,
     write_project_template,
 )
@@ -47,6 +48,15 @@ class ProjectFirstMapResizeResult:
     old_length: int
     new_width: int
     new_length: int
+    refreshed_result: ProjectFirstMapResult
+
+
+@dataclass(frozen=True)
+class ProjectFirstMapRethemeResult:
+    project_dir: Path
+    config_path: Path
+    old_preset_name: str
+    new_preset_name: str
     refreshed_result: ProjectFirstMapResult
 
 
@@ -694,6 +704,11 @@ def _finalize_project_first_map(
                         "commandHint": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
                     },
                     {
+                        "id": "retheme-first-map",
+                        "summary": "Use first-map-retheme when the starter story and region lineup should switch to another preset without hand-editing TOML.",
+                        "commandHint": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
+                    },
+                    {
                         "id": "inspect-fixture-summary",
                         "summary": "Check fixture scope and warnings before any Minecraft-side testing.",
                         "path": str(location_result.draft_result.fixture_summary_path.relative_to(project_dir)),
@@ -706,6 +721,7 @@ def _finalize_project_first_map(
             "presetCatalogJson": "py -3.11 -m titanforge preset-catalog --json",
             "refreshFirstMap": f'py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
             "resizeFirstMap": f'py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
+            "rethemeFirstMap": f'py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
             "rerunProjectLocation": (
                 f'py -3.11 -m titanforge project-location "{template_result.config_path.name}" '
                 f'"{location_result.output_dir.name}" --use-cleanup-for-heightmap'
@@ -814,12 +830,14 @@ def refresh_project_first_map(
     *,
     max_draft_side: int | None = None,
     use_cleanup_for_heightmap: bool | None = None,
+    preset_name: str | None = None,
 ) -> ProjectFirstMapResult:
-    preset_name, stored_max_draft_side, stored_cleanup_flag = _read_first_map_refresh_settings(project_dir)
+    stored_preset_name, stored_max_draft_side, stored_cleanup_flag = _read_first_map_refresh_settings(project_dir)
     config_path = project_dir / "titanforge.toml"
     config = load_project_config(config_path)
     resolved_max_draft_side = stored_max_draft_side if max_draft_side is None else max_draft_side
     resolved_cleanup = stored_cleanup_flag if use_cleanup_for_heightmap is None else use_cleanup_for_heightmap
+    resolved_preset_name = stored_preset_name if preset_name is None else preset_name
     location_result = write_project_location(
         config,
         project_dir / "first-map",
@@ -830,7 +848,7 @@ def refresh_project_first_map(
         project_dir=project_dir,
         config_path=config_path,
         suggested_output_dir=project_dir / "first-map",
-        preset_name=preset_name,
+        preset_name=resolved_preset_name,
         config=config,
     )
     return _finalize_project_first_map(
@@ -854,6 +872,20 @@ def resize_project_first_map(project_dir: Path, *, width: int, length: int) -> P
         old_length=current_config.length,
         new_width=updated_config.width,
         new_length=updated_config.length,
+        refreshed_result=refreshed_result,
+    )
+
+
+def retheme_project_first_map(project_dir: Path, *, preset_name: str) -> ProjectFirstMapRethemeResult:
+    config_path = project_dir / "titanforge.toml"
+    old_preset_name, _, _ = _read_first_map_refresh_settings(project_dir)
+    rewrite_project_template_preset(config_path, preset_name)
+    refreshed_result = refresh_project_first_map(project_dir, preset_name=preset_name)
+    return ProjectFirstMapRethemeResult(
+        project_dir=project_dir,
+        config_path=config_path,
+        old_preset_name=old_preset_name,
+        new_preset_name=preset_name,
         refreshed_result=refreshed_result,
     )
 
@@ -925,6 +957,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"Draft raster: {result.location_result.draft_result.raster_width} x {result.location_result.draft_result.raster_length}",
             f"Scale bridge: 1 px = {result.location_result.draft_result.blocks_per_pixel} blocks",
             f'Change world size later: py -3.11 -m titanforge first-map-resize "{result.project_dir.name}" --width <blocks> --length <blocks>',
+            f'Switch starter preset later: py -3.11 -m titanforge first-map-retheme "{result.project_dir.name}" --preset <preset-name>',
             scale.planning_note,
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
@@ -942,6 +975,21 @@ def format_project_first_map_resize_result(result: ProjectFirstMapResizeResult) 
             f"- config: {result.config_path.name}",
             f"- old size: {result.old_width} x {result.old_length}",
             f"- new size: {result.new_width} x {result.new_length}",
+            f"- refreshed review: {result.refreshed_result.review_page_path.name}",
+            f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
+            f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",
+            f"Open first: {result.refreshed_result.review_page_path.name}",
+        )
+    )
+
+
+def format_project_first_map_retheme_result(result: ProjectFirstMapRethemeResult) -> str:
+    return "\n".join(
+        (
+            f"First-map retheme: {result.project_dir}",
+            f"- config: {result.config_path.name}",
+            f"- old preset: {result.old_preset_name}",
+            f"- new preset: {result.new_preset_name}",
             f"- refreshed review: {result.refreshed_result.review_page_path.name}",
             f"- refreshed project-location dir: {result.refreshed_result.location_result.output_dir.name}",
             f"Validation: {result.refreshed_result.location_result.location_result.errors} errors, {result.refreshed_result.location_result.location_result.warnings} warnings",

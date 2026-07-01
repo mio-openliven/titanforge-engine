@@ -103,6 +103,13 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-resize previews\my-first-world --width 8192 --length 6144
 ```
 
+If you want the same map size but another starter story and region lineup, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-retheme previews\my-first-world --preset island-kingdom
+```
+
 If you come back to that folder later and only need the current handoff again, do not rebuild it. Run:
 
 ```powershell
