@@ -76,6 +76,8 @@ python -m titanforge first-map-set-story out\my-first-world --premise "A sea-bor
 python -m titanforge first-map-set-regions out\my-first-world --region "Harbor Town|city|arrival hub|busy, grounded|30%|Main player arrival." --region "Salt Coast|sea|weather border|windy, cinematic|35%|Open shoreline and horizon." --region "Old Pine Forest|forest|mystery corridor|dense, quiet, watchful|35%|Lost-path exploration zone."
 python -m titanforge first-map-test-world out\my-first-world
 python -m titanforge first-map-test-world-grow out\my-first-world
+python -m titanforge first-map-test-world-status out\my-first-world
+python -m titanforge first-map-test-world-verify out\my-first-world --check minecraft-open --check-status passed
 python -m titanforge init-project out\my-first-world --name "My First World" --width 2048 --length 1536 --preset coastal-valley
 python -m titanforge project-draft examples\tiny_project\titanforge.toml out\tiny-project-draft --max-draft-side 256
 python -m titanforge project-location examples\tiny_project\titanforge.toml out\tiny-project-location --max-draft-side 256 --use-cleanup-for-heightmap
@@ -104,6 +106,10 @@ Use `first-map-set-regions` when the preset is no longer enough and you want you
 Use `first-map-test-world` when you already have a `first-map` project and want the shortest path to one experimental Minecraft manual-open candidate without hunting for `titanforge.toml` yourself. It resolves the config from `first-map-manifest.json`, writes a donor-backed `minecraft-test-world` folder, and prints the same checklist/report handoff used by `anvil-test-world`. `first-map-status` now highlights one recommended first manual-open path before the longer focus lists. If you omit `--max-side`, TitanForge now picks a safer starter sample from the logical world size. Add `--focus-region "Harbor Town"` or another region title from `first-map-status` when you want the sampled window to recenter around a specific story zone instead of the origin. Add `--focus-anchor "arrival"` together with `--focus-region` when you want the first shell to aim at one exact reveal point inside that region. Focused runs now default to their own sibling folders such as `minecraft-test-world-harbor-town` or `minecraft-test-world-broken-ridge-ridge-vista`, so they no longer silently replace the base shell. Larger manual samples can now span several sampled `.mca` files when needed, while the default starter sample stays smaller and safer. Install the optional extra first with `py -3.11 -m pip install -e .[donor-spikes]`.
 
 Use `first-map-test-world-grow` after a shell already passed manual checks and you want the next safe sampled window without calling `anvil-test-world-grow` on an internal folder path. It defaults to the base `minecraft-test-world` folder, and you can point it at a focused shell with `--sample-dir minecraft-test-world-harbor-town`.
+
+Use `first-map-test-world-status` when you want the current manual-open status from the project root instead of calling `anvil-test-world-status` on an internal sample folder path. It defaults to the base `minecraft-test-world` folder and also supports `--sample-dir` for focused shells.
+
+Use `first-map-test-world-verify` when you want to update the saved manual-open report from the project root instead of passing the internal `verification-report.json` path. It mirrors the same `--status`, `--check`, `--check-status`, `--check-note`, and `--report-note` options as the lower-level verifier.
 
 `fixture-summary.json` now also carries a plain `starterTest` verdict: `safe`, `caution`, or `blocked`. The same verdict is surfaced in `location/review.html` and `first-map-status`, so a scenario writer does not need to infer first-test risk from raw warning strings alone.
 

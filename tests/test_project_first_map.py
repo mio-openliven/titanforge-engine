@@ -212,7 +212,11 @@ class ProjectFirstMapTests(unittest.TestCase):
         )
         self.assertEqual(manifest["commands"]["buildTestWorld"], 'py -3.11 -m titanforge first-map-test-world "first-world" --max-side 128')
         self.assertEqual(manifest["commands"]["growTestWorld"], 'py -3.11 -m titanforge first-map-test-world-grow "first-world"')
-        self.assertEqual(manifest["commands"]["testWorldStatus"], 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
+        self.assertEqual(
+            manifest["commands"]["verifyTestWorld"],
+            'py -3.11 -m titanforge first-map-test-world-verify "first-world" --check <check-id> --check-status <status>',
+        )
+        self.assertEqual(manifest["commands"]["testWorldStatus"], 'py -3.11 -m titanforge first-map-test-world-status "first-world"')
         self.assertEqual(
             manifest["minecraftHandoff"]["artifacts"]["fixtureSummary"],
             "first-map\\draft\\fixture-summary.json",
@@ -228,6 +232,10 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(
             manifest["minecraftHandoff"]["testWorld"]["growCommand"],
             'py -3.11 -m titanforge first-map-test-world-grow "first-world"',
+        )
+        self.assertEqual(
+            manifest["minecraftHandoff"]["testWorld"]["verifyCommand"],
+            'py -3.11 -m titanforge first-map-test-world-verify "first-world" --check <check-id> --check-status <status>',
         )
         self.assertIn(
             "disposable centered sample",
@@ -366,6 +374,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-set-story "first-world"', summary)
         self.assertIn('first-map-set-regions "first-world"', summary)
         self.assertIn('first-map-test-world-grow "first-world"', summary)
+        self.assertIn('first-map-test-world-verify "first-world"', summary)
         self.assertIn("Open first: review.html", summary)
 
     def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
@@ -403,6 +412,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn(("setStoryFirstMap", 'py -3.11 -m titanforge first-map-set-story "status-world" --premise "<story text>" --player-feeling "<player feeling>"'), result.commands)
         self.assertIn(("setRegionsFirstMap", 'py -3.11 -m titanforge first-map-set-regions "status-world" --region "<title>|<kind>|<story role>|<mood>|<coverage>"'), result.commands)
         self.assertIn(("growTestWorld", 'py -3.11 -m titanforge first-map-test-world-grow "status-world"'), result.commands)
+        self.assertIn(("verifyTestWorld", 'py -3.11 -m titanforge first-map-test-world-verify "status-world" --check <check-id> --check-status <status>'), result.commands)
         self.assertIn(('buildTestWorld', 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128'), result.commands)
         self.assertEqual(result.route_preview_path, project_dir / "first-map" / "draft" / "route-preview.png")
         self.assertEqual(result.route_plan_path, project_dir / "first-map" / "draft" / "route-plan.json")
@@ -470,15 +480,24 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.recommended_manual_start.build_command, 'py -3.11 -m titanforge first-map-test-world "status-world" --max-side 128')
         self.assertEqual(result.recommended_manual_start.output_dir, "minecraft-test-world")
         self.assertEqual(result.recommended_manual_start.checklist_path, "minecraft-test-world\\verification-checklist.txt")
-        self.assertEqual(result.recommended_manual_start.status_command, 'py -3.11 -m titanforge anvil-test-world-status "minecraft-test-world"')
+        self.assertEqual(
+            result.recommended_manual_start.status_command,
+            'py -3.11 -m titanforge first-map-test-world-status "status-world" --sample-dir "minecraft-test-world"',
+        )
         self.assertEqual(result.test_world_focus_commands[0][0], "Harbor Town")
         self.assertIn('--focus-region "Harbor Town"', result.test_world_focus_commands[0][1])
         self.assertEqual(result.test_world_focus_commands[0][2], "minecraft-test-world-harbor-town")
-        self.assertIn('anvil-test-world-status "minecraft-test-world-harbor-town"', result.test_world_focus_commands[0][3])
+        self.assertIn(
+            'first-map-test-world-status "status-world" --sample-dir "minecraft-test-world-harbor-town"',
+            result.test_world_focus_commands[0][3],
+        )
         self.assertEqual(result.test_world_focus_anchor_commands[0][0], "Harbor Town / arrival")
         self.assertIn('--focus-anchor "arrival"', result.test_world_focus_anchor_commands[0][1])
         self.assertEqual(result.test_world_focus_anchor_commands[0][2], "minecraft-test-world-harbor-town-arrival")
-        self.assertIn('anvil-test-world-status "minecraft-test-world-harbor-town-arrival"', result.test_world_focus_anchor_commands[0][3])
+        self.assertIn(
+            'first-map-test-world-status "status-world" --sample-dir "minecraft-test-world-harbor-town-arrival"',
+            result.test_world_focus_anchor_commands[0][3],
+        )
         self.assertEqual(result.starter_test_verdict, "caution")
         self.assertIn("disposable first Minecraft test", result.starter_test_summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
@@ -505,6 +524,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-set-story "status-world"', summary)
         self.assertIn('first-map-set-regions "status-world"', summary)
         self.assertIn('first-map-test-world-grow "status-world"', summary)
+        self.assertIn('first-map-test-world-status "status-world"', summary)
+        self.assertIn('first-map-test-world-verify "status-world"', summary)
         self.assertIn("Minecraft later:", summary)
         self.assertIn("starter-test-verdict: caution", summary)
         self.assertIn("- recommended first manual-open:", summary)
@@ -1221,6 +1242,117 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(grown_manifest["sampleWindow"]["focusRegion"], "Harbor Town")
         self.assertEqual(grown_manifest["sampleWindow"]["size"]["width"], 256)
         self.assertIn("minecraft-test-world-harbor-town-256", stdout.getvalue())
+
+    def test_first_map_test_world_status_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "status-wrapper-cli"
+            write_project_first_map(
+                project_dir,
+                "Status Wrapper CLI",
+                1024,
+                768,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["first-map-test-world-status", str(project_dir)])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Anvil test-world status:", stdout.getvalue())
+        self.assertIn("- verification status: pending", stdout.getvalue())
+        self.assertIn("First-map wrappers:", stdout.getvalue())
+        self.assertIn("first-map-test-world-status", stdout.getvalue())
+        self.assertIn("first-map-test-world-verify", stdout.getvalue())
+
+    def test_first_map_test_world_verify_cli_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "verify-wrapper-cli"
+            write_project_first_map(
+                project_dir,
+                "Verify Wrapper CLI",
+                1024,
+                768,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                anvil_module=_FakeAnvilModule,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "first-map-test-world-verify",
+                        str(project_dir),
+                        "--check",
+                        "minecraft-world-list",
+                        "--check-status",
+                        "in_progress",
+                        "--check-note",
+                        "World copied for a throwaway manual boot.",
+                    ]
+                )
+
+            report = json.loads((project_dir / "minecraft-test-world" / "verification-report.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["status"], "in_progress")
+        self.assertEqual(report["checks"][1]["status"], "in_progress")
+        self.assertIn("Test-world verification report:", stdout.getvalue())
+        self.assertIn("- updated check: minecraft-world-list", stdout.getvalue())
+
+    def test_first_map_test_world_verify_cli_can_target_named_sample_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project_dir = Path(directory) / "verify-focused-wrapper"
+            write_project_first_map(
+                project_dir,
+                "Verify Focused Wrapper",
+                2048,
+                1536,
+                "coastal-valley",
+                max_draft_side=256,
+                use_cleanup_for_heightmap=True,
+            )
+            focused_result = write_project_first_map_test_world(
+                project_dir,
+                max_side=128,
+                focus_region_title="Harbor Town",
+                anvil_module=_FakeAnvilModule,
+            )
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "first-map-test-world-verify",
+                        str(project_dir),
+                        "--sample-dir",
+                        focused_result.output_dir.name,
+                        "--check",
+                        "minecraft-open",
+                        "--check-status",
+                        "failed",
+                    ]
+                )
+
+            report = json.loads((focused_result.output_dir / "verification-report.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["checks"][2]["status"], "failed")
+        self.assertIn("minecraft-open", stdout.getvalue())
 
     def test_first_map_test_world_failed_status_points_back_to_project_handoff(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

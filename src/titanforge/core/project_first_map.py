@@ -26,7 +26,11 @@ from titanforge.spikes.anvil_region import DEFAULT_SPIKE_MAX_SIDE, MAX_SPIKE_SID
 from titanforge.spikes.anvil_test_world import (
     AnvilTestWorldGrowthResult,
     AnvilTestWorldResult,
+    AnvilTestWorldStatusResult,
+    format_test_world_status_result,
     grow_test_world,
+    summarize_test_world_status,
+    update_test_world_verification_report,
     write_anvil_test_world,
 )
 
@@ -215,8 +219,11 @@ def _build_first_map_shell_command(
     return command
 
 
-def _build_first_map_shell_status_command(output_dir_name: str) -> str:
-    return f'py -3.11 -m titanforge anvil-test-world-status "{output_dir_name}"'
+def _build_first_map_shell_status_command(project_dir: Path, output_dir_name: str) -> str:
+    return (
+        f'py -3.11 -m titanforge first-map-test-world-status "{project_dir.name}" '
+        f'--sample-dir "{output_dir_name}"'
+    )
 
 
 def build_first_map_focus_region_commands(
@@ -235,6 +242,7 @@ def build_first_map_focus_region_commands(
             ),
             build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name,
             _build_first_map_shell_status_command(
+                project_dir,
                 build_first_map_test_world_output_dir(project_dir, focus_region_title=region_title).name
             ),
         )
@@ -267,7 +275,7 @@ def build_first_map_focus_anchor_commands(
                         focus_anchor_id=anchor.id,
                     ),
                     output_dir,
-                    _build_first_map_shell_status_command(output_dir),
+                    _build_first_map_shell_status_command(project_dir, output_dir),
                 )
             )
     return tuple(commands)
@@ -308,7 +316,7 @@ def build_first_map_route_handoffs(
                     focus_anchor_id=route.from_point.anchor_id,
                 ),
                 start_output_dir=start_output_dir,
-                start_status_command=_build_first_map_shell_status_command(start_output_dir),
+                start_status_command=_build_first_map_shell_status_command(project_dir, start_output_dir),
                 end_command=_build_first_map_shell_command(
                     project_dir,
                     end_output_dir,
@@ -317,7 +325,7 @@ def build_first_map_route_handoffs(
                     focus_anchor_id=route.to_point.anchor_id,
                 ),
                 end_output_dir=end_output_dir,
-                end_status_command=_build_first_map_shell_status_command(end_output_dir),
+                end_status_command=_build_first_map_shell_status_command(project_dir, end_output_dir),
             )
         )
     return tuple(handoffs)
@@ -363,7 +371,7 @@ def build_first_map_story_walkthrough(
                     focus_anchor_id=anchor_id,
                 ),
                 output_dir=output_dir,
-                status_command=_build_first_map_shell_status_command(output_dir),
+                status_command=_build_first_map_shell_status_command(project_dir, output_dir),
             )
         )
 
@@ -450,7 +458,10 @@ def build_first_map_recommended_manual_start(
         ),
         output_dir=output_dir,
         checklist_path=f"{output_dir}\\verification-checklist.txt",
-        status_command=f'py -3.11 -m titanforge anvil-test-world-status "{output_dir}"',
+        status_command=(
+            f'py -3.11 -m titanforge first-map-test-world-status "{project_dir.name}" '
+            f'--sample-dir "{output_dir}"'
+        ),
     )
 
 
@@ -778,8 +789,12 @@ def _finalize_project_first_map(
             "growTestWorld": (
                 f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir.name}"'
             ),
+            "verifyTestWorld": (
+                f'py -3.11 -m titanforge first-map-test-world-verify "{project_dir.name}" '
+                '--check <check-id> --check-status <status>'
+            ),
             "testWorldStatus": (
-                f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"'
+                f'py -3.11 -m titanforge first-map-test-world-status "{project_dir.name}"'
             ),
         },
         "minecraftHandoff": {
@@ -795,7 +810,11 @@ def _finalize_project_first_map(
                     f'--max-side {test_world_strategy["recommendedMaxSide"]}'
                 ),
                 "growCommand": f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir.name}"',
-                "statusCommand": f'py -3.11 -m titanforge anvil-test-world-status "{DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME}"',
+                "statusCommand": f'py -3.11 -m titanforge first-map-test-world-status "{project_dir.name}"',
+                "verifyCommand": (
+                    f'py -3.11 -m titanforge first-map-test-world-verify "{project_dir.name}" '
+                    '--check <check-id> --check-status <status>'
+                ),
                 "outputDir": DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
                 "recommendedStart": {
                     "summary": recommended_manual_start.summary,
@@ -1055,6 +1074,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f'After other config edits: py -3.11 -m titanforge first-map-refresh "{result.project_dir.name}"',
             "Optional Minecraft shell: install donor-spikes, then run first-map-test-world from this project folder.",
             f'If a sample passes manual checks: py -3.11 -m titanforge first-map-test-world-grow "{result.project_dir.name}"',
+            f'If you need to record manual checks: py -3.11 -m titanforge first-map-test-world-verify "{result.project_dir.name}" --check <check-id> --check-status <status>',
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
             f"Open first: {result.review_page_path.name}",
@@ -1184,6 +1204,61 @@ def grow_project_first_map_test_world(
     source_output_dir = project_dir / sample_dir_name
     target_output_dir = project_dir / output_dir_name if output_dir_name is not None else None
     return grow_test_world(source_output_dir, target_output_dir=target_output_dir)
+
+
+def summarize_project_first_map_test_world(
+    project_dir: Path,
+    *,
+    sample_dir_name: str = DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
+) -> AnvilTestWorldStatusResult:
+    return summarize_test_world_status(project_dir / sample_dir_name)
+
+
+def verify_project_first_map_test_world(
+    project_dir: Path,
+    *,
+    sample_dir_name: str = DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME,
+    status: str | None = None,
+    check_id: str | None = None,
+    check_status: str | None = None,
+    check_note: str | None = None,
+    report_note: str | None = None,
+):
+    return update_test_world_verification_report(
+        project_dir / sample_dir_name / "verification-report.json",
+        status=status,
+        check_id=check_id,
+        check_status=check_status,
+        check_note=check_note,
+        report_note=report_note,
+    )
+
+
+def format_project_first_map_test_world_status_result(
+    project_dir: Path,
+    sample_dir_name: str,
+    result: AnvilTestWorldStatusResult,
+) -> str:
+    lines = [format_test_world_status_result(result)]
+    status_command = f'py -3.11 -m titanforge first-map-test-world-status "{project_dir}"'
+    grow_command = f'py -3.11 -m titanforge first-map-test-world-grow "{project_dir}"'
+    verify_command = (
+        f'py -3.11 -m titanforge first-map-test-world-verify "{project_dir}" '
+        '--check <check-id> --check-status <status>'
+    )
+    if sample_dir_name != DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME:
+        status_command += f' --sample-dir "{sample_dir_name}"'
+        grow_command += f' --sample-dir "{sample_dir_name}"'
+        verify_command += f' --sample-dir "{sample_dir_name}"'
+    lines.extend(
+        (
+            "First-map wrappers:",
+            f"- status: {status_command}",
+            f"- grow: {grow_command}",
+            f"- verify: {verify_command}",
+        )
+    )
+    return "\n".join(lines)
 
 
 def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStatusResult:

@@ -14,13 +14,16 @@ from titanforge.core.project_first_map import (
     format_project_first_map_resize_result,
     format_project_first_map_retheme_result,
     format_project_first_map_status_result,
+    format_project_first_map_test_world_status_result,
     grow_project_first_map_test_world,
     refresh_project_first_map,
     set_project_first_map_story,
     replace_project_first_map_regions,
     retheme_project_first_map,
     resize_project_first_map,
+    summarize_project_first_map_test_world,
     summarize_project_first_map_status,
+    verify_project_first_map_test_world,
     write_project_first_map,
     write_project_first_map_test_world,
 )
@@ -238,6 +241,39 @@ def build_parser() -> argparse.ArgumentParser:
         dest="target_output_dir",
         help="Optional fresh output folder name inside the project for the larger sample.",
     )
+    first_map_test_world_status_parser = subparsers.add_parser(
+        "first-map-test-world-status",
+        help="Read the current status of a first-map test-world sample from the project root.",
+    )
+    first_map_test_world_status_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_test_world_status_parser.add_argument(
+        "--sample-dir",
+        default="minecraft-test-world",
+        help="Existing sample folder name inside the project, for example minecraft-test-world or minecraft-test-world-harbor-town.",
+    )
+    first_map_test_world_verify_parser = subparsers.add_parser(
+        "first-map-test-world-verify",
+        help="Update a first-map test-world verification report from the project root.",
+    )
+    first_map_test_world_verify_parser.add_argument("project_dir", type=Path, help="Existing first-map project folder.")
+    first_map_test_world_verify_parser.add_argument(
+        "--sample-dir",
+        default="minecraft-test-world",
+        help="Existing sample folder name inside the project, for example minecraft-test-world or minecraft-test-world-harbor-town.",
+    )
+    first_map_test_world_verify_parser.add_argument(
+        "--status",
+        choices=("pending", "in_progress", "failed", "passed"),
+        help="Top-level verification status.",
+    )
+    first_map_test_world_verify_parser.add_argument("--check", help="Check id inside verification-report.json.")
+    first_map_test_world_verify_parser.add_argument(
+        "--check-status",
+        choices=("pending", "in_progress", "failed", "passed"),
+        help="New status for the selected check.",
+    )
+    first_map_test_world_verify_parser.add_argument("--check-note", help="Note to append to the selected check.")
+    first_map_test_world_verify_parser.add_argument("--report-note", help="Note to append to the report note list.")
 
     plan_parser = subparsers.add_parser("plan", help="Read and summarize a TitanForge project config.")
     plan_parser.add_argument("config", type=Path, help="Path to titanforge.toml.")
@@ -637,6 +673,27 @@ def _dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
             output_dir_name=args.target_output_dir,
         )
         print(format_test_world_growth_result(result))
+        return 0
+
+    if args.command == "first-map-test-world-status":
+        result = summarize_project_first_map_test_world(
+            args.project_dir,
+            sample_dir_name=args.sample_dir,
+        )
+        print(format_project_first_map_test_world_status_result(args.project_dir, args.sample_dir, result))
+        return 0
+
+    if args.command == "first-map-test-world-verify":
+        result = verify_project_first_map_test_world(
+            args.project_dir,
+            sample_dir_name=args.sample_dir,
+            status=args.status,
+            check_id=args.check,
+            check_status=args.check_status,
+            check_note=args.check_note,
+            report_note=args.report_note,
+        )
+        print(format_test_world_verification_update_result(result))
         return 0
 
     if args.command == "plan":

@@ -3,6 +3,18 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-084",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add first-map test-world status and verify wrappers",
+      "acceptance": [
+        "CLI can read the current status of a first-map test-world sample from the project root without asking the user to call anvil-test-world-status on an internal folder path",
+        "CLI can update the verification report of a first-map test-world sample from the project root without asking the user to edit or pass the internal verification-report.json path",
+        "the wrappers default to minecraft-test-world but can also target named focused sample folders inside the first-map project",
+        "first-map handoff guidance surfaces the status and verify wrappers alongside build and grow commands, and tests cover base and focused sample flows"
+      ]
+    },
+    {
       "id": "TF-083",
       "status": "done",
       "priority": "P1",

@@ -152,6 +152,20 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-test-world-grow previews\my-first-world
 ```
 
+If you only need the current shell status from the project root, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-test-world-status previews\my-first-world
+```
+
+If you need to record the manual-open result from the project root, use:
+
+```powershell
+$env:PYTHONPATH='src'
+py -3.11 -m titanforge first-map-test-world-verify previews\my-first-world --check minecraft-open --check-status passed
+```
+
 If you need a fresh world brief instead of the example file, start here:
 
 ```powershell
