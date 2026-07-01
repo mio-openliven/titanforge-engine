@@ -23,7 +23,10 @@ class ProjectLocationTests(unittest.TestCase):
                 output_dir,
                 max_draft_side=256,
                 use_cleanup_for_heightmap=True,
-                project_root_artifacts=(("minecraft-first-pass.txt", "../minecraft-first-pass.txt"),),
+                project_root_artifacts=(
+                    ("review.html", "../review.html"),
+                    ("minecraft-first-pass.txt", "../minecraft-first-pass.txt"),
+                ),
             )
             manifest = json.loads((output_dir / "project-location-manifest.json").read_text(encoding="utf-8"))
             location_manifest = json.loads((output_dir / "location" / "manifest.json").read_text(encoding="utf-8"))
@@ -67,6 +70,8 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn("It is not where you change final world size or story layout.", location_review_html)
         self.assertIn("Need world size or story context?", location_review_html)
         self.assertIn("world size, story regions, routes", location_review_html)
+        self.assertIn("Need size or story changes?", location_review_html)
+        self.assertIn("root first-map handoff with size, story, preset, and refresh guidance", location_review_html)
         self.assertIn("Overview already looks right?", location_review_html)
         self.assertIn("Need the first Minecraft test handoff?", location_review_html)
         self.assertIn("Project-Draft Links", location_review_html)
@@ -84,6 +89,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn('../draft/fixture-summary.json', location_review_html)
         self.assertIn('../draft/fixture-commands.txt', location_review_html)
         self.assertIn('../draft/datapack-fixture.zip', location_review_html)
+        self.assertIn('../review.html', location_review_html)
         self.assertIn('../minecraft-first-pass.txt', location_review_html)
 
     def test_project_location_cli_command(self) -> None:

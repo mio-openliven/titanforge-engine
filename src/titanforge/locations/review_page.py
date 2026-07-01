@@ -41,7 +41,15 @@ def write_location_review_page(
     draft_review_path = draft_artifact_map.get("draft/review.html")
     draft_fixture_summary_path = draft_artifact_map.get("draft/fixture-summary.json")
     draft_fixture_commands_path = draft_artifact_map.get("draft/fixture-commands.txt")
+    root_review_path = project_root_artifact_map.get("review.html")
     minecraft_first_pass_path = project_root_artifact_map.get("minecraft-first-pass.txt")
+    if root_review_path:
+        beginner_steps.append(
+            (
+                "Need size or story changes?",
+                f'Open <a href="{escape(root_review_path)}">review.html</a> for the root first-map handoff with size, story, preset, and refresh guidance.',
+            )
+        )
     if draft_review_path:
         beginner_steps.append(
             (

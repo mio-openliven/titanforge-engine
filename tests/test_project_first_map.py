@@ -397,6 +397,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="minecraft-first-pass.txt"', root_review_html)
         self.assertIn("Project Root Shortcuts", location_review_html)
+        self.assertIn("Need size or story changes?", location_review_html)
+        self.assertIn('href="../review.html"', location_review_html)
         self.assertIn("Overview already looks right?", location_review_html)
         self.assertIn('href="../minecraft-first-pass.txt"', location_review_html)
         self.assertIn('href="first-map/draft/datapack-fixture.zip"', root_review_html)
