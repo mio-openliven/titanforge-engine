@@ -48,6 +48,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             config = load_project_config(project_dir / "titanforge.toml")
             manifest = json.loads((project_dir / "first-map-manifest.json").read_text(encoding="utf-8"))
             bridge_manifest = json.loads((project_dir / "first-map" / "project-location-manifest.json").read_text(encoding="utf-8"))
+            first_map_start_text = (project_dir / "first-map-start.txt").read_text(encoding="utf-8")
             root_review_html = (project_dir / "review.html").read_text(encoding="utf-8")
             location_review_html = (project_dir / "first-map" / "location" / "review.html").read_text(encoding="utf-8")
             draft_review_html = (project_dir / "first-map" / "draft" / "review.html").read_text(encoding="utf-8")
@@ -168,22 +169,26 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["guidance"]["storyRoutes"]["routeSamples"][0]["endOutputDir"],
             "minecraft-test-world-harbor-town-center",
         )
-        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["id"], "root-review")
-        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["path"], "review.html")
+        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["id"], "first-map-start")
+        self.assertEqual(manifest["guidance"]["actionPlan"]["openSequence"][0]["path"], "first-map-start.txt")
         self.assertEqual(
             manifest["guidance"]["actionPlan"]["openSequence"][1]["path"],
+            "review.html",
+        )
+        self.assertEqual(
+            manifest["guidance"]["actionPlan"]["openSequence"][2]["path"],
             "first-map\\location\\review.html",
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["openSequence"][3]["path"],
+            manifest["guidance"]["actionPlan"]["openSequence"][4]["path"],
             "titanforge.toml",
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["openSequence"][4]["id"],
+            manifest["guidance"]["actionPlan"]["openSequence"][5]["id"],
             "minecraft-first-pass",
         )
         self.assertEqual(
-            manifest["guidance"]["actionPlan"]["openSequence"][4]["path"],
+            manifest["guidance"]["actionPlan"]["openSequence"][5]["path"],
             "minecraft-first-pass.txt",
         )
         self.assertIn(
@@ -357,6 +362,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             manifest["minecraftHandoff"]["reviewOrder"][3]["path"],
             "first-map\\draft\\datapack-fixture.zip",
         )
+        self.assertEqual(manifest["artifacts"]["firstMapStart"], "first-map-start.txt")
         self.assertEqual(manifest["artifacts"]["projectLocationDir"], "first-map")
         self.assertEqual(manifest["artifacts"]["rootReviewPage"], "review.html")
         self.assertEqual(manifest["artifacts"]["minecraftFirstPass"], "minecraft-first-pass.txt")
@@ -397,10 +403,16 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('href="first-map/draft/route-plan.json"', root_review_html)
         self.assertIn('href="titanforge.toml"', root_review_html)
         self.assertIn('href="minecraft-first-pass.txt"', root_review_html)
+        self.assertIn("First-map starter for: first-world", first_map_start_text)
+        self.assertIn("1. Open review.html first", first_map_start_text)
+        self.assertIn('py -3.11 -m titanforge first-map-resize "first-world"', first_map_start_text)
+        self.assertIn('py -3.11 -m titanforge first-map-status "first-world"', first_map_start_text)
         self.assertIn("Project Root Shortcuts", draft_review_html)
+        self.assertIn('href="../first-map-start.txt"', draft_review_html)
         self.assertIn('href="../review.html"', draft_review_html)
         self.assertIn('href="../minecraft-first-pass.txt"', draft_review_html)
         self.assertIn("Project Root Shortcuts", location_review_html)
+        self.assertIn('href="../first-map-start.txt"', location_review_html)
         self.assertIn("Need size or story changes?", location_review_html)
         self.assertIn('href="../review.html"', location_review_html)
         self.assertIn("Overview already looks right?", location_review_html)
@@ -440,6 +452,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("--max-side 128", root_review_html)
         self.assertIn("verification-checklist.txt", root_review_html)
         self.assertIn("First map:", summary)
+        self.assertIn("- first-map start: first-map-start.txt", summary)
         self.assertIn("- root review: review.html", summary)
         self.assertIn("Logical world size: 2048 x 1536", summary)
         self.assertIn("World scale: Local district", summary)
@@ -453,7 +466,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn('first-map-set-regions "first-world"', summary)
         self.assertIn('first-map-test-world-grow "first-world"', summary)
         self.assertIn('first-map-test-world-verify "first-world"', summary)
-        self.assertIn("Open first: review.html", summary)
+        self.assertIn("Open first: first-map-start.txt", summary)
 
     def test_summarize_project_first_map_status_reads_manifest_guidance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -471,6 +484,7 @@ class ProjectFirstMapTests(unittest.TestCase):
             summary = format_project_first_map_status_result(result)
 
         self.assertEqual(result.preset_name, "coastal-valley")
+        self.assertEqual(result.first_map_start_path, project_dir / "first-map-start.txt")
         self.assertEqual(result.minecraft_first_pass_path, project_dir / "minecraft-first-pass.txt")
         self.assertEqual(result.world_scale_label, "Local district")
         self.assertIn("Good for one town plus nearby coast", result.world_scale_summary)
@@ -483,8 +497,9 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.size_edit_options[0].length, 192)
         self.assertEqual(result.size_edit_options[1].scale_label, "Local district")
         self.assertIn('first-map-resize "status-world"', result.size_edit_options[-1].rerun_command)
-        self.assertEqual(result.open_sequence[0], ("root-review", "review.html"))
-        self.assertEqual(result.open_sequence[4], ("minecraft-first-pass", "minecraft-first-pass.txt"))
+        self.assertEqual(result.open_sequence[0], ("first-map-start", "first-map-start.txt"))
+        self.assertEqual(result.open_sequence[1], ("root-review", "review.html"))
+        self.assertEqual(result.open_sequence[5], ("minecraft-first-pass", "minecraft-first-pass.txt"))
         self.assertIn(("presetCatalog", "py -3.11 -m titanforge preset-catalog"), result.commands)
         self.assertIn(("refreshFirstMap", 'py -3.11 -m titanforge first-map-refresh "status-world"'), result.commands)
         self.assertIn(("resizeFirstMap", 'py -3.11 -m titanforge first-map-resize "status-world" --width <blocks> --length <blocks>'), result.commands)
@@ -587,6 +602,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(result.datapack_start.place_command, "/function titanforge:place_fixture")
         self.assertEqual(result.datapack_start.clear_command, "/function titanforge:clear_fixture")
         self.assertEqual(result.datapack_start.starter_verdict, "caution")
+        self.assertIn("- first-map start: first-map-start.txt", summary)
         self.assertIn("- location review: first-map\\location\\review.html", summary)
         self.assertIn("- minecraft first pass: minecraft-first-pass.txt", summary)
         self.assertIn("Preset intent:", summary)
@@ -635,7 +651,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("folder: minecraft-test-world-harbor-town-arrival", summary)
         self.assertIn("optional-test-world: Experimental manual-open shell only, not full world export.", summary)
         self.assertIn("Command hints:", summary)
-        self.assertIn("Open first: review.html", summary)
+        self.assertIn("Open first: first-map-start.txt", summary)
 
     def test_write_project_first_map_refuses_to_overwrite_existing_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -682,7 +698,8 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("Preset story: A layered island setting", stdout.getvalue())
         self.assertIn("Key regions: Crown Harbor, Stormwater Shore, Interior Canopy, +2 more", stdout.getvalue())
         self.assertIn("Scale bridge: 1 px =", stdout.getvalue())
-        self.assertIn("Open first: review.html", stdout.getvalue())
+        self.assertIn("- first-map start: first-map-start.txt", stdout.getvalue())
+        self.assertIn("Open first: first-map-start.txt", stdout.getvalue())
         self.assertIn("Validation: 0 errors, 0 warnings", stdout.getvalue())
 
     def test_first_map_status_cli_command(self) -> None:
@@ -705,6 +722,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("First-map status:", stdout.getvalue())
         self.assertIn("- preset: frontier-basin", stdout.getvalue())
+        self.assertIn("- first-map start: first-map-start.txt", stdout.getvalue())
         self.assertIn("- root review: review.html", stdout.getvalue())
         self.assertIn("Preset intent:", stdout.getvalue())
         self.assertIn("Review now:", stdout.getvalue())
@@ -712,6 +730,7 @@ class ProjectFirstMapTests(unittest.TestCase):
         self.assertIn("starter-test-verdict:", stdout.getvalue())
         self.assertIn("Command hints:", stdout.getvalue())
         self.assertIn("buildTestWorld", stdout.getvalue())
+        self.assertIn("Open first: first-map-start.txt", stdout.getvalue())
 
     def test_refresh_project_first_map_rebuilds_existing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

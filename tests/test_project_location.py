@@ -24,6 +24,7 @@ class ProjectLocationTests(unittest.TestCase):
                 max_draft_side=256,
                 use_cleanup_for_heightmap=True,
                 project_root_artifacts=(
+                    ("first-map-start.txt", "../first-map-start.txt"),
                     ("review.html", "../review.html"),
                     ("minecraft-first-pass.txt", "../minecraft-first-pass.txt"),
                 ),
@@ -68,6 +69,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertEqual(location_manifest["sourceMode"], "project-draft")
         self.assertEqual(location_manifest["terrain"]["cleanupApplied"], True)
         self.assertIn("Project Root Shortcuts", draft_review_html)
+        self.assertIn('../first-map-start.txt', draft_review_html)
         self.assertIn("open <a href=\"../review.html\">review.html</a> for the root size, story, preset, and refresh handoff", draft_review_html)
         self.assertIn('../minecraft-first-pass.txt', draft_review_html)
         self.assertIn("How To Read This Pack", location_review_html)
@@ -93,6 +95,7 @@ class ProjectLocationTests(unittest.TestCase):
         self.assertIn('../draft/fixture-summary.json', location_review_html)
         self.assertIn('../draft/fixture-commands.txt', location_review_html)
         self.assertIn('../draft/datapack-fixture.zip', location_review_html)
+        self.assertIn('../first-map-start.txt', location_review_html)
         self.assertIn('../review.html', location_review_html)
         self.assertIn('../minecraft-first-pass.txt', location_review_html)
 

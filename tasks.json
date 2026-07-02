@@ -3,6 +3,17 @@
   "version": 1,
   "tasks": [
     {
+      "id": "TF-094",
+      "status": "done",
+      "priority": "P1",
+      "title": "Add root first-map-start text handoff",
+      "acceptance": [
+        "first-map writes one root first-map-start.txt artifact with the shortest non-HTML scenario-writer startup path",
+        "manifest, status, and project-root shortcut bridges surface first-map-start.txt alongside review.html and minecraft-first-pass.txt",
+        "tests cover the new root text handoff and the unchanged compile/test flow"
+      ]
+    },
+    {
       "id": "TF-093",
       "status": "done",
       "priority": "P1",

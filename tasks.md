@@ -16,6 +16,7 @@ Canonical machine-readable backlog: `tasks.json`.
 
 ## Done
 
+- `TF-094` `P1` Add root first-map-start text handoff.
 - `TF-093` `P1` Link root handoff from draft review.
 - `TF-092` `P1` Link root review from location review.
 - `TF-091` `P1` Link root minecraft-first-pass from location review.

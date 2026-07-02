@@ -38,6 +38,7 @@ from titanforge.spikes.anvil_test_world import (
 PROJECT_FIRST_MAP_SCHEMA = "titanforge.first-map"
 PROJECT_FIRST_MAP_VERSION = 1
 DEFAULT_FIRST_MAP_TEST_WORLD_DIR_NAME = "minecraft-test-world"
+DEFAULT_FIRST_MAP_START_FILE_NAME = "first-map-start.txt"
 DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME = "minecraft-first-pass.txt"
 MIN_FIRST_MAP_TEST_WORLD_SIDE = 64
 
@@ -150,6 +151,7 @@ class ProjectFirstMapDatapackStart:
 class ProjectFirstMapStatusResult:
     project_dir: Path
     manifest_path: Path
+    first_map_start_path: Path
     minecraft_first_pass_path: Path
     config_path: Path
     review_page_path: Path
@@ -536,6 +538,34 @@ def format_project_first_map_datapack_start_text(
     return "\n".join(lines)
 
 
+def format_project_first_map_start_text(
+    project_dir: Path,
+    *,
+    world_width: int,
+    world_length: int,
+    world_scale_label: str,
+) -> str:
+    lines = [
+        f"First-map starter for: {project_dir.name}",
+        f"Logical world size: {world_width} x {world_length}",
+        f"World scale: {world_scale_label}",
+        "",
+        "Do this in order:",
+        "1. Open review.html first for the main scenario-writer overview.",
+        f'2. If the size is wrong, run: py -3.11 -m titanforge first-map-resize "{project_dir.name}" --width <blocks> --length <blocks>',
+        f'3. If the starter theme is wrong, run: py -3.11 -m titanforge first-map-retheme "{project_dir.name}" --preset <preset-name>',
+        (
+            f'4. If the premise or player feeling is wrong, run: py -3.11 -m titanforge first-map-set-story "{project_dir.name}" '
+            '--premise "<story text>" --player-feeling "<player feeling>"'
+        ),
+        f'5. If the region lineup is wrong, run: py -3.11 -m titanforge first-map-set-regions "{project_dir.name}" --region "<title>|<kind>|<story role>|<mood>|<coverage>"',
+        f'6. After any manual config edits, run: py -3.11 -m titanforge first-map-refresh "{project_dir.name}"',
+        "7. If the overview already looks right and you want the shortest Minecraft datapack path, open minecraft-first-pass.txt.",
+        f'8. If you need the terminal handoff again later, run: py -3.11 -m titanforge first-map-status "{project_dir.name}"',
+    ]
+    return "\n".join(lines)
+
+
 def suggest_first_map_test_world_max_side(width: int, length: int) -> int:
     logical_max_side = max(width, length)
     if logical_max_side <= 256:
@@ -661,6 +691,7 @@ def _finalize_project_first_map(
     use_cleanup_for_heightmap: bool,
 ) -> ProjectFirstMapResult:
     manifest_path = project_dir / "first-map-manifest.json"
+    first_map_start_path = project_dir / DEFAULT_FIRST_MAP_START_FILE_NAME
     review_page_path = project_dir / "review.html"
     provisional_result = ProjectFirstMapResult(
         project_dir=project_dir,
@@ -702,6 +733,16 @@ def _finalize_project_first_map(
         project_dir,
         datapack_zip_path=location_result.draft_result.datapack_fixture_zip_path,
         fixture_summary_path=location_result.draft_result.fixture_summary_path,
+    )
+    first_map_start_path.write_text(
+        format_project_first_map_start_text(
+            project_dir,
+            world_width=template_result.config.width,
+            world_length=template_result.config.length,
+            world_scale_label=scale.label,
+        )
+        + "\n",
+        encoding="utf-8",
     )
     fixture_summary = json.loads(location_result.draft_result.fixture_summary_path.read_text(encoding="utf-8"))
     starter_test = dict(fixture_summary.get("starterTest", {}))
@@ -798,6 +839,11 @@ def _finalize_project_first_map(
             },
             "actionPlan": {
                 "openSequence": [
+                    {
+                        "id": "first-map-start",
+                        "path": first_map_start_path.name,
+                        "summary": "Open this first from the project folder when you want a short text handoff before the HTML review.",
+                    },
                     {
                         "id": "root-review",
                         "path": review_page_path.name,
@@ -971,6 +1017,7 @@ def _finalize_project_first_map(
             ],
         },
         "artifacts": {
+            "firstMapStart": first_map_start_path.name,
             "rootReviewPage": review_page_path.name,
             "minecraftFirstPass": minecraft_first_pass_path.name,
             "projectLocationDir": location_result.output_dir.name,
@@ -1021,6 +1068,7 @@ def refresh_project_first_map(
         max_draft_side=resolved_max_draft_side,
         use_cleanup_for_heightmap=resolved_cleanup,
         project_root_artifacts=(
+            (DEFAULT_FIRST_MAP_START_FILE_NAME, f"../{DEFAULT_FIRST_MAP_START_FILE_NAME}"),
             ("review.html", "../review.html"),
             (DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME, f"../{DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}"),
         ),
@@ -1146,6 +1194,7 @@ def write_project_first_map(
         max_draft_side=max_draft_side,
         use_cleanup_for_heightmap=use_cleanup_for_heightmap,
         project_root_artifacts=(
+            (DEFAULT_FIRST_MAP_START_FILE_NAME, f"../{DEFAULT_FIRST_MAP_START_FILE_NAME}"),
             ("review.html", "../review.html"),
             (DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME, f"../{DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}"),
         ),
@@ -1171,6 +1220,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f"- preset: {result.template_result.preset_name}",
             f"- project-location dir: {result.location_result.output_dir.name}",
             f"- root manifest: {result.manifest_path.name}",
+            f"- first-map start: {DEFAULT_FIRST_MAP_START_FILE_NAME}",
             f"- root review: {result.review_page_path.name}",
             f"- minecraft first pass: {DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME}",
             f"Logical world size: {result.template_result.config.width} x {result.template_result.config.length}",
@@ -1196,7 +1246,7 @@ def format_project_first_map_result(result: ProjectFirstMapResult) -> str:
             f'If you need to record manual checks: py -3.11 -m titanforge first-map-test-world-verify "{result.project_dir.name}" --check <check-id> --check-status <status>',
             *[f"Warning: {warning}" for warning in result.location_result.warnings],
             f"Validation: {result.location_result.location_result.errors} errors, {result.location_result.location_result.warnings} warnings",
-            f"Open first: {result.review_page_path.name}",
+            f"Open first: {DEFAULT_FIRST_MAP_START_FILE_NAME}",
         )
     )
 
@@ -1498,6 +1548,7 @@ def summarize_project_first_map_status(project_dir: Path) -> ProjectFirstMapStat
     return ProjectFirstMapStatusResult(
         project_dir=project_dir,
         manifest_path=manifest_path,
+        first_map_start_path=project_dir / str(artifacts.get("firstMapStart", DEFAULT_FIRST_MAP_START_FILE_NAME)),
         minecraft_first_pass_path=project_dir / str(artifacts.get("minecraftFirstPass", handoff_artifacts.get("minecraftFirstPass", DEFAULT_FIRST_MAP_MINECRAFT_FIRST_PASS_FILE_NAME))),
         config_path=project_dir / str(project.get("configPath", "titanforge.toml")),
         review_page_path=project_dir / str(artifacts.get("rootReviewPage", "review.html")),
@@ -1577,6 +1628,7 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
     lines = [
         f"First-map status: {result.project_dir}",
         f"- manifest: {result.manifest_path.name}",
+        f"- first-map start: {result.first_map_start_path.name}",
         f"- minecraft first pass: {result.minecraft_first_pass_path.name}",
         f"- config: {result.config_path.name}",
         f"- preset: {result.preset_name}",
@@ -1709,7 +1761,7 @@ def format_project_first_map_status_result(result: ProjectFirstMapStatusResult) 
         lines.append("Command hints:")
         for command_id, command_value in result.commands:
             lines.append(f"- {command_id}: {command_value}")
-    lines.append(f"Open first: {result.review_page_path.name}")
+    lines.append(f"Open first: {result.first_map_start_path.name}")
     return "\n".join(lines)
 
 

@@ -89,10 +89,11 @@ py -3.11 -m titanforge preset-catalog --json
 Then open:
 
 ```text
+previews\my-first-world\first-map-start.txt
 previews\my-first-world\review.html
 ```
 
-That root page now starts with a short do-this-next path for scenario writers: set size, adjust story/theme/regions, refresh or reread the handoff, then try one safe Minecraft sample only after the overview still looks right. It also shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. It also shows a few exact starter size examples and rerun commands, so changing from a small test map to a very large cinematic world does not require guessing. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
+Open `first-map-start.txt` first when you arrive from the project folder, then open `review.html` for the richer HTML handoff. That root page now starts with a short do-this-next path for scenario writers: set size, adjust story/theme/regions, refresh or reread the handoff, then try one safe Minecraft sample only after the overview still looks right. It also shows what story the preset is aiming for, which regions anchor it, `width` and `length` are the intended Minecraft world size in blocks, it labels that size in plain language, and the draft preview can stay smaller while reporting its `blocksPerPixel` scale. It also shows a few exact starter size examples and rerun commands, so changing from a small test map to a very large cinematic world does not require guessing. The same guidance plus a machine-readable open order, command hints, and Minecraft handoff artifact order is also mirrored into `first-map-manifest.json` for later UI automation.
 
 If you change premise, regions, or other story text later inside `titanforge.toml`, rebuild the existing handoff with:
 
@@ -136,7 +137,7 @@ $env:PYTHONPATH='src'
 py -3.11 -m titanforge first-map-status previews\my-first-world
 ```
 
-That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths. It now starts with a short recommended walkthrough built from the current route plan, explains whether the starter sample stays in one `.mca` file or later grows into several sampled region files, then keeps the fuller route-focused, region-focused, and anchor-focused sample commands available below when you need deeper inspection.
+That terminal status is now meant to stand on its own: it repeats the preset intent, size guidance, review order, next change actions, and Minecraft-side cautions from `first-map-manifest.json`, not just raw file paths. It now starts with the same root `first-map-start.txt` handoff, then a short recommended walkthrough built from the current route plan, explains whether the starter sample stays in one `.mca` file or later grows into several sampled region files, then keeps the fuller route-focused, region-focused, and anchor-focused sample commands available below when you need deeper inspection.
 
 The Minecraft handoff now also surfaces a plain starter-test verdict from `fixture-summary.json` such as `safe` or `caution`, and it now includes two short routes: one root `minecraft-first-pass.txt` guide for the first in-world datapack pass from `datapack-fixture.zip` with exact `/reload` and `/function` commands, plus one recommended sampled test-world path with a sampled `.mca` file-scope note when you need the donor-backed manual-open shell instead.
 
